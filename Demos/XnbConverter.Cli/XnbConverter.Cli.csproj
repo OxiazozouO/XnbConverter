@@ -6,7 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <ApplicationIcon>App.ico</ApplicationIcon>
+        <ApplicationIcon>..\..\.resources\App.ico</ApplicationIcon>
         <StartupObject>XnbConverter.Cli.Program</StartupObject>
     </PropertyGroup>
 
