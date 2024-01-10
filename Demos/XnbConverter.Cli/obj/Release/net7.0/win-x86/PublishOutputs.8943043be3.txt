@@ -1,0 +1,7 @@
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x86\publish\XnbConverter.Cli.pdb
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x86\publish\.config\config.json
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x86\publish\pack.bat
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x86\publish\unpack.bat
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x86\publish\使用教程.pdf
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x86\publish\音频信息查看.bat
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x86\publish\XnbConverter.Cli.exe

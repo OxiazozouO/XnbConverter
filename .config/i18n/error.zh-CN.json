@@ -1,0 +1,5 @@
+{
+    "Type" : "类型：{0}",
+    "UnrealizedTypes" : "未实现的类型：{0}",
+    "InvalidReaderType" : "无效的读取器类型：{0}"
+}

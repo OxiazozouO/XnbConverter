@@ -1,0 +1,121 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <ApplicationIcon>App.ico</ApplicationIcon>
+        <StartupObject>XnbConverter.Cli.Program</StartupObject>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\XnbConverter.Core\XnbConverter.Core.csproj">
+        <Private>True</Private>
+      </ProjectReference>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <Content Include="..\..\.config\bin\ffmpeg\ffmpeg.exe">
+        <Link>.config\bin\ffmpeg\ffmpeg.exe</Link>
+      </Content>
+      <Content Include="..\..\.config\bin\ffmpeg\LICENSE.md">
+        <Link>.config\bin\ffmpeg\LICENSE.md</Link>
+      </Content>
+      <Content Include="..\..\.config\config.json">
+        <Link>.config\config.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Tool\pack.bat">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Tool\unpack.bat">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Tool\音频信息查看.bat">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\..\.config\i18n\error.zh-CN.json">
+        <Link>.config\i18n\error.zh-CN.json</Link>
+      </Content>
+      <Content Include="..\..\.resources\App.ico">
+        <Link>App.ico</Link>
+      </Content>
+      <Content Include="..\..\.resources\appIco.pptx">
+        <Link>appIco.pptx</Link>
+      </Content>
+      <Content Include="..\..\.resources\pack.bat">
+        <Link>pack.bat</Link>
+      </Content>
+      <Content Include="..\..\.resources\unpack.bat">
+        <Link>unpack.bat</Link>
+      </Content>
+      <Content Include="..\..\.resources\音频信息查看.bat">
+        <Link>音频信息查看.bat</Link>
+      </Content>
+      <Content Include="..\..\README.md">
+        <Link>README.md</Link>
+      </Content>
+      <Content Include="..\..\README.zh-CN.md">
+        <Link>README.zh-CN.md</Link>
+      </Content>
+      <Content Include="..\..\README.zh-CN.pdf">
+        <Link>README.zh-CN.pdf</Link>
+      </Content>
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <Compile Remove="bin\Release\net6.0\packed\**" />
+      <Compile Remove="bin\**" />
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <EmbeddedResource Remove="bin\Release\net6.0\packed\**" />
+      <EmbeddedResource Remove="bin\**" />
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <None Remove="bin\Release\net6.0\packed\**" />
+      <None Remove="resources\pack.bat" />
+      <None Remove="resources\unpack.bat" />
+      <None Remove="resources\音频信息查看.bat" />
+      <None Update="Tool\pack.bat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Tool\unpack.bat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Tool\音频信息查看.bat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Remove="bin\**" />
+    </ItemGroup>
+
+</Project>

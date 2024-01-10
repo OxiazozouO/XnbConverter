@@ -1,0 +1,9 @@
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\XnbConverter.Cli.pdb
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\.config\config.json
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\.config\error.json
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\.config\ffmpeg.exe
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\pack.bat
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\unpack.bat
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\使用教程.pdf
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\音频信息查看.bat
+D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\publish\win-x86\XnbConverter.Cli.exe

@@ -1,0 +1,10 @@
+D:\XnbConverter\XnbConverter.Core\bin\Release\net7.0\XnbConverter.Core.deps.json
+D:\XnbConverter\XnbConverter.Core\bin\Release\net7.0\XnbConverter.Core.dll
+D:\XnbConverter\XnbConverter.Core\obj\Release\net7.0\XnbConverter.Core.csproj.AssemblyReference.cache
+D:\XnbConverter\XnbConverter.Core\obj\Release\net7.0\XnbConverter.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\XnbConverter\XnbConverter.Core\obj\Release\net7.0\XnbConverter.Core.AssemblyInfoInputs.cache
+D:\XnbConverter\XnbConverter.Core\obj\Release\net7.0\XnbConverter.Core.AssemblyInfo.cs
+D:\XnbConverter\XnbConverter.Core\obj\Release\net7.0\XnbConverter.Core.csproj.CoreCompileInputs.cache
+D:\XnbConverter\XnbConverter.Core\obj\Release\net7.0\XnbConverter.Core.dll
+D:\XnbConverter\XnbConverter.Core\obj\Release\net7.0\refint\XnbConverter.Core.dll
+D:\XnbConverter\XnbConverter.Core\obj\Release\net7.0\ref\XnbConverter.Core.dll
