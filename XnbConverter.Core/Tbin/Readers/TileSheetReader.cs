@@ -10,13 +10,13 @@ namespace XnbConverter.Tbin.Readers;
 public class TileSheetReader: BaseReader
 {
     private readonly StringReader stringReader = new ();
-    private int vector2Reader;
+    private int intVector2Reader;
     private int propertieListReader;
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
         stringReader.Init(readerResolver);
-        vector2Reader = readerResolver.GetIndex<Vector2Reader>();
+        intVector2Reader = readerResolver.GetIndex<IntVector2Reader>();
         propertieListReader = readerResolver.GetIndex<ListReader<PropertieReader, Propertie>>();
     }
     public override bool IsValueType()
@@ -31,10 +31,10 @@ public class TileSheetReader: BaseReader
         result.Id          = stringReader.ReadByInt32();
         result.Description = stringReader.ReadByInt32();
         result.Image       = stringReader.ReadByInt32();
-        result.SheetSize   = readerResolver.ReadValue<Vector2>(vector2Reader);
-        result.TileSize    = readerResolver.ReadValue<Vector2>(vector2Reader);
-        result.Margin      = readerResolver.ReadValue<Vector2>(vector2Reader);
-        result.Spacing     = readerResolver.ReadValue<Vector2>(vector2Reader);
+        result.SheetSize   = readerResolver.ReadValue<IntVector2>(intVector2Reader);
+        result.TileSize    = readerResolver.ReadValue<IntVector2>(intVector2Reader);
+        result.Margin      = readerResolver.ReadValue<IntVector2>(intVector2Reader);
+        result.Spacing     = readerResolver.ReadValue<IntVector2>(intVector2Reader);
         result.Properties  = readerResolver.ReadValue<List<Propertie>>(propertieListReader);
         
         return result;
@@ -47,10 +47,10 @@ public class TileSheetReader: BaseReader
         stringReader.WriteByInt32(result.Id);
         stringReader.WriteByInt32(result.Description);
         stringReader.WriteByInt32(result.Image);
-        readerResolver.WriteValue(vector2Reader, result.SheetSize);
-        readerResolver.WriteValue(vector2Reader, result.TileSize);
-        readerResolver.WriteValue(vector2Reader, result.Margin);
-        readerResolver.WriteValue(vector2Reader, result.Spacing);
+        readerResolver.WriteValue(intVector2Reader, result.SheetSize);
+        readerResolver.WriteValue(intVector2Reader, result.TileSize);
+        readerResolver.WriteValue(intVector2Reader, result.Margin);
+        readerResolver.WriteValue(intVector2Reader, result.Spacing);
         readerResolver.WriteValue(propertieListReader, result.Properties);
     }
 }

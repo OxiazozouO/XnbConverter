@@ -106,7 +106,7 @@ public class TBin10Reader : BaseReader
                 main, new TileSheetReader(), new ListReader<TileSheetReader, TileSheet>(),
                 new PropertieReader(), new ListReader<PropertieReader, Propertie>(),
                 new LayerReader(), new ListReader<LayerReader, Layer>(),
-                new Vector2Reader(), new StaticTileReader(),
+                new Vector2Reader(), new IntVector2Reader(),new StaticTileReader(),
                 new AnimatedTilerReader(),
             },
             new BufferReader(tbin.Data),
