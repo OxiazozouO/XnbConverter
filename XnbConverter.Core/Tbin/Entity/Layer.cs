@@ -24,12 +24,12 @@ public class Layer
     /// <summary>
     /// The size of a layer, in tiles.
     /// </summary>
-    public Vector2 LayerSize { get; set; }
+    public IntVector2 LayerSize { get; set; }
 
     /// <summary>
     /// The size of a tile, in pixels.
     /// </summary>
-    public Vector2 TileSize { get; set; }
+    public IntVector2 TileSize { get; set; }
 
     /// <summary>
     /// The layer properties.

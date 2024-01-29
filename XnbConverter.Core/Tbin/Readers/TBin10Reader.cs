@@ -1,4 +1,4 @@
-﻿#region HEADER
+#region HEADER
 /*
  * Author: spacechase0 (https://github.com/spacechase0)
  * Project URL: https://github.com/spacechase0/TbinCSharp
@@ -96,7 +96,7 @@ public class TBin10Reader : BaseReader
         // Log.BigFileDebug("D:\\1\\output.txt", tbin.Data);
     }
     
-    private static TBin10Reader Create(TBin10 tbin)
+    public static TBin10Reader Create(TBin10 tbin)
     {
         
         TBin10Reader main = new TBin10Reader();
@@ -127,6 +127,4 @@ public class TBin10Reader : BaseReader
         if(!isRemoveTileSheetsExtension)
             readerResolver.WriteValue(layerListReader, input.Layers);
     }
-    
-    
 }

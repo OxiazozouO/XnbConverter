@@ -1,4 +1,5 @@
-﻿using XnbConverter.Readers;
+﻿using XnbConverter.Entity.Mono;
+using XnbConverter.Readers;
 using XnbConverter.Readers.Base;
 using XnbConverter.Readers.Base.ValueReaders;
 using XnbConverter.Tbin.Entity;
@@ -10,7 +11,7 @@ namespace XnbConverter.Tbin.Readers;
 public class LayerReader: BaseReader
 {
     private readonly StringReader stringReader = new ();
-    private int vector2Reader;
+    private int intVector2Reader;
     private int propertieListReader;
     private int staticTileReader;
     private int animatedTilerReader;
@@ -18,7 +19,7 @@ public class LayerReader: BaseReader
     {
         base.Init(readerResolver);
         stringReader.Init(readerResolver);
-        vector2Reader       = readerResolver.GetIndex<Vector2Reader>();
+        intVector2Reader       = readerResolver.GetIndex<IntVector2Reader>();
         propertieListReader = readerResolver.GetIndex<ListReader<PropertieReader, Propertie>>();
         staticTileReader    = readerResolver.GetIndex<StaticTileReader>();
         animatedTilerReader = readerResolver.GetIndex<AnimatedTilerReader>();
@@ -36,8 +37,8 @@ public class LayerReader: BaseReader
         result.Id = stringReader.ReadByInt32();
         result.Visible = bufferReader.ReadByte();
         result.Description = stringReader.ReadByInt32();
-        result.LayerSize = readerResolver.ReadValue<Vector2>(vector2Reader);
-        result.TileSize = readerResolver.ReadValue<Vector2>(vector2Reader);
+        result.LayerSize = readerResolver.ReadValue<IntVector2>(intVector2Reader);
+        result.TileSize = readerResolver.ReadValue<IntVector2>(intVector2Reader);
 
         result.Properties = readerResolver.ReadValue<List<Propertie>>(propertieListReader);
         
@@ -98,8 +99,8 @@ public class LayerReader: BaseReader
         stringReader.WriteByInt32(input.Id);
         bufferWriter.WriteByte(input.Visible);
         stringReader.WriteByInt32(input.Description);
-        readerResolver.WriteValue(vector2Reader, input.LayerSize);
-        readerResolver.WriteValue(vector2Reader, input.TileSize);
+        readerResolver.WriteValue(intVector2Reader, input.LayerSize);
+        readerResolver.WriteValue(intVector2Reader, input.TileSize);
         readerResolver.WriteValue(propertieListReader, input.Properties);
         
         float x = input.LayerSize.X;
