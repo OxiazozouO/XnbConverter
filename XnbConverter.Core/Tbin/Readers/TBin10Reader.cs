@@ -63,19 +63,8 @@ public class TBin10Reader : BaseReader
         byte[] tmp = tbin.Data;
         Span<byte> span = tmp.AsSpan();
         
-        TBin10Reader main = new TBin10Reader();
-        _ = new ReaderResolver(
-            new BaseReader[]{
-                main, new TileSheetReader(), new ListReader<TileSheetReader, TileSheet>(),
-                new PropertieReader(), new ListReader<PropertieReader, Propertie>(),
-                new LayerReader(), new ListReader<LayerReader, Layer>(),
-                new Vector2Reader(), new StaticTileReader(),
-                new AnimatedTilerReader(),
-            },
-            new BufferReader(tmp),
-            new BufferWriter(tmp)
-        );
-
+        TBin10Reader main = Create(tbin);
+        
         main.isRemoveTileSheetsExtension = true;
         tbin = main.Read();
         int ordLen = main.bufferReader.BytePosition;
@@ -107,6 +96,25 @@ public class TBin10Reader : BaseReader
         // Log.BigFileDebug("D:\\1\\output.txt", tbin.Data);
     }
     
+    private static TBin10Reader Create(TBin10 tbin)
+    {
+        
+        TBin10Reader main = new TBin10Reader();
+        _ = new ReaderResolver(
+            new BaseReader[]
+            {
+                main, new TileSheetReader(), new ListReader<TileSheetReader, TileSheet>(),
+                new PropertieReader(), new ListReader<PropertieReader, Propertie>(),
+                new LayerReader(), new ListReader<LayerReader, Layer>(),
+                new Vector2Reader(), new StaticTileReader(),
+                new AnimatedTilerReader(),
+            },
+            new BufferReader(tbin.Data),
+            new BufferWriter(tbin.Data)
+        );
+        return main;
+    }
+    
     public override void Write(object content)
     {
         TBin10 input = (TBin10)content;
@@ -119,4 +127,6 @@ public class TBin10Reader : BaseReader
         if(!isRemoveTileSheetsExtension)
             readerResolver.WriteValue(layerListReader, input.Layers);
     }
+    
+    
 }
