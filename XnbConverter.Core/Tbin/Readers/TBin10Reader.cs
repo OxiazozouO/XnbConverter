@@ -72,8 +72,7 @@ public class TBin10Reader : BaseReader
         if(size > TBin10.LayerMax)
             throw new XnbError("Xnb尚未支持超过{0}层的Tbin地图，目前{1}层", TBin10.LayerMax, size);
         // Log.BigFileDebug("D:\\1\\input.txt", tmp);
-        foreach (var t in tbin.TileSheets)
-            t.Image = t.Image.Replace(".png", "");
+        tbin.RemoveTileSheetsExtension();
 
         main.Write(tbin);
         int newLen = main.bufferWriter.BytePosition;
@@ -126,5 +125,12 @@ public class TBin10Reader : BaseReader
         readerResolver.WriteValue(tileSheetListReader, input.TileSheets);
         if(!isRemoveTileSheetsExtension)
             readerResolver.WriteValue(layerListReader, input.Layers);
+    }
+    public void Save(TBin10 input,string path)
+    {
+        bufferWriter.Buffer=Pool.RentByte(Pool.LongSize);
+        Write(input);
+        File.WriteAllBytes(path,bufferWriter.Buffer[..bufferWriter.BytePosition]);
+        Pool.Return(bufferWriter.Buffer);
     }
 }

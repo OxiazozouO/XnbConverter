@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XactTest", "Tests\XactTest\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XnbConverter.Cli", "Demos\XnbConverter.Cli\XnbConverter.Cli.csproj", "{9F6FD155-34DD-4097-98A2-6E2C8176FE0D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auto_Tbin", "Demos\Auto_Tbin\Auto_Tbin.csproj", "{EE8DF4BA-20A0-4FEF-B2FF-370B51A8C635}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{9F6FD155-34DD-4097-98A2-6E2C8176FE0D}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{9F6FD155-34DD-4097-98A2-6E2C8176FE0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F6FD155-34DD-4097-98A2-6E2C8176FE0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE8DF4BA-20A0-4FEF-B2FF-370B51A8C635}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE8DF4BA-20A0-4FEF-B2FF-370B51A8C635}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE8DF4BA-20A0-4FEF-B2FF-370B51A8C635}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE8DF4BA-20A0-4FEF-B2FF-370B51A8C635}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +51,7 @@ Global
 		{5E692781-BFA8-4168-8063-0935607EAA51} = {4B4055BD-F25A-44C2-BB38-E0D7EB626119}
 		{6246EFBE-D439-43FD-8C2C-68A52F571F84} = {4B4055BD-F25A-44C2-BB38-E0D7EB626119}
 		{9F6FD155-34DD-4097-98A2-6E2C8176FE0D} = {EF0A0F88-F474-4D23-99D4-51D1BCCFB81D}
+		{EE8DF4BA-20A0-4FEF-B2FF-370B51A8C635} = {EF0A0F88-F474-4D23-99D4-51D1BCCFB81D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8FEA1B86-858D-4743-8685-FF7E86E80B30}
