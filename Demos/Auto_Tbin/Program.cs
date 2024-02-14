@@ -20,6 +20,7 @@ public class Program
         tbin = tr.Read();
         
         tbin.ConsolidateLayers(path);
+        
         tbin.RemoveTileSheetsExtension();
         tr.Save(tbin, Path.Combine(path, "Highlands_1.tbin"));
     }

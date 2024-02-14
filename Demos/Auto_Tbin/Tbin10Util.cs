@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Tbin.Entity;
 
@@ -24,14 +25,55 @@ public static class Tbin10Util
     public static void ConsolidateLayers(this TBin10 tbin, string path)
     {
         var sb = new StringBuilder();
-        var list = new Dictionary<string, Image<Rgba32>>();
+        var list = new Dictionary<string, List<Image<Rgba32>>>();
+        tbin.RemoveTileSheetsExtension();
+        string ex = "";
+        HashSet<string> seasonSet = new HashSet<string>();
         foreach (var v in tbin.TileSheets)
         {
-            v.Image = v.Image.Replace(".png", "");
-            var s = Path.Combine(path, v.Image + ".png");
-            var image = Image.Load<Rgba32>(s);
-            list.Add(v.Id, image);
+            if (v.Image.Contains("spring_"))
+            {
+                List<Image<Rgba32>> lt = new List<Image<Rgba32>>();
+                foreach (var season in GetSeasons(v.Image))
+                {
+                    var s = Path.Combine(path, season + ".png");
+
+                    if (File.Exists(s))
+                    {
+                        var image = Image.Load<Rgba32>(s);
+                        lt.Add(image);
+                    }
+                    else
+                    {
+                        ex += s + "\n";
+                    }
+                }
+
+                list.Add(v.Id, lt);
+                seasonSet.Add(v.Id);
+            }
+            else
+            {
+                var s = Path.Combine(path, v.Image + ".png");
+                if (File.Exists(s))
+                {
+                    var image = Image.Load<Rgba32>(s);
+                    List<Image<Rgba32>> lt = new List<Image<Rgba32>>();
+                    lt.Add(image);
+                    list.Add(v.Id, lt);
+                }
+                else
+                {
+                    ex += s + "\n";
+                }
+            }
         }
+
+        if (ex != "")
+        {
+            throw new Exception("下列文件不存在：" + ex);
+        }
+
 
         var map = new Dictionary<string, List<Layer>>();
         foreach (var la in tbin.Layers)
@@ -93,10 +135,9 @@ public static class Tbin10Util
             properties[strId].Add(prop);
         }
 
-        var imgList = new ImgList(path);
+        var imgList = new ImgLists(path);
         var indexed = new Dictionary<string, (int, int)>();
         var layers = new List<Layer>();
-
 
         foreach (var v in map)
         {
@@ -105,7 +146,6 @@ public static class Tbin10Util
                 layers.Add(v.Value[0]);
                 continue;
             }
-
 
             var ll = v.Value;
 
@@ -170,25 +210,68 @@ public static class Tbin10Util
                             for (var i = 0; i < anmInd; ++i)
                             {
                                 foreach (var an in animatedTile[i].Frames)
+                                {
                                     sb.Append(an.TileSheet).Append('_').Append(an.TileIndex).Append('_');
+                                }
                             }
-
 
                             if (indexed.TryGetValue(sb.ToString(), out var value))
                             {
                                 layer.Tiles.Add(layers[value.Item1].Tiles[value.Item2]);
                             }
-
-
                             else
                             {
-                                var image = new Image<Rgba32>(16, 16);
-                                var pl = new List<Propertie>();
+                                Image<Rgba32>[] image = null;
+                                bool tag = false;
                                 for (var i = 0; i < staInd; ++i)
                                 {
-                                    image.DrawImagePortion(0, list[staticTile[i].TileSheet], staticTile[i].TileIndex);
+                                    if (!seasonSet.Contains(staticTile[i].TileSheet)) continue;
+                                    tag = true;
+                                    break;
                                 }
 
+                                if (tag)
+                                {
+                                    image = new Image<Rgba32>[]
+                                    {
+                                        new Image<Rgba32>(16, 16),
+                                        new Image<Rgba32>(16, 16),
+                                        new Image<Rgba32>(16, 16),
+                                        new Image<Rgba32>(16, 16),
+                                    };
+                                    for (var i = 0; i < staInd; ++i)
+                                    {
+                                        StaticTile st = staticTile[i];
+                                        if (seasonSet.Contains(st.TileSheet))
+                                        {
+                                            for (int k = 0; k < 4; k++)
+                                            {
+                                                image[k].DrawImagePortion(0, list[st.TileSheet][k], st.TileIndex);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (int k = 0; k < 4; k++)
+                                            {
+                                                image[k].DrawImagePortion(0, list[st.TileSheet][0], st.TileIndex);
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    image = new Image<Rgba32>[]
+                                    {
+                                        new Image<Rgba32>(16, 16)
+                                    };
+                                    for (var i = 0; i < staInd; ++i)
+                                    {
+                                        image[0].DrawImagePortion(0, list[staticTile[i].TileSheet][0],
+                                            staticTile[i].TileIndex);
+                                    }
+                                }
+
+                                var pl = new List<Propertie>();
                                 for (var i = 0; i < staInd; ++i)
                                 {
                                     var strId = staticTile[i].TileSheet + "_" + staticTile[i].TileIndex;
@@ -220,14 +303,12 @@ public static class Tbin10Util
                                         imgList.AddProperties(pl);
                                     }
 
-
                                     for (var i = 0; i < staInd; i++)
                                     {
                                         if (staticTile[i].Properties.Count < 1) //事件
                                         {
                                             continue;
                                         }
-
 
                                         all.Properties.AddRange(staticTile[i].Properties); //需要进一步处理
                                     }
@@ -271,7 +352,6 @@ public static class Tbin10Util
                                         }
                                     }
 
-
                                     var anTile = new AnimatedTile
                                     {
                                         Properties = new List<Propertie>(),
@@ -281,22 +361,67 @@ public static class Tbin10Util
                                         Index = new List<char>(),
                                         _currTileSheet = new List<string>()
                                     };
+                                    for (var i = 0; i < anmInd; ++i)
+                                    {
+                                        foreach (var frame in animatedTile[i].Frames)
+                                        {
+                                            if (!seasonSet.Contains(frame.TileSheet)) continue;
+                                            tag = true;
+                                            break;
+                                        }
+                                    }
+
                                     for (var i = 0; i < ma; i++)
                                     {
-                                        var imgCopy = image.Clone();
-                                        for (var k = 0; k < anmInd; k++)
+                                        Image<Rgba32>[] imgCopy;
+                                        if (tag && image.Length == 1)
                                         {
-                                            var frame = animatedTile[k].Frames[arr[k + 1][i]];
-                                            imgCopy.DrawImagePortion(0, list[frame.TileSheet], frame.TileIndex);
+                                            imgCopy = new Image<Rgba32>[4];
+                                            for (int k = 0; k < 4; k++)
+                                            {
+                                                imgCopy[k] = image[0].Clone();
+                                            }
                                         }
+                                        else
+                                        {
+                                            imgCopy = new Image<Rgba32>[image.Length];
+                                            for (int k = 0; k < image.Length; k++)
+                                            {
+                                                imgCopy[k] = image[k].Clone();
+                                            }
+                                        }
+
+                                        if (tag)
+                                        {
+                                            for (var k = 0; k < anmInd; k++)
+                                            {
+                                                var frame = animatedTile[k].Frames[arr[k + 1][i]];
+                                                for (var index = 0; index < 4; index++)
+                                                {
+                                                    imgCopy[index].DrawImagePortion(0, list[frame.TileSheet][index],
+                                                        frame.TileIndex);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (var k = 0; k < anmInd; k++)
+                                            {
+                                                var frame = animatedTile[k].Frames[arr[k + 1][i]];
+                                                imgCopy[0].DrawImagePortion(0, list[frame.TileSheet][0],
+                                                    frame.TileIndex);
+                                            }
+                                        }
+
 
                                         var pll = new List<Propertie>();
                                         pll.AddRange(pl.Select(tmp => new Propertie
                                             { Key = tmp.Key, Type = tmp.Type, Value = tmp.Value }));
                                         for (var k = 0; k < anmInd; k++)
                                         {
-                                            var vvv = animatedTile[k].Frames[arr[k + 1][i]];
-                                            var strId = vvv.TileSheet + "_" + vvv.TileIndex;
+                                            var frame = animatedTile[k].Frames[arr[k + 1][i]];
+                                            var strId = frame.TileSheet + "_" + frame.TileIndex;
+
                                             if (properties.TryGetValue(strId, out var proper))
                                             {
                                                 pll.AddRange(proper.Select(tmp => new Propertie
@@ -350,6 +475,12 @@ public static class Tbin10Util
         tbin.Layers = layers;
         imgList.Save();
         tbin.TileSheets.AddRange(imgList.TileSheets);
+    }
+
+    private static string[] GetSeasons(string s)
+    {
+        s = s.Replace("spring_", "");
+        return new[] { "spring_" + s, "summer_" + s, "fall_" + s, "winter_" + s };
     }
 
     private static void CompileIndex<T>(List<T> tiles, List<char> index, List<int> sizeArr, List<string> currTileSheet,
@@ -467,25 +598,47 @@ public static class Tbin10Util
     }
 
 
+    public static Dictionary<string, List<object>> GetTile(this TBin10 tbin, params string[] s)
+    {
+        Dictionary<string, List<object>> lists = new Dictionary<string, List<object>>();
+        for (var index = 0; index < tbin.Properties.Count; index++)
+        {
+            var property = tbin.Properties[index];
+            string key = property.Key + "_" + index;
+            if (s.Any(v => property.Key == v))
+            {
+                if (lists.ContainsKey(key))
+                {
+                    lists[key].AddRange(property.Parse());
+                }
+                else
+                {
+                    lists.Add(key, property.Parse());
+                }
+            }
+        }
+
+        return lists;
+    }
+
     public class ImgList
     {
         private const int DefSize = 1250;
-        private readonly List<List<Image<Rgba32>>> _list;
         private readonly string _path;
-
         private readonly List<string> _pathNames;
-        public readonly List<TileSheet> TileSheets;
         private List<Image<Rgba32>> _tmpList;
+
+        public readonly List<TileSheet> TileSheets;
+
         private TileSheet _tmpTile;
 
         public ImgList(string path)
         {
             _path = path;
             _tmpList = new List<Image<Rgba32>>();
-            _list = new List<List<Image<Rgba32>>>();
-            _list.Add(_tmpList);
             _pathNames = new List<string>();
             _pathNames.Add(GetImgName());
+            TileSheets = new List<TileSheet>();
 
             _tmpTile = new TileSheet
             {
@@ -498,33 +651,36 @@ public static class Tbin10Util
                 Spacing = new IntVector2 { X = 0, Y = 0 },
                 Properties = new List<Propertie>()
             };
-            TileSheets = new List<TileSheet>();
+
             TileSheets.Add(_tmpTile);
         }
 
         public void Add(Image<Rgba32> img)
         {
-            if (_tmpList.Count == DefSize * DefSize)
+            if (img.Width == 16)
             {
-                Save();
-                _tmpList = new List<Image<Rgba32>>();
-                _pathNames.Add(GetImgName());
-                TileSheets.Add(_tmpTile);
-
-                _tmpTile = new TileSheet
+                if (_tmpList.Count == DefSize * DefSize)
                 {
-                    Id = NowName(),
-                    Description = "",
-                    Image = NowName(),
-                    SheetSize = null,
-                    TileSize = new IntVector2 { X = 16, Y = 16 },
-                    Margin = new IntVector2 { X = 0, Y = 0 },
-                    Spacing = new IntVector2 { X = 0, Y = 0 },
-                    Properties = new List<Propertie>()
-                };
-            }
+                    Save();
+                    _tmpList = new List<Image<Rgba32>>();
+                    _pathNames.Add(GetImgName());
+                    TileSheets.Add(_tmpTile);
 
-            _tmpList.Add(img);
+                    _tmpTile = new TileSheet
+                    {
+                        Id = NowName(),
+                        Description = "",
+                        Image = NowName(),
+                        SheetSize = null,
+                        TileSize = new IntVector2 { X = 16, Y = 16 },
+                        Margin = new IntVector2 { X = 0, Y = 0 },
+                        Spacing = new IntVector2 { X = 0, Y = 0 },
+                        Properties = new List<Propertie>()
+                    };
+                }
+
+                _tmpList.Add(img);
+            }
         }
 
         public void AddProperties(List<Propertie> pl)
@@ -538,7 +694,10 @@ public static class Tbin10Util
             if (_tmpList.Count < DefSize * DefSize)
             {
                 num = (int)Math.Sqrt(_tmpList.Count);
-                if (num * num < _tmpList.Count) ++num;
+                if (num * num < _tmpList.Count)
+                {
+                    ++num;
+                }
 
                 num *= 16;
             }
@@ -549,9 +708,10 @@ public static class Tbin10Util
 
             var m = new Image<Rgba32>(num, num); //2
             TileSheets[^1].SheetSize = new IntVector2 { X = num / 16, Y = num / 16 };
-            for (var i = 0; i < _tmpList.Count; i++) m.DrawImagePortion(i, _tmpList[i], 0);
-
-            _list.Add(_tmpList);
+            for (var i = 0; i < _tmpList.Count; i++)
+            {
+                m.DrawImagePortion(i, _tmpList[i], 0);
+            }
 
             m.Save(Path.Combine(_path, _pathNames[^1] + ".png"));
         }
@@ -564,6 +724,159 @@ public static class Tbin10Util
         public int NowIndex()
         {
             return _tmpList.Count - 1;
+        }
+    }
+
+    public class ImgLists
+    {
+        private const int DefSize = 1250;
+        private readonly string _path;
+        private Dictionary<int, List<List<Image<Rgba32>>>> _tmpList = new Dictionary<int, List<List<Image<Rgba32>>>>();
+
+        public readonly List<TileSheet> TileSheets = new List<TileSheet>();
+        public readonly Dictionary<int, TileSheet> _tmpTileSheet = new Dictionary<int, TileSheet>();
+        private readonly Dictionary<int, List<string>> _pathNames = new Dictionary<int, List<string>>();
+
+        public int w = 0;
+
+        public ImgLists(string path)
+        {
+            _path = path;
+        }
+
+        public void Add(params Image<Rgba32>[] img)
+        {
+            w = img.Length;
+            if (_tmpList.TryGetValue(w, out var value))
+            {
+                if (value[0].Count == DefSize * DefSize)
+                {
+                    Save(value);
+                    for (int i = 0; i < value.Count; i++)
+                    {
+                        value[i] = new List<Image<Rgba32>>();
+                    }
+
+                    _pathNames[w] = new List<string>();
+                    _tmpTileSheet[w] = new TileSheet
+                    {
+                        Id = NowName(),
+                        Description = "",
+                        Image = NowName(),
+                        SheetSize = null,
+                        TileSize = new IntVector2 { X = 16, Y = 16 },
+                        Margin = new IntVector2 { X = 0, Y = 0 },
+                        Spacing = new IntVector2 { X = 0, Y = 0 },
+                        Properties = new List<Propertie>()
+                    };
+                }
+            }
+            else
+            {
+                _tmpList.Add(w, new List<List<Image<Rgba32>>>());
+                for (int i = 0; i < w; i++)
+                {
+                    _tmpList[w].Add(new List<Image<Rgba32>>());
+                }
+
+                if (!_pathNames.ContainsKey(w))
+                {
+                    _pathNames.Add(w, new List<string>());
+                }
+
+                _pathNames[w].Add(GetImgName());
+
+                if (!_tmpTileSheet.ContainsKey(w))
+                {
+                    var tmpT = new TileSheet
+                    {
+                        Id = NowName(),
+                        Description = "",
+                        Image = NowName(),
+                        SheetSize = null,
+                        TileSize = new IntVector2 { X = 16, Y = 16 },
+                        Margin = new IntVector2 { X = 0, Y = 0 },
+                        Spacing = new IntVector2 { X = 0, Y = 0 },
+                        Properties = new List<Propertie>()
+                    };
+                    TileSheets.Add(tmpT);
+                    _tmpTileSheet.Add(w, tmpT);
+                }
+            }
+
+            for (int i = 0; i < w; i++)
+            {
+                _tmpList[w][i].Add(img[i]);
+            }
+        }
+
+        public void AddProperties(List<Propertie> pl)
+        {
+            _tmpTileSheet[w].Properties.AddRange(pl);
+        }
+
+        public void Save(List<List<Image<Rgba32>>> list)
+        {
+            int num;
+            if (list[0].Count < DefSize * DefSize)
+            {
+                num = (int)Math.Sqrt(list[0].Count);
+                if (num * num < list[0].Count)
+                {
+                    ++num;
+                }
+
+                num *= 16;
+            }
+            else
+            {
+                num = DefSize * 16;
+            }
+
+            string[] s = { "" };
+            if (list.Count == 4)
+            {
+                s = new string[] { "spring_", "summer_", "fall_", "winter_" };
+            }
+
+            for (int i = 0; i < list.Count; ++i)
+            {
+                var m = new Image<Rgba32>(num, num); //2
+                _tmpTileSheet[w].SheetSize = new IntVector2 { X = num / 16, Y = num / 16 };
+                for (var j = 0; j < list[0].Count; ++j)
+                {
+                    m.DrawImagePortion(j, list[i][j], 0);
+                }
+
+                m.Save(Path.Combine(_path, s[i] + _pathNames[w][^1] + ".png"));
+            }
+        }
+
+        public void Save()
+        {
+            foreach (var (key, value) in _tmpList)
+            {
+                if (value[0].Count > 0)
+                {
+                    w = key;
+                    Save(value);
+                }
+            }
+        }
+
+        public string NowName()
+        {
+            if (w == 4)
+            {
+                return "spring_" + _pathNames[w][^1];
+            }
+
+            return _pathNames[w][^1];
+        }
+
+        public int NowIndex()
+        {
+            return _tmpList[w][0].Count - 1;
         }
     }
 }

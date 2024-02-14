@@ -12,6 +12,10 @@
         <Content Include="..\..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
+        <Content Include="..\..\.resources\1.json">
+          <Link>1.json</Link>
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
