@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Tbin.Entity;
 
@@ -22,14 +21,13 @@ public static class Tbin10Util
         Values = values.ToArray();
     }
 
-    public static void ConsolidateLayers(this TBin10 tbin, string path)
+    private static void LoadImages(this List<TileSheet> tileSheets, string path,
+        out Dictionary<string, List<Image<Rgba32>>> imgList, out HashSet<string> seasonSet)
     {
-        var sb = new StringBuilder();
-        var list = new Dictionary<string, List<Image<Rgba32>>>();
-        tbin.RemoveTileSheetsExtension();
+        imgList = new Dictionary<string, List<Image<Rgba32>>>();
+        seasonSet = new HashSet<string>();
         string ex = "";
-        HashSet<string> seasonSet = new HashSet<string>();
-        foreach (var v in tbin.TileSheets)
+        foreach (var v in tileSheets)
         {
             if (v.Image.Contains("spring_"))
             {
@@ -49,7 +47,7 @@ public static class Tbin10Util
                     }
                 }
 
-                list.Add(v.Id, lt);
+                imgList.Add(v.Id, lt);
                 seasonSet.Add(v.Id);
             }
             else
@@ -57,10 +55,13 @@ public static class Tbin10Util
                 var s = Path.Combine(path, v.Image + ".png");
                 if (File.Exists(s))
                 {
-                    var image = Image.Load<Rgba32>(s);
-                    List<Image<Rgba32>> lt = new List<Image<Rgba32>>();
-                    lt.Add(image);
-                    list.Add(v.Id, lt);
+                    if (!imgList.ContainsKey(v.Id))
+                    {
+                        var image = Image.Load<Rgba32>(s);
+                        List<Image<Rgba32>> lt = new List<Image<Rgba32>>();
+                        lt.Add(image);
+                        imgList.Add(v.Id, lt);
+                    }
                 }
                 else
                 {
@@ -73,10 +74,12 @@ public static class Tbin10Util
         {
             throw new Exception("下列文件不存在：" + ex);
         }
+    }
 
-
-        var map = new Dictionary<string, List<Layer>>();
-        foreach (var la in tbin.Layers)
+    private static void ProcessMap(this List<Layer> layers, out Dictionary<string, List<Layer>> map)
+    {
+        map = new Dictionary<string, List<Layer>>();
+        foreach (var la in layers)
         {
             string name = "";
             if (la.Properties.Count == 0)
@@ -121,23 +124,51 @@ public static class Tbin10Util
                 return;
             }
         }
+    }
 
-        var properties = new Dictionary<string, List<Propertie>>();
-        foreach (var sheet in tbin.TileSheets)
-        foreach (var prop in sheet.Properties)
+    private static void ExtractProperties(this List<TileSheet> tileSheets,
+        out Dictionary<string, List<Propertie>> properties)
+    {
+        properties = new Dictionary<string, List<Propertie>>();
+        foreach (var sheet in tileSheets)
         {
-            var strId = sheet.Id + "_" + prop.Key.Split("@")[2];
-            if (!properties.ContainsKey(strId))
+            foreach (var prop in sheet.Properties)
             {
-                properties[strId] = new List<Propertie>();
+                var strId = sheet.Id + "@" + prop.Key.Split("@")[2];
+                if (!properties.ContainsKey(strId))
+                {
+                    properties[strId] = new List<Propertie>();
+                }
+
+                properties[strId].Add(prop);
             }
-
-            properties[strId].Add(prop);
         }
+    }
 
+
+    public static void ConsolidateLayers(this TBin10 tbin, string path)
+    {
+        tbin.Layers.ProcessMap(out var map);
+        // foreach (var v in map)
+        // {
+        //     if (v.Value.Count == 1)
+        //     {
+        //         continue;
+        //     }
+        //
+        //     goto run;
+        // }
+        //
+        // return;
+        run:
         var imgList = new ImgLists(path);
         var indexed = new Dictionary<string, (int, int)>();
         var layers = new List<Layer>();
+        var sb = new StringBuilder();
+
+        tbin.RemoveTileSheetsExtension();
+        tbin.TileSheets.LoadImages(path, out var list, out var seasonSet);
+        tbin.TileSheets.ExtractProperties(out var properties);
 
         foreach (var v in map)
         {
@@ -157,10 +188,7 @@ public static class Tbin10Util
                 LayerSize = ll[0].LayerSize,
                 TileSize = ll[0].TileSize,
                 Properties = new List<Propertie>(),
-                Tiles = new List<BaseTile>(),
-                Index = new List<char>(),
-                _sizeArr = new List<int>(),
-                _currTileSheet = new List<string>()
+                Tiles = new List<BaseTile>()
             };
             layers.Add(layer);
 
@@ -274,8 +302,7 @@ public static class Tbin10Util
                                 var pl = new List<Propertie>();
                                 for (var i = 0; i < staInd; ++i)
                                 {
-                                    var strId = staticTile[i].TileSheet + "_" + staticTile[i].TileIndex;
-                                    if (properties.TryGetValue(strId, out var property))
+                                    if (properties.TryGetValue(staticTile[i].GetId(), out var property))
                                     {
                                         pl.AddRange(property.Select(tmp => new Propertie
                                             { Key = tmp.Key, Type = tmp.Type, Value = tmp.Value }));
@@ -357,9 +384,7 @@ public static class Tbin10Util
                                         Properties = new List<Propertie>(),
                                         FrameInterval = gcd,
                                         Frames = new List<StaticTile>(ma),
-                                        _frameCount = ma,
-                                        Index = new List<char>(),
-                                        _currTileSheet = new List<string>()
+                                        _frameCount = ma
                                     };
                                     for (var i = 0; i < anmInd; ++i)
                                     {
@@ -420,9 +445,8 @@ public static class Tbin10Util
                                         for (var k = 0; k < anmInd; k++)
                                         {
                                             var frame = animatedTile[k].Frames[arr[k + 1][i]];
-                                            var strId = frame.TileSheet + "_" + frame.TileIndex;
 
-                                            if (properties.TryGetValue(strId, out var proper))
+                                            if (properties.TryGetValue(frame.GetId(), out var proper))
                                             {
                                                 pll.AddRange(proper.Select(tmp => new Propertie
                                                     { Key = tmp.Key, Type = tmp.Type, Value = tmp.Value }));
@@ -451,8 +475,9 @@ public static class Tbin10Util
                                         anTile.Frames.Add(tmp);
                                     }
 
-                                    CompileIndex(anTile.Frames, anTile.Index, null, anTile._currTileSheet,
-                                        layer.LayerSize.X);
+                                    (anTile.Index, _, anTile._currTileSheet) =
+                                        anTile.Frames.CompileIndex(layer.LayerSize.X);
+
                                     layer.Tiles.Add(anTile);
 
                                     indexed.Add(sb.ToString(), (layers.Count - 1, layer.Tiles.Count - 1));
@@ -469,7 +494,7 @@ public static class Tbin10Util
                 }
             }
 
-            CompileIndex(layer.Tiles, layer.Index, layer._sizeArr, layer._currTileSheet, layer.LayerSize.X);
+            (layer.Index, layer._sizeArr, layer._currTileSheet) = layer.Tiles.CompileIndex(layer.LayerSize.X);
         }
 
         tbin.Layers = layers;
@@ -483,13 +508,12 @@ public static class Tbin10Util
         return new[] { "spring_" + s, "summer_" + s, "fall_" + s, "winter_" + s };
     }
 
-    private static void CompileIndex<T>(List<T> tiles, List<char> index, List<int> sizeArr, List<string> currTileSheet,
-        int w)
+    private static (List<char>, List<int>, List<string>) CompileIndex<T>(this List<T> tiles, int w)
     {
-        if (currTileSheet.Count == 0)
-        {
-            currTileSheet.Add("");
-        }
+        List<char> index = new List<char>();
+        List<int> sizeArr = new List<int>();
+        List<string> currTileSheet = new List<string>();
+        currTileSheet.Add("");
 
         for (var i = 0; i < tiles.Count; ++i)
         {
@@ -528,6 +552,8 @@ public static class Tbin10Util
                 index.Add('A');
             }
         }
+
+        return (index, sizeArr, currTileSheet);
     }
 
     private static int[] SubLen(int i, int j, int w) //i:null  j : not null
@@ -597,147 +623,16 @@ public static class Tbin10Util
         return Math.Abs(n - Values[left]) > Math.Abs(n - Values[left - 1]) ? Values[left - 1] : Values[left];
     }
 
-
-    public static Dictionary<string, List<object>> GetTile(this TBin10 tbin, params string[] s)
-    {
-        Dictionary<string, List<object>> lists = new Dictionary<string, List<object>>();
-        for (var index = 0; index < tbin.Properties.Count; index++)
-        {
-            var property = tbin.Properties[index];
-            string key = property.Key + "_" + index;
-            if (s.Any(v => property.Key == v))
-            {
-                if (lists.ContainsKey(key))
-                {
-                    lists[key].AddRange(property.Parse());
-                }
-                else
-                {
-                    lists.Add(key, property.Parse());
-                }
-            }
-        }
-
-        return lists;
-    }
-
-    public class ImgList
+    private class ImgLists
     {
         private const int DefSize = 1250;
         private readonly string _path;
-        private readonly List<string> _pathNames;
-        private List<Image<Rgba32>> _tmpList;
 
-        public readonly List<TileSheet> TileSheets;
-
-        private TileSheet _tmpTile;
-
-        public ImgList(string path)
-        {
-            _path = path;
-            _tmpList = new List<Image<Rgba32>>();
-            _pathNames = new List<string>();
-            _pathNames.Add(GetImgName());
-            TileSheets = new List<TileSheet>();
-
-            _tmpTile = new TileSheet
-            {
-                Id = NowName(),
-                Description = "",
-                Image = NowName(),
-                SheetSize = null,
-                TileSize = new IntVector2 { X = 16, Y = 16 },
-                Margin = new IntVector2 { X = 0, Y = 0 },
-                Spacing = new IntVector2 { X = 0, Y = 0 },
-                Properties = new List<Propertie>()
-            };
-
-            TileSheets.Add(_tmpTile);
-        }
-
-        public void Add(Image<Rgba32> img)
-        {
-            if (img.Width == 16)
-            {
-                if (_tmpList.Count == DefSize * DefSize)
-                {
-                    Save();
-                    _tmpList = new List<Image<Rgba32>>();
-                    _pathNames.Add(GetImgName());
-                    TileSheets.Add(_tmpTile);
-
-                    _tmpTile = new TileSheet
-                    {
-                        Id = NowName(),
-                        Description = "",
-                        Image = NowName(),
-                        SheetSize = null,
-                        TileSize = new IntVector2 { X = 16, Y = 16 },
-                        Margin = new IntVector2 { X = 0, Y = 0 },
-                        Spacing = new IntVector2 { X = 0, Y = 0 },
-                        Properties = new List<Propertie>()
-                    };
-                }
-
-                _tmpList.Add(img);
-            }
-        }
-
-        public void AddProperties(List<Propertie> pl)
-        {
-            _tmpTile.Properties.AddRange(pl);
-        }
-
-        public void Save()
-        {
-            int num;
-            if (_tmpList.Count < DefSize * DefSize)
-            {
-                num = (int)Math.Sqrt(_tmpList.Count);
-                if (num * num < _tmpList.Count)
-                {
-                    ++num;
-                }
-
-                num *= 16;
-            }
-            else
-            {
-                num = DefSize * 16;
-            }
-
-            var m = new Image<Rgba32>(num, num); //2
-            TileSheets[^1].SheetSize = new IntVector2 { X = num / 16, Y = num / 16 };
-            for (var i = 0; i < _tmpList.Count; i++)
-            {
-                m.DrawImagePortion(i, _tmpList[i], 0);
-            }
-
-            m.Save(Path.Combine(_path, _pathNames[^1] + ".png"));
-        }
-
-        public string NowName()
-        {
-            return _pathNames[^1];
-        }
-
-        public int NowIndex()
-        {
-            return _tmpList.Count - 1;
-        }
-    }
-
-    public class ImgLists
-    {
-        private const int DefSize = 1250;
-        private readonly string _path;
-        private Dictionary<int, List<List<Image<Rgba32>>>> _tmpList = new Dictionary<int, List<List<Image<Rgba32>>>>();
-
-        public readonly List<TileSheet> TileSheets = new List<TileSheet>();
-        public readonly Dictionary<int, TileSheet> _tmpTileSheet = new Dictionary<int, TileSheet>();
-        private readonly Dictionary<int, List<string>> _pathNames = new Dictionary<int, List<string>>();
-
-        public int w = 0;
+        public readonly List<TileSheet> TileSheets = new();
+        private readonly Dictionary<int, List<List<Image<Rgba32>>>> _tmpList = new();
+        private readonly Dictionary<int, TileSheet> _tmpTileSheet = new();
+        private readonly Dictionary<int, List<string>> _pathNames = new();
+        private int _w;
 
         public ImgLists(string path)
         {
@@ -746,8 +641,8 @@ public static class Tbin10Util
 
         public void Add(params Image<Rgba32>[] img)
         {
-            w = img.Length;
-            if (_tmpList.TryGetValue(w, out var value))
+            _w = img.Length;
+            if (_tmpList.TryGetValue(_w, out var value))
             {
                 if (value[0].Count == DefSize * DefSize)
                 {
@@ -757,8 +652,8 @@ public static class Tbin10Util
                         value[i] = new List<Image<Rgba32>>();
                     }
 
-                    _pathNames[w] = new List<string>();
-                    _tmpTileSheet[w] = new TileSheet
+                    _pathNames[_w] = new List<string>();
+                    _tmpTileSheet[_w] = new TileSheet
                     {
                         Id = NowName(),
                         Description = "",
@@ -773,20 +668,20 @@ public static class Tbin10Util
             }
             else
             {
-                _tmpList.Add(w, new List<List<Image<Rgba32>>>());
-                for (int i = 0; i < w; i++)
+                _tmpList.Add(_w, new List<List<Image<Rgba32>>>());
+                for (int i = 0; i < _w; i++)
                 {
-                    _tmpList[w].Add(new List<Image<Rgba32>>());
+                    _tmpList[_w].Add(new List<Image<Rgba32>>());
                 }
 
-                if (!_pathNames.ContainsKey(w))
+                if (!_pathNames.ContainsKey(_w))
                 {
-                    _pathNames.Add(w, new List<string>());
+                    _pathNames.Add(_w, new List<string>());
                 }
 
-                _pathNames[w].Add(GetImgName());
+                _pathNames[_w].Add(GetImgName());
 
-                if (!_tmpTileSheet.ContainsKey(w))
+                if (!_tmpTileSheet.ContainsKey(_w))
                 {
                     var tmpT = new TileSheet
                     {
@@ -800,19 +695,19 @@ public static class Tbin10Util
                         Properties = new List<Propertie>()
                     };
                     TileSheets.Add(tmpT);
-                    _tmpTileSheet.Add(w, tmpT);
+                    _tmpTileSheet.Add(_w, tmpT);
                 }
             }
 
-            for (int i = 0; i < w; i++)
+            for (int i = 0; i < _w; i++)
             {
-                _tmpList[w][i].Add(img[i]);
+                _tmpList[_w][i].Add(img[i]);
             }
         }
 
         public void AddProperties(List<Propertie> pl)
         {
-            _tmpTileSheet[w].Properties.AddRange(pl);
+            _tmpTileSheet[_w].Properties.AddRange(pl);
         }
 
         public void Save(List<List<Image<Rgba32>>> list)
@@ -842,13 +737,13 @@ public static class Tbin10Util
             for (int i = 0; i < list.Count; ++i)
             {
                 var m = new Image<Rgba32>(num, num); //2
-                _tmpTileSheet[w].SheetSize = new IntVector2 { X = num / 16, Y = num / 16 };
+                _tmpTileSheet[_w].SheetSize = new IntVector2 { X = num / 16, Y = num / 16 };
                 for (var j = 0; j < list[0].Count; ++j)
                 {
                     m.DrawImagePortion(j, list[i][j], 0);
                 }
 
-                m.Save(Path.Combine(_path, s[i] + _pathNames[w][^1] + ".png"));
+                m.Save(Path.Combine(_path, s[i] + _pathNames[_w][^1] + ".png"));
             }
         }
 
@@ -858,7 +753,7 @@ public static class Tbin10Util
             {
                 if (value[0].Count > 0)
                 {
-                    w = key;
+                    _w = key;
                     Save(value);
                 }
             }
@@ -866,17 +761,344 @@ public static class Tbin10Util
 
         public string NowName()
         {
-            if (w == 4)
+            if (_w == 4)
             {
-                return "spring_" + _pathNames[w][^1];
+                return "spring_" + _pathNames[_w][^1];
             }
 
-            return _pathNames[w][^1];
+            return _pathNames[_w][^1];
         }
 
         public int NowIndex()
         {
-            return _tmpList[w][0].Count - 1;
+            return _tmpList[_w][0].Count - 1;
+        }
+    }
+
+
+    public static object[][] GetTile(this TBin10 tbin, string s, int n)
+    {
+        List<object> list = null;
+        for (var i = 0; i < tbin.Properties.Count; i++)
+        {
+            var property = tbin.Properties[i];
+            if (property.Key != s) continue;
+            list = property.Parse();
+            break;
+        }
+
+        object[][] result = null;
+        if (list is not null)
+        {
+            result = new object[list.Count / n][];
+            for (int i = 0; i < list.Count / n; i++)
+            {
+                result[i] = new object[n];
+            }
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                result[i / n][i % n] = list[i];
+            }
+        }
+
+        return result;
+    }
+
+    public static List<string> GetPropertie(this TBin10 tbin)
+    {
+        List<string> list = new List<string>();
+        List<Propertie>? properties = null;
+        foreach (var la in tbin.Layers)
+        {
+            foreach (var t in la.Tiles)
+            {
+                switch (t)
+                {
+                    case null:
+                        continue;
+                    case StaticTile:
+
+                        if (t is StaticTile s)
+                        {
+                            properties = s.Properties;
+                        }
+
+                        goto default;
+                    case AnimatedTile:
+                        if (t is AnimatedTile a)
+                        {
+                            properties = a.Properties;
+                        }
+
+                        goto default;
+                    default:
+                        if (properties == null)
+                        {
+                            break;
+                        }
+
+                        foreach (var pr in properties)
+                        {
+                            if (pr.Value is string ss && ss.Contains("Warp"))
+                            {
+                                string[] w = ss.Split(' ');
+                                if (w.Length == 1)
+                                {
+                                    continue;
+                                }
+
+                                if (w[0] is "WarpWomensLocker" or "WarpMensLocker" or "LockedDoorWarp")
+                                {
+                                    list.Add(w[3]);
+                                }
+                                else if (w[0] == "Warp")
+                                {
+                                    if (!int.TryParse(w[1], out var sss))
+                                    {
+                                        w[3] = w[1];
+                                    }
+
+                                    list.Add(w[3]);
+                                }
+                                else if (w[0] == "MagicWarp")
+                                {
+                                    list.Add(w[1]);
+                                }
+                            }
+                        }
+
+                        properties = null;
+                        break;
+                }
+            }
+        }
+
+        return list;
+    }
+
+    public static List<string>? GetWarpDirectedGraphAt(this TBin10 tbin, string name)
+    {
+        var t = tbin.GetTile("Warp", 5);
+        var e = tbin.GetPropertie();
+        if (t == null && e.Count == 0)
+        {
+            return null;
+        }
+
+        HashSet<string> set = new HashSet<string>();
+        if (t != null)
+        {
+            foreach (var t1 in t)
+            {
+                var ss = (string)t1[2];
+                if (name == ss)
+                {
+                    continue;
+                }
+
+                set.Add(ss);
+            }
+        }
+
+
+        foreach (var s in e)
+        {
+            if (name == s)
+            {
+                continue;
+            }
+
+            set.Add(s);
+        }
+
+        List<string> l = set.ToList();
+        if (l.Count > 0)
+        {
+            l.Insert(0, name);
+            return l;
+        }
+
+        return null;
+    }
+
+    public static void GetWarpDirectedGraph(this List<TBin10> tbins, string[] names, out List<List<string>?> graph)
+    {
+        graph = new List<List<string>?>();
+        for (var i = 0; i < tbins.Count; i++)
+        {
+            graph.Add(tbins[i].GetWarpDirectedGraphAt(names[i]));
+        }
+    }
+
+    /*public static void RemoveRedundancyTiles(this TBin10 tbin, string path)
+    {
+        tbin.RemoveTileSheetsExtension();
+        tbin.TileSheets.LoadImages(path, out var imgs, out var _);
+        var ll = tbin.Layers;
+        int len = ll[0].Tiles.Count;
+        Dictionary<string, bool> map = new Dictionary<string, bool>();
+        for (var j = 0; j < len; ++j)
+        {
+            bool[] bools = new bool[ll.Count];
+            int i = ll.Count - 1;
+            for (; i >= 0; i--)
+            {
+                var t = ll[i].Tiles[j];
+                switch (ll[i].Tiles[j])
+                {
+                    case null:
+                        bools[i] = false;
+                        continue;
+                    case StaticTile:
+                        StaticTile s = t as StaticTile;
+                        string id = s.TileSheet + s.TileIndex;
+                        if (map.TryGetValue(id, out var value))
+                        {
+                            bools[i] = value;
+                        }
+                        else
+                        {
+                            bools[i] = imgs[s.TileSheet].All(image => image.IsRegionOpaque(s.TileIndex));
+                            map.Add(id, bools[i]);
+                        }
+
+                        break;
+                    case AnimatedTile:
+                        AnimatedTile a = t as AnimatedTile;
+                        bool[] b = new bool[a.Frames.Count];
+                        for (var l = 0; l < a.Frames.Count; l++)
+                        {
+                            var s2 = a.Frames[l];
+                            string id2 = s2.TileSheet + s2.TileIndex;
+                            if (map.TryGetValue(id2, out var v2))
+                            {
+                                b[l] = v2;
+                            }
+                            else
+                            {
+                                b[l] = imgs[s2.TileSheet].All(image => image.IsRegionOpaque(s2.TileIndex));
+                                map.Add(id2, bools[i]);
+                            }
+                        }
+
+                        bools[i] = b.All(bb => bb);
+
+                        break;
+                    default:
+                        throw new Exception("Bad tile data");
+                }
+            }
+
+            for (i = ll.Count - 1; i >= 0; i--)
+            {
+                if (bools[i])
+                {
+                    i--;
+                    break;
+                }
+            }
+
+            for (; i >= 0; i--)
+            {
+                ll[i].Tiles[j] = null;
+            }
+        }
+
+        foreach (var t in ll)
+        {
+            (t.Index, t._sizeArr, t._currTileSheet) = t.Tiles.CompileIndex(t.LayerSize.X);
+        }
+    }*/
+
+    public static void ConsolidateNullTileSheets(this TBin10 tbin)
+    {
+        Dictionary<string,int> map = new Dictionary<string,int>();
+        List<bool> tag = new List<bool>();
+        for (var i = 0; i < tbin.TileSheets.Count; i++)
+        {
+            tag.Add(true);
+            if (map.TryGetValue(tbin.TileSheets[i].Image,out var m))
+            {
+                if (tbin.TileSheets[i].Properties.Count > 0 && tbin.TileSheets[m].Properties.Count > 0)
+                {
+                    throw new NotImplementedException();
+                }
+                if (tbin.TileSheets[i].Properties.Count == 0 && tbin.TileSheets[m].Properties.Count == 0)
+                {
+                    tag[i] = false;
+                }else if (tbin.TileSheets[i].Properties.Count > 0)
+                {
+                    map[tbin.TileSheets[i].Image] = i;
+                    tag[m] = false;
+                }
+                else if(tbin.TileSheets[m].Properties.Count > 0)
+                {
+                    tag[i] = false;
+                }
+                else
+                {
+                    
+                }
+            }
+            else
+            {
+                map.Add(tbin.TileSheets[i].Image,i);
+            }
+        }
+
+        for (var i = 0; i < tbin.TileSheets.Count; i++)
+        {
+            if (tag[i]) continue;
+            tag.RemoveAt(i);
+            tbin.TileSheets.RemoveAt(i);
+            i--;
+        }
+    }
+
+    public static void RemoveRedundancyTileSheetProperties(this TBin10 tbin)
+    {
+        HashSet<string> set = new HashSet<string>();
+        foreach (var layer in tbin.Layers)
+        {
+            foreach (var t in layer.Tiles)
+            {
+                switch (t)
+                {
+                    case null:
+                        continue;
+                    case StaticTile:
+
+                        if (t is StaticTile s)
+                        {
+                            set.Add(s.GetId());
+                        }
+                        break;
+                    case AnimatedTile:
+                        if (t is AnimatedTile a)
+                        {
+                            foreach (var staticTile in a.Frames)
+                            {
+                                set.Add(staticTile.GetId());
+                            }
+                        }
+                        break;
+                    default:
+                        throw new Exception("Bad tile data");
+                }
+            }
+        }
+
+        foreach (var sheet in tbin.TileSheets)
+        {
+            for (var i = 0; i < sheet.Properties.Count; i++)
+            {
+                var prop = sheet.Properties[i];
+                var strId = sheet.Id + "@" + prop.Key.Split("@")[2];
+                if (set.Contains(strId)) continue;
+                sheet.Properties.RemoveAt(i);
+                i--;
+            }
         }
     }
 }

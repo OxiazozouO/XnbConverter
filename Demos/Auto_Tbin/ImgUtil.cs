@@ -20,4 +20,22 @@ public static class ImgUtil
         var w = width / 16;
         return new Rectangle(id % w * 16, id / w * 16, 16, 16);
     }
+    
+    public static bool IsRegionOpaque(this Image<Rgba32> image, int id)
+    {
+        Rectangle r = IdToRectangle(image.Width, id);
+        int im = r.Y + r.Height;
+        int jm = r.X + r.Width;
+        for (int i = r.Y; i < im; i++)
+        {
+            for (int j = r.X; j < jm; j++)
+            {
+                if (image[j, i].A != 255)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

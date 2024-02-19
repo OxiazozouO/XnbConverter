@@ -16,4 +16,6 @@ public class StaticTile : BaseTile
     /// 此平铺的混合模式。
     /// </summary>
     public byte BlendMode { get; set; }
+
+    public string GetId() => TileSheet + "@" + TileIndex;
 }

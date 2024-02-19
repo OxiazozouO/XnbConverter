@@ -58,15 +58,15 @@ public class TBin10Reader : BaseReader
             result.Layers = readerResolver.ReadValue<List<Layer>>(layerListReader);
         return result;
     }
-    public static void RemoveTileSheetsExtension(ref TBin10 tbin)
+    public static void RemoveTileSheetsExtension(ref byte[] data)
     {
-        byte[] tmp = tbin.Data;
+        byte[] tmp = data;
         Span<byte> span = tmp.AsSpan();
         
-        TBin10Reader main = Create(tbin);
+        TBin10Reader main = Create(data);
         
         main.isRemoveTileSheetsExtension = true;
-        tbin = main.Read();
+        TBin10 tbin = main.Read();
         int ordLen = main.bufferReader.BytePosition;
         int size = main.bufferReader.ReadInt32();
         if(size > TBin10.LayerMax)
@@ -78,24 +78,22 @@ public class TBin10Reader : BaseReader
         int newLen = main.bufferWriter.BytePosition;
         
         int outLen = newLen + (tmp.Length - ordLen);
-        tbin = new TBin10();
         if (ordLen == newLen)
         {
-            tbin.Data = tmp;
+            data = tmp;
         } else if (ordLen > newLen)
         {
             byte[] result = new byte[outLen];
             Span<byte> span2 = result.AsSpan();
             span[..newLen].CopyTo(span2);
             span[ordLen..].CopyTo(span2[newLen..]);
-            tbin.Data = result;
+            data = result;
         } else
             throw new XnbError("未知程序错误");
-        
         // Log.BigFileDebug("D:\\1\\output.txt", tbin.Data);
     }
     
-    public static TBin10Reader Create(TBin10 tbin)
+    public static TBin10Reader Create(byte[] data)
     {
         
         TBin10Reader main = new TBin10Reader();
@@ -108,8 +106,8 @@ public class TBin10Reader : BaseReader
                 new Vector2Reader(), new IntVector2Reader(),new StaticTileReader(),
                 new AnimatedTilerReader(),
             },
-            new BufferReader(tbin.Data),
-            new BufferWriter(tbin.Data)
+            new BufferReader(data),
+            new BufferWriter(data)
         );
         return main;
     }
@@ -132,5 +130,16 @@ public class TBin10Reader : BaseReader
         Write(input);
         File.WriteAllBytes(path,bufferWriter.Buffer[..bufferWriter.BytePosition]);
         Pool.Return(bufferWriter.Buffer);
+    }
+
+    public static TBin10 FormFile(string path)
+    {
+        var v = Create(File.ReadAllBytes(path));
+        return v.Read();
+    }
+
+    public void FormTmx(string path)
+    {
+        
     }
 }

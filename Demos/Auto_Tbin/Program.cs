@@ -1,6 +1,4 @@
 ﻿using Auto_Tbin;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Tbin.Readers;
 
@@ -8,29 +6,66 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var path = @"D:\1\SVE\Maps\";
-
-        var tbin = new TBin10
+        
+    }
+    public static void Test_1()
+    {
+        var path = @"D:\1\SVE\Maps\";//    D:\.XnbConverter\unpacked\Maps\
+        string[] paths = Directory.GetFiles(path, "*.tbin", SearchOption.AllDirectories);
+        List<TBin10> list = new List<TBin10>();
+        foreach (var s in paths)
         {
-            Data = File.ReadAllBytes(Path.Combine(path, "Highlands.tbin"))//
-        };
-
-        var tr = TBin10Reader.Create(tbin);
-
-        tbin = tr.Read();
+            TBin10 tbin = new TBin10();
+            var tr = TBin10Reader.Create(File.ReadAllBytes(s));
+            tbin = tr.Read();
+            tbin.RemoveTileSheetsExtension();
+            tbin.RemoveNullProperties();
+            tbin.RemovePropertiesStr();
+            list.Add(tbin);
+        }
         
-        tbin.ConsolidateLayers(path);
-        
-        tbin.RemoveTileSheetsExtension();
-        tr.Save(tbin, Path.Combine(path, "Highlands_1.tbin"));
+        string[] sss = new string[paths.Length];
+        for (var i = 0; i < paths.Length; i++)
+        {
+            var s = paths[i];
+            sss[i] = s.Substring(s.LastIndexOf('\\') + 1, s.LastIndexOf('.') - s.LastIndexOf('\\') - 1);
+        }
+        list.GetWarpDirectedGraph(sss, out var w);
+        foreach (var strings in w)
+        {
+            if (strings == null||strings.Count == 0) continue;
+            Console.Write(strings[0]+":");
+            for (int i = 1; i < strings.Count; i++)
+            {
+                Console.Write(strings[i]+" ");
+            }
+            Console.WriteLine();
+        }
+
+        Console.WriteLine(w);
     }
 
-
-    public static void rrr()
+    public static void Test_2()
     {
-        var i1 = Image.Load<Rgba32>(@"D:\2\Crop.png");
-        var i2 = Image.Load<Rgba32>(@"D:\2\Seeds.png");
-        i2.DrawImagePortion(0, i1, 12);
-        i2.Save(@"D:\2\2.png");
+        var path = @"D:\1\SVE\Maps\";//    D:\.XnbConverter\unpacked\Maps\
+        TBin10 tbin = new TBin10();
+        var tr = TBin10Reader.Create(File.ReadAllBytes(Path.Combine(path, "Farm.tbin")));
+        tbin = tr.Read();
+        
+        tr.Save(tbin, Path.Combine(path, "Highlands_1.tbin"));
+    }
+    public static void Test_3()
+    {
+        var path = @"D:\1\SVE\Maps\";
+        TBin10 tbin = new TBin10();
+        var tr = TBin10Reader.Create(File.ReadAllBytes(Path.Combine(path, "1.tbin")));
+        tbin = tr.Read();
+        tbin.ConsolidateNullTileSheets();
+        tbin.RemoveRedundancyTileSheetProperties();
+        
+        // tbin.ConsolidateLayers(path);
+        
+        tbin.RemoveTileSheetsExtension();
+        tr.Save(tbin, Path.Combine(path, "IF2Farm_1.tbin"));
     }
 }

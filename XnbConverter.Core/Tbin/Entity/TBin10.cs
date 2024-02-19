@@ -13,20 +13,73 @@ public class TBin10
     public List<TileSheet> TileSheets { get; set; }
     public List<Layer> Layers { get; set; }
 
-    public static TBin10 FormTbin(string path)
-    {
-        TBin10 tbin = new TBin10
-        {
-            Data = File.ReadAllBytes(path)
-        };
-        //删除图块集的后缀名，不然地图在星露谷不能正常用
-        TBin10Reader.RemoveTileSheetsExtension(ref tbin);
-        return tbin;
-    }
-
     public void RemoveTileSheetsExtension()
     {
         foreach (var t in TileSheets)
             t.Image = t.Image.Replace(".png", "");
+    }
+
+    public void RemoveNullProperties()
+    {
+        for (int i = 0; i < Properties.Count; i++)
+        {
+            string? s = Properties[i].Value as string;
+            if (s == "")
+            {
+                Properties.RemoveAt(i--);
+            }
+        }
+    }
+    
+    public void RemovePropertiesStr()
+    {
+        foreach (var property in Properties)
+        {
+            if (property.Value is string s)
+            {
+                property.Value = s.Replace("Custom_", "");
+            }
+        }
+        
+        List<Propertie>? properties = null;
+        foreach (var la in Layers)
+        {
+            foreach (var t in la.Tiles)
+            {
+                switch (t)
+                {
+                    case null:
+                        continue;
+                    case StaticTile:
+
+                        if (t is StaticTile s)
+                        {
+                            properties = s.Properties;
+                        }
+
+                        goto default;
+                    case AnimatedTile:
+                        if (t is AnimatedTile a)
+                        {
+                            properties = a.Properties;
+                        }
+                        goto default;
+                    default:
+                        if (properties == null)
+                        {
+                            break;
+                        }
+                        foreach (var pr in properties)
+                        {
+                            if (pr.Value is string ss)
+                            {
+                                pr.Value = ss.Replace("Custom_", "");
+                            }
+                        }
+                        properties = null;
+                        break;
+                }
+            }
+        }
     }
 }
