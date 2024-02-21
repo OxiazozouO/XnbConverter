@@ -21,6 +21,13 @@ public static class Tbin10Util
         Values = values.ToArray();
     }
 
+    /// <summary>
+    /// 根据提取出的图块集，加载图片并分类
+    /// </summary>
+    /// <param name="tileSheets">地图的图块集</param>
+    /// <param name="path">tbin所在的目录</param>
+    /// <param name="imgList">图片id为key的图片列表</param>
+    /// <param name="seasonSet">图片是否为季节性的图片</param>
     private static void LoadImages(this List<TileSheet> tileSheets, string path,
         out Dictionary<string, List<Image<Rgba32>>> imgList, out HashSet<string> seasonSet)
     {
@@ -29,6 +36,11 @@ public static class Tbin10Util
         string ex = "";
         foreach (var v in tileSheets)
         {
+            if (imgList.ContainsKey(v.Id))
+            {
+                continue;
+            }
+
             if (v.Image.Contains("spring_"))
             {
                 List<Image<Rgba32>> lt = new List<Image<Rgba32>>();
@@ -76,6 +88,11 @@ public static class Tbin10Util
         }
     }
 
+    /// <summary>
+    ///  图块集中的图块根据图块集的id进行分类
+    /// </summary>
+    /// <param name="layers"></param>
+    /// <param name="map"></param>
     private static void ProcessMap(this List<Layer> layers, out Dictionary<string, List<Layer>> map)
     {
         map = new Dictionary<string, List<Layer>>();
@@ -126,6 +143,9 @@ public static class Tbin10Util
         }
     }
 
+    /// <summary>
+    /// 提取图块集中的属性
+    /// </summary>
     private static void ExtractProperties(this List<TileSheet> tileSheets,
         out Dictionary<string, List<Propertie>> properties)
     {
@@ -145,21 +165,23 @@ public static class Tbin10Util
         }
     }
 
-
-    public static void ConsolidateLayers(this TBin10 tbin, string path)
+    /// <summary>
+    /// 合并同名的图块集
+    /// </summary>
+    public static TBin10 ConsolidateLayers(this TBin10 tbin, string path)
     {
         tbin.Layers.ProcessMap(out var map);
-        // foreach (var v in map)
-        // {
-        //     if (v.Value.Count == 1)
-        //     {
-        //         continue;
-        //     }
-        //
-        //     goto run;
-        // }
-        //
-        // return;
+        foreach (var v in map)
+        {
+            if (v.Value.Count == 1)
+            {
+                continue;
+            }
+
+            goto run;
+        }
+
+        return tbin;
         run:
         var imgList = new ImgLists(path);
         var indexed = new Dictionary<string, (int, int)>();
@@ -500,14 +522,21 @@ public static class Tbin10Util
         tbin.Layers = layers;
         imgList.Save();
         tbin.TileSheets.AddRange(imgList.TileSheets);
+        return tbin;
     }
 
+    /// <summary>
+    /// 获取四季的名字
+    /// </summary>
     private static string[] GetSeasons(string s)
     {
         s = s.Replace("spring_", "");
         return new[] { "spring_" + s, "summer_" + s, "fall_" + s, "winter_" + s };
     }
 
+    /// <summary>
+    /// 编制地图的索引以压缩地图
+    /// </summary>
     private static (List<char>, List<int>, List<string>) CompileIndex<T>(this List<T> tiles, int w)
     {
         List<char> index = new List<char>();
@@ -779,11 +808,11 @@ public static class Tbin10Util
     public static object[][] GetTile(this TBin10 tbin, string s, int n)
     {
         List<object> list = null;
-        for (var i = 0; i < tbin.Properties.Count; i++)
+        foreach (var property in tbin.Properties)
         {
-            var property = tbin.Properties[i];
             if (property.Key != s) continue;
-            list = property.Parse();
+            property.Parse(out var ret);
+            list = ret;
             break;
         }
 
@@ -805,7 +834,7 @@ public static class Tbin10Util
         return result;
     }
 
-    public static List<string> GetPropertie(this TBin10 tbin)
+    public static List<string> GetProperties(this TBin10 tbin)
     {
         List<string> list = new List<string>();
         List<Propertie>? properties = null;
@@ -880,7 +909,7 @@ public static class Tbin10Util
     public static List<string>? GetWarpDirectedGraphAt(this TBin10 tbin, string name)
     {
         var t = tbin.GetTile("Warp", 5);
-        var e = tbin.GetPropertie();
+        var e = tbin.GetProperties();
         if (t == null && e.Count == 0)
         {
             return null;
@@ -922,6 +951,9 @@ public static class Tbin10Util
         return null;
     }
 
+    /// <summary>
+    /// 获取地图的连通图
+    /// </summary>
     public static void GetWarpDirectedGraph(this List<TBin10> tbins, string[] names, out List<List<string>?> graph)
     {
         graph = new List<List<string>?>();
@@ -931,11 +963,36 @@ public static class Tbin10Util
         }
     }
 
-    /*public static void RemoveRedundancyTiles(this TBin10 tbin, string path)
+    /// <summary>
+    /// 慎用，删除被完全遮挡的图块
+    /// </summary>
+    public static TBin10 RemoveRedundancyTiles(this TBin10 tbin, string path)
     {
+        List<Layer> ll = new List<Layer>();
+        bool tag = false;
+        for (var i = tbin.Layers.Count - 1; i >= 0; i--)
+        {
+            var la = tbin.Layers[i];
+            if (!tag && la.Id == "Buildings")
+            {
+                tag = true;
+            }
+
+            if (tag)
+            {
+                ll.Add(la);
+            }
+        }
+
+        if (ll.Count == 0)
+        {
+            return tbin;
+        }
+
+        ll.Reverse();
+
         tbin.RemoveTileSheetsExtension();
         tbin.TileSheets.LoadImages(path, out var imgs, out var _);
-        var ll = tbin.Layers;
         int len = ll[0].Tiles.Count;
         Dictionary<string, bool> map = new Dictionary<string, bool>();
         for (var j = 0; j < len; ++j)
@@ -1009,54 +1066,68 @@ public static class Tbin10Util
         {
             (t.Index, t._sizeArr, t._currTileSheet) = t.Tiles.CompileIndex(t.LayerSize.X);
         }
-    }*/
 
-    public static void ConsolidateNullTileSheets(this TBin10 tbin)
+        return tbin;
+    }
+
+    /// <summary>
+    /// 把用同一张图片的图块集合并删除
+    /// </summary>
+    public static TBin10 ConsolidateNullTileSheets(this TBin10 tbin)
     {
-        Dictionary<string,int> map = new Dictionary<string,int>();
-        List<bool> tag = new List<bool>();
+        Dictionary<string, int> map = new Dictionary<string, int>();
+        bool[] tag = new bool[tbin.TileSheets.Count];
         for (var i = 0; i < tbin.TileSheets.Count; i++)
         {
-            tag.Add(true);
-            if (map.TryGetValue(tbin.TileSheets[i].Image,out var m))
+            if (map.TryGetValue(tbin.TileSheets[i].Image, out var m))
             {
-                if (tbin.TileSheets[i].Properties.Count > 0 && tbin.TileSheets[m].Properties.Count > 0)
+                var pis = tbin.TileSheets[i].Properties;
+                var pms = tbin.TileSheets[m].Properties;
+                if (pis.Count > 0 && pms.Count > 0)
                 {
-                    throw new NotImplementedException();
+                    HashSet<string> set = new HashSet<string>();
+                    List<Propertie> ret = pis.Where(t => set.Add(t.Key)).ToList();
+                    ret.AddRange(pms.Where(t => set.Add(t.Key)));
+                    tbin.TileSheets[m].Properties = ret;
+                    tag[i] = true;
                 }
-                if (tbin.TileSheets[i].Properties.Count == 0 && tbin.TileSheets[m].Properties.Count == 0)
+                else if (pis.Count == 0 && pms.Count == 0)
                 {
-                    tag[i] = false;
-                }else if (tbin.TileSheets[i].Properties.Count > 0)
+                    tag[i] = true;
+                }
+                else if (pis.Count > 0)
                 {
                     map[tbin.TileSheets[i].Image] = i;
-                    tag[m] = false;
+                    tag[m] = true;
                 }
-                else if(tbin.TileSheets[m].Properties.Count > 0)
+                else if (pms.Count > 0)
                 {
-                    tag[i] = false;
+                    tag[i] = true;
                 }
                 else
                 {
-                    
                 }
             }
             else
             {
-                map.Add(tbin.TileSheets[i].Image,i);
+                map.Add(tbin.TileSheets[i].Image, i);
             }
         }
 
+        int index = 0;
         for (var i = 0; i < tbin.TileSheets.Count; i++)
         {
-            if (tag[i]) continue;
-            tag.RemoveAt(i);
-            tbin.TileSheets.RemoveAt(i);
-            i--;
+            if (!tag[index++]) continue;
+            tbin.TileSheets.RemoveAt(i--);
         }
+
+        return tbin;
     }
 
-    public static void RemoveRedundancyTileSheetProperties(this TBin10 tbin)
+    /// <summary>
+    /// 慎用，把没有用到的图块集的属性进行删除，会损坏图块集的完整性。
+    /// </summary>
+    public static TBin10 RemoveRedundancyTileSheetProperties(this TBin10 tbin)
     {
         HashSet<string> set = new HashSet<string>();
         foreach (var layer in tbin.Layers)
@@ -1073,6 +1144,7 @@ public static class Tbin10Util
                         {
                             set.Add(s.GetId());
                         }
+
                         break;
                     case AnimatedTile:
                         if (t is AnimatedTile a)
@@ -1082,6 +1154,7 @@ public static class Tbin10Util
                                 set.Add(staticTile.GetId());
                             }
                         }
+
                         break;
                     default:
                         throw new Exception("Bad tile data");
@@ -1096,9 +1169,208 @@ public static class Tbin10Util
                 var prop = sheet.Properties[i];
                 var strId = sheet.Id + "@" + prop.Key.Split("@")[2];
                 if (set.Contains(strId)) continue;
-                sheet.Properties.RemoveAt(i);
-                i--;
+                sheet.Properties.RemoveAt(i--);
             }
         }
+
+        return tbin;
+    }
+
+    /// <summary>
+    /// 通过已有的发光图块，设置同一图块的发光属性。
+    /// </summary>
+    public static TBin10 FindAndSetLight(this TBin10 tbin)
+    {
+        List<string> lights = new List<string>();
+        List<Property> ps = new List<Property>();
+
+        tbin.Layers.ProcessMap(out var map);
+        Dictionary<string, Property> l = new Dictionary<string, Property>();
+        var pMap = tbin.Properties.ToDictionary(p => p.Key);
+        HashSet<string> bad = new HashSet<string>();
+        if (pMap.TryGetValue("DayTiles", out var p1))
+        {
+            p1.Parse(out var itemList);
+            for (int i = 0; i < itemList.Count; i += 4)
+            {
+                int id = tbin.PosToId((int)itemList[i + 1], (int)itemList[i + 2]);
+                string key = (int)itemList[i + 1] + "@" + (int)itemList[i + 2];
+                switch (map[(string)itemList[i]][0].Tiles[id])
+                {
+                    case null:
+                        bad.Add(key);
+                        continue;
+                    case StaticTile s:
+                    {
+                        s.TileIndex = (int)itemList[i + 3];
+                        if (l.TryGetValue(key, out var pp))
+                        {
+                            pp.TileSheet = s.TileSheet;
+                            pp.DayId = s.TileIndex;
+                        }
+                        else
+                        {
+                            l.Add(key, new Property
+                            {
+                                TileSheet = s.TileSheet,
+                                DayId = s.TileIndex
+                            });
+                        }
+
+                        break;
+                    }
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
+
+        if (pMap.TryGetValue("NightTiles", out var p2))
+        {
+            p2.Parse(out var itemList);
+            for (int i = 0; i < itemList.Count; i += 4)
+            {
+                int id = tbin.PosToId((int)itemList[i + 1], (int)itemList[i + 2]);
+                string key = (int)itemList[i + 1] + "@" + (int)itemList[i + 2];
+                switch (map[(string)itemList[i]][0].Tiles[id])
+                {
+                    case null:
+                        bad.Add(key);
+                        continue;
+                    case StaticTile s when l.TryGetValue(key, out var pp):
+                        pp.TileSheet = s.TileSheet;
+                        pp.NightId = (int)itemList[i + 3];
+                        break;
+                    case StaticTile s:
+                        l.Add(key, new Property
+                        {
+                            TileSheet = s.TileSheet,
+                            NightId = (int)itemList[i + 3]
+                        });
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
+
+        if (pMap.TryGetValue("Light", out var p3))
+        {
+            p3.Parse(out var itemList);
+            for (int i = 0; i < itemList.Count; i += 3)
+            {
+                string key = (int)itemList[i] + "@" + (int)itemList[i + 1];
+                if (bad.Contains(key)) continue;
+                if (l.TryGetValue(key, out var pp))
+                {
+                    pp.LightLevel = (int)itemList[i + 2];
+                }
+                else
+                {
+                    l.Add(key, new Property
+                    {
+                        LightLevel = (int)itemList[i + 2]
+                    });
+                }
+            }
+        }
+
+        HashSet<string> m = new HashSet<string>();
+        foreach (var (key, value) in l)
+        {
+            if (value.DayId != -1 && value.NightId != -1 && value.TileSheet != "")
+            {
+                if (m.Add(value.DayId + "@" + value.NightId))
+                {
+                    ps.Add(value);
+                }
+            }
+            else if (value.LightLevel != -1)
+            {
+                lights.Add(key.Replace("@", " ") + " " + value.LightLevel);
+            }
+        }
+
+        foreach (var layer in tbin.Layers)
+        {
+            for (var i = 0; i < layer.Tiles.Count; i++)
+            {
+                var tile = layer.Tiles[i];
+                if (tile is not StaticTile s) continue;
+                foreach (var p in ps)
+                {
+                    if (s.TileSheet != p.TileSheet || s.TileIndex != p.DayId) continue;
+                    var pos = tbin.IdToPos(i);
+                    p.List.Add((layer.Id, pos.Item1, pos.Item2));
+                    break;
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (pMap.TryGetValue("DayTiles", out var pp1))
+        {
+            foreach (var pr in ps)
+            {
+                foreach (var (item1, item2, item3) in pr.List)
+                {
+                    sb.Append(item1).Append(' ').Append(item2).Append(' ').Append(item3).Append(' ').Append(pr.DayId)
+                        .Append(' ');
+                }
+            }
+
+            pp1.Value = sb.ToString().Trim();
+            sb.Length = 0;
+        }
+
+        if (pMap.TryGetValue("NightTiles", out var pp2))
+        {
+            foreach (var pr in ps)
+            {
+                foreach (var (item1, item2, item3) in pr.List)
+                {
+                    sb.Append(item1).Append(' ').Append(item2).Append(' ').Append(item3).Append(' ').Append(pr.NightId)
+                        .Append(' ');
+                }
+            }
+
+            pp2.Value = sb.ToString().Trim();
+            sb.Length = 0;
+        }
+
+        if (pMap.TryGetValue("Light", out var pp3))
+        {
+            HashSet<string> hs = new HashSet<string>();
+            foreach (var pr in ps)
+            {
+                if (pr.LightLevel == -1) continue;
+                foreach (var (_, item2, item3) in pr.List)
+                {
+                    if (hs.Add(item2 + "@" + item3))
+                    {
+                        sb.Append(item2).Append(' ').Append(item3).Append(' ').Append(pr.LightLevel).Append(' ');
+                    }
+                }
+            }
+
+            foreach (var light in lights)
+            {
+                sb.Append(light).Append(' ');
+            }
+
+            pp3.Value = sb.ToString().Trim();
+        }
+
+        tbin.RemoveNullProperties();
+        return tbin;
+    }
+
+    private class Property
+    {
+        public string TileSheet = "";
+        public int DayId = -1;
+        public int NightId = -1;
+        public int LightLevel = -1;
+        public readonly List<(string, int, int)> List = new List<(string, int, int)>(); //x,y,layerIndex,x,y
     }
 }

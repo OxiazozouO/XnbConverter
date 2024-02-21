@@ -1,10 +1,8 @@
-﻿using XnbConverter.Tbin.Readers;
-
-namespace XnbConverter.Tbin.Entity;
+﻿namespace XnbConverter.Tbin.Entity;
 
 public class TBin10
 {
-    public static readonly int LayerMax = 7;
+    public const int LayerMax = 7;
     public byte[] Data { set; get; }
     public string Format { get; set; }
     public string Id { get; set; }
@@ -12,6 +10,16 @@ public class TBin10
     public List<Propertie> Properties { get; set; }
     public List<TileSheet> TileSheets { get; set; }
     public List<Layer> Layers { get; set; }
+
+    public int PosToId(int x,int y)
+    {
+        return Layers[0].LayerSize.X * y + x;
+    }
+    
+    public (int,int) IdToPos(int id)//x,y
+    {
+        return (id % Layers[0].LayerSize.X, id / Layers[0].LayerSize.X);
+    }
 
     public void RemoveTileSheetsExtension()
     {
