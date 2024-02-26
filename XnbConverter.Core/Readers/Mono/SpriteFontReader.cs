@@ -27,13 +27,13 @@ public class SpriteFontReader : BaseReader
     {
         var result = new SpriteFont();
 
-        result.Texture = readerResolver.Read<Texture2D>();
-        result.Glyphs = readerResolver.Read<List<Rect>>();
-        result.Cropping = readerResolver.Read<List<Rect>>();
-        result.CharacterMap = readerResolver.Read<List<char>>();
+        result.Texture = (Texture2D)readerResolver.Read(texture2DReader);
+        result.Glyphs = (List<Rect>)readerResolver.Read(rectangleListReader);
+        result.Cropping = (List<Rect>)readerResolver.Read(rectangleListReader);
+        result.CharacterMap = (List<char>)readerResolver.Read(charListReader);
         result.VerticalLineSpacing = bufferReader.ReadInt32();
         result.HorizontalSpacing = bufferReader.ReadSingle();
-        result.Kerning = readerResolver.Read<List<Vector3>>();
+        result.Kerning = (List<Vector3>)readerResolver.Read(vector3ListReader);
         result.DefaultCharacter = nullableReader.Read() as char?;
 
         return result;

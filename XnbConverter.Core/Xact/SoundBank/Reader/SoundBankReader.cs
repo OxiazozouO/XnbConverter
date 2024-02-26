@@ -132,8 +132,8 @@ public class SoundBankReader : BaseReader
                 bufferReader.BytePosition = oldPos;
 
                 result.SoundEntrys.Add(se);
-                if (result._sounds.ContainsKey(CueNames[i]))
-                    Console.WriteLine();
+                // if (result._sounds.ContainsKey(CueNames[i]))
+                //     Console.WriteLine();
                 result._sounds.Add(CueNames[i], new XactSound[] { sound });
                 // result._probabilities.Add(CueNames[i], result.dedefaultProbability);
             }
@@ -162,8 +162,8 @@ public class SoundBankReader : BaseReader
                         bufferReader.BytePosition = (int)soundCue.SoundOffset;
                         var sound = xactSoundReader.Read();
                         bufferReader.BytePosition = ord;
-                        if (result._sounds.ContainsKey(CueNames[header.NumSimpleCues + i]))
-                            Console.WriteLine();
+                        // if (result._sounds.ContainsKey(CueNames[header.NumSimpleCues + i]))
+                        //     Console.WriteLine();
                         result._sounds.Add(CueNames[header.NumSimpleCues + i], new XactSound[] { sound });
                         // result._probabilities.Add(CueNames[header.NumSimpleCues + i], result.dedefaultProbability);
                     }
@@ -252,8 +252,8 @@ public class SoundBankReader : BaseReader
                     }
 
                     bufferReader.BytePosition = savePos;
-                    if (result._sounds.ContainsKey(CueNames[header.NumSimpleCues + i]))
-                        Console.WriteLine();
+                    // if (result._sounds.ContainsKey(CueNames[header.NumSimpleCues + i]))
+                    //     Console.WriteLine();
                     result._sounds.Add(CueNames[header.NumSimpleCues + i], cueSounds);
                     // result._probabilities.Add(CueNames[header.NumSimpleCues + i], probs);
                 }

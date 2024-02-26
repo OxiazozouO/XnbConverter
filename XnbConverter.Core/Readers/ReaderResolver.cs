@@ -69,36 +69,15 @@ public class ReaderResolver
      * @param {BufferReader} buffer 要读取的缓冲区
      * @returns {object} 返回由读取器解析的对象
      */
-    public T Read<T>()
+    public object Read(int i)
     {
         // 读取要使用的读取器的索引
         var index = bufferReader.Read7BitNumber() - 1;
-        if (index < 0 || index >= readerArr.Length)
+        if (index != i)
             throw new XnbError("无效的读取器索引 {0}", index);
         var a = readerArr[index];
-        Console.WriteLine(n + "  " + index + "   " + bufferReader.BytePosition);
-        n++;
         // 使用选定的读取器读取缓冲区
-        return (T)a.Read();
-    }
-
-    private int n = 0;
-
-    public T? Read_Null<T>()
-    {
-        Console.WriteLine(typeof(T));
-        // 读取要使用的读取器的索引
-        var index = bufferReader.Read7BitNumber() - 1;
-        if (index < 0)
-            return default;
-
-        if (index >= readerArr.Length)
-            throw new XnbError("无效的读取器索引 {0}", index);
-        var a = readerArr[index];
-        Console.WriteLine(n + "  " + index + "   " + bufferReader.BytePosition);
-        n++;
-        // 使用选定的读取器读取缓冲区
-        return (T?)a.Read();
+        return a.Read();
     }
 
     public T ReadValue<T>(int i)
@@ -122,16 +101,6 @@ public class ReaderResolver
     public object ReadValue(int i)
     {
         return readerArr[i].Read();
-    }
-
-    /**
-     * 写入XNB文件内容
-     * @param {BufferWriter} buffer 要写入的缓冲区
-     * @param {object} content 要写入缓冲区的内容
-     */
-    public void Write(object content)
-    {
-        Write(0, content);
     }
 
     public int GetIndex(Type t)

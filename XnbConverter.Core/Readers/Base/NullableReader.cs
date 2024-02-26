@@ -3,19 +3,21 @@
 public class NullableReader<T, N> : BaseReader where T : BaseReader, new()
 {
     private int reader;
+    private int nIndex;
     private bool b;
 
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
         reader = readerResolver.GetIndex(typeof(T));
+        nIndex = readerResolver.GetIndex(typeof(N));
         b = new T().IsValueType();
     }
 
     public override object Read()
     {
         var hasValue = bufferReader.ReadBoolean();
-        return hasValue ? b ? readerResolver.ReadValue<N>(reader) : readerResolver.Read<N>() : null;
+        return hasValue ? b ? readerResolver.ReadValue(nIndex) : readerResolver.Read(nIndex) : null;
     }
 
     public override void Write(object input)

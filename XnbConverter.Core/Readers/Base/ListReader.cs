@@ -27,14 +27,14 @@ public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
     {
         var size = bufferReader.ReadUInt32();
         var list = new List<K>();
-        K value;
+        object value;
 
         if (_bK)
         {
             while (size-- > 0)
             {
-                value = readerResolver.ReadValue<K>(_reader);
-                list.Add(value);
+                value = readerResolver.ReadValue(_reader);
+                list.Add((K)value);
             }
         }
         else
@@ -42,8 +42,8 @@ public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
             var index = 0;
             while (size-- > 0)
             {
-                value = readerResolver.Read<K>();
-                list.Add(value);
+                value = readerResolver.Read(_reader);
+                list.Add((K)value);
             }
         }
 

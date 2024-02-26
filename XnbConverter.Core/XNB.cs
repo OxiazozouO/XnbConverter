@@ -161,7 +161,7 @@ public class XNB : IDisposable
         // sb.ToString().log();
         // 由已加载的读取器创建内容读取器 并读取内容
         var readerResolver = new ReaderResolver(readerArr, bufferReader, typeIndex.ToString());
-        Data = readerResolver.Read<object>();
+        Data = readerResolver.Read(0);
         // 成功加载XNB文件
         Log.Info("成功读取XNB文件！");
     }
@@ -242,7 +242,7 @@ public class XNB : IDisposable
             outBuffer.Write7BitNumber(0);
 
             // 创建内容读取器并写入内容 并将内容写入读取器解析器
-            new ReaderResolver(ReaderArr, outBuffer, typeIndex.ToString()).Write(data);
+            new ReaderResolver(ReaderArr, outBuffer, typeIndex.ToString()).Write(0, data);
 
             if (Lzx || Lz4) // 文件需要压缩
             {
@@ -280,7 +280,6 @@ public class XNB : IDisposable
                     goto save;
                 }
             }
-
             // 将文件大小写入缓冲区
             outBuffer.WriteUInt32((uint)outBuffer.BytePosition, XnbConstants.FILE_SIZE_INDEX);
 

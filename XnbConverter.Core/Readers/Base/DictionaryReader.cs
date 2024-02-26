@@ -38,12 +38,12 @@ public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, 
         while (size-- > 0)
         {
             // 获取键
-            var key = _bK ? readerResolver.ReadValue<K>(_keyReader) : readerResolver.Read<K>();
+            object key = _bK ? readerResolver.ReadValue<K>(_keyReader) : readerResolver.Read(_keyReader);
             // 获取值
-            var value = _bV ? readerResolver.ReadValue<V>(_valueReader) : readerResolver.Read<V>();
+            object value = _bV ? readerResolver.ReadValue<V>(_valueReader) : readerResolver.Read(_valueReader);
 
             // 将键值对添加到字典中
-            dictionary.Add(key, value);
+            dictionary.Add((K)key, (V)value);
         }
 
         // 返回字典对象

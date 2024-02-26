@@ -57,7 +57,6 @@ public static class TypeReader
 
     private static (Type, Type) GetTypeAt(List<string> list, ref int index)
     {
-        Console.WriteLine(index);
         string[] a0 = list[index].Split('@')[0].Split('`');
         var full = list[index].Split('@')[1];
         var name = a0[0];

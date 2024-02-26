@@ -65,12 +65,12 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
             var value = _allPro[i] switch
             {
                 PropertyInfo p =>
-                    p.GetValue(_types[i]),
+                    p.GetValue(input),
                 FieldInfo f =>
-                    f.GetValue(_types[i])
+                    f.GetValue(input)
             };
             if (_types[i].IsValueType)
-                readerResolver.Write(_readIndex[i], value);
+                readerResolver.WriteValue(_readIndex[i], value);
             else
                 readerResolver.Write_Null(_readIndex[i], value);
         }

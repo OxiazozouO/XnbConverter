@@ -25,12 +25,25 @@ public class ArrayReader<T> : BaseReader where T : BaseReader, new()
         List<T> array = new();
 
         // 循环size次读取数组元素
-        for (var i = 0; i < size; i++)
+        if (flag)
         {
-            // 从缓冲区获取值
-            var value = flag ? readerResolver.ReadValue<T>(reader) : readerResolver.Read<T>();
-            // 将值添加到本地数组
-            array.Add(value);
+            for (var i = 0; i < size; i++)
+            {
+                // 从缓冲区获取值
+                var value = readerResolver.ReadValue(reader);
+                // 将值添加到本地数组
+                array.Add((T)value);
+            }
+        }
+        else
+        {
+            for (var i = 0; i < size; i++)
+            {
+                // 从缓冲区获取值
+                var value = readerResolver.Read(reader);
+                // 将值添加到本地数组
+                array.Add((T)value);
+            }
         }
 
         // 返回数组
