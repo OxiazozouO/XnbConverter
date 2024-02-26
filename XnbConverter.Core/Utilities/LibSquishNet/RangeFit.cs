@@ -5,12 +5,14 @@ namespace Squish;
 
 public class RangeFit : ColourFit
 {
-    Vector3 m_metric = new Vector3();
-    Vector3 m_start;
-    Vector3 m_end;
-    float m_besterror;
+    private Vector3 m_metric = new();
+    private Vector3 m_start;
+    private Vector3 m_end;
+    private float m_besterror;
 
-    public RangeFit(ColourSet colours, bool isDxt1) : base(colours, isDxt1){}
+    public RangeFit(ColourSet colours, bool isDxt1) : base(colours, isDxt1)
+    {
+    }
 
     public override void Init()
     {
@@ -21,14 +23,14 @@ public class RangeFit : ColourFit
         m_end = Vector3.Zero;
         // initialise the best error
         m_besterror = float.MaxValue;
-        
-        
+
+
         // cache some values
-        int count = Colours.Count;
+        var count = Colours.Count;
         Vector3[] values = Colours.Points;
-        
+
         // get the covariance matrix, compute the principle component
-        Vector3 principle = Sym3x3.ExtractIndicesFromPackedBytes(count, values, Colours.Weights);
+        var principle = Sym3x3.ExtractIndicesFromPackedBytes(count, values, Colours.Weights);
 
         // get the min and max range as the codebook endpoints
         if (count > 0)
@@ -38,9 +40,9 @@ public class RangeFit : ColourFit
             // compute the range
             m_start = m_end = values[0];
             min = max = values[0].Dot(principle);
-            for (int i = 1; i < count; ++i)
+            for (var i = 1; i < count; ++i)
             {
-                float val = values[i].Dot(principle);
+                var val = values[i].Dot(principle);
                 if (val < min)
                 {
                     m_start = values[i];
@@ -57,13 +59,13 @@ public class RangeFit : ColourFit
         // clamp the output to [0, 1]
         // clamp to the grid and save
         m_start = (Vector3.Grid * m_start.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector3.Grid;
-        m_end   = (Vector3.Grid * m_end  .Clamp(0.0f, 1.0f)).HalfAdjust() / Vector3.Grid;
+        m_end = (Vector3.Grid * m_end.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector3.Grid;
     }
 
     protected override void Compress3(Span<byte> block)
     {
         // cache some values
-        int count = Colours.Count;
+        var count = Colours.Count;
         Vector3[] values = Colours.Points;
 
         // create a codebook
@@ -73,16 +75,16 @@ public class RangeFit : ColourFit
         codes[2] = 0.5f * (m_start + m_end);
 
         // match each point to the closest code
-        byte[] closest = new byte[16];
-        float error = 0.0f;
-        for (int i = 0; i < count; ++i)
+        var closest = new byte[16];
+        var error = 0.0f;
+        for (var i = 0; i < count; ++i)
         {
             // find the closest code
-            float dist = float.MaxValue;
-            int idx = 0;
-            for (int j = 0; j < 3; ++j)
+            var dist = float.MaxValue;
+            var idx = 0;
+            for (var j = 0; j < 3; ++j)
             {
-                float d = (m_metric * (values[i] - codes[j])).LengthSquared();
+                var d = (m_metric * (values[i] - codes[j])).LengthSquared();
                 if (d < dist)
                 {
                     dist = d;
@@ -100,7 +102,7 @@ public class RangeFit : ColourFit
         // save this scheme if it wins
         if (!(error < m_besterror)) return;
         // remap the indices
-        byte[] indices = Colours.RemapIndices(closest);
+        var indices = Colours.RemapIndices(closest);
 
         // save the block
         ColourBlock.WriteColourBlock3(m_start.To565(), m_end.To565(), indices, block);

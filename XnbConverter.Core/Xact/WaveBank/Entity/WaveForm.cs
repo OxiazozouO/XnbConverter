@@ -2,8 +2,8 @@
 
 public class WaveForm
 {
-    public RIFFChunk riffChunk = new RIFFChunk();
-    public FmtChunk fmtChunk = new FmtChunk();
+    public RIFFChunk riffChunk = new();
+    public FmtChunk fmtChunk = new();
     public FactChunk? factChunk = null;
-    public DATAChunk dataChunk = new DATAChunk();
+    public DATAChunk dataChunk = new();
 }

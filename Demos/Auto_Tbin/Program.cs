@@ -59,19 +59,19 @@ public class Program
 
     public static void Test_3()
     {
-        var path = @"D:\.XnbConverter\unpacked\1\Content\Maps";
+        var path = @"D:\.XnbConverter\unpacked\Content\Maps";
         foreach (var file in Directory.GetFiles(path, "*.tbin", SearchOption.AllDirectories))
         {
             var tr = TBin10Reader.Create(File.ReadAllBytes(file));
             var tbin = tr.Read().RemoveRedundancyTiles(path)
-                .ConsolidateNullTileSheets();
-                tbin.FindAndSetLight();
+                .ConsolidateNullTileSheets()
+                .FindAndSetLight();
             tr.Save(tbin,file);
         }
         
         // var tr = TBin10Reader.Create(File.ReadAllBytes(Path.Combine(path,"FarmHouse2_marriage.tbin")));
         // var tbin = tr.Read().RemoveRedundancyTiles(path)
-        //     .ConsolidateNullTileSheets()
+        //     .ConsolidateNullTileSheets()2
         //     .FindAndSetLight();
         // tr.Save(tbin,Path.Combine(path,"FarmHouse2_marriage@1.tbin"));
     }

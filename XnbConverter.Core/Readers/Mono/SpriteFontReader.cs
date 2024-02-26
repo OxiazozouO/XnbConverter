@@ -11,21 +11,22 @@ public class SpriteFontReader : BaseReader
     private int rectangleListReader;
     private int charListReader;
     private int vector3ListReader;
+
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
         nullableReader.Init(readerResolver);
-        if(readerResolver.bufferWriter == null) return;
-        texture2DReader     = readerResolver.GetIndex< Texture2DReader >();
-        rectangleListReader = readerResolver.GetIndex< ListReader<RectangleReader, Rect> >();
-        charListReader      = readerResolver.GetIndex< ListReader<CharReader, char> >();
-        vector3ListReader   = readerResolver.GetIndex< ListReader<Vector3Reader, Vector3> >();
+        if (readerResolver.bufferWriter == null) return;
+        texture2DReader = readerResolver.GetIndex(typeof(Texture2D));
+        rectangleListReader = readerResolver.GetIndex(typeof(List<Rect>));
+        charListReader = readerResolver.GetIndex(typeof(List<char>));
+        vector3ListReader = readerResolver.GetIndex(typeof(List<Vector3>));
     }
 
     public override SpriteFont Read()
     {
-        SpriteFont result = new SpriteFont();
-        
+        var result = new SpriteFont();
+
         result.Texture = readerResolver.Read<Texture2D>();
         result.Glyphs = readerResolver.Read<List<Rect>>();
         result.Cropping = readerResolver.Read<List<Rect>>();
@@ -34,10 +35,10 @@ public class SpriteFontReader : BaseReader
         result.HorizontalSpacing = bufferReader.ReadSingle();
         result.Kerning = readerResolver.Read<List<Vector3>>();
         result.DefaultCharacter = nullableReader.Read() as char?;
-        
+
         return result;
     }
-    
+
     public override void Write(object content)
     {
         var input = (SpriteFont)content;
@@ -50,16 +51,14 @@ public class SpriteFontReader : BaseReader
         readerResolver.Write(vector3ListReader, input.Kerning);
         nullableReader.Write(input.DefaultCharacter);
     }
-    
+
     public override bool IsValueType()
     {
         return false;
     }
-    
+
     public override Type GetResultType()
     {
         return typeof(SpriteFont);
     }
-    
-    
 }

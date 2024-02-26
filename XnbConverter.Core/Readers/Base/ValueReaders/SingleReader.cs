@@ -7,6 +7,7 @@ public class SingleReader : BaseReader
         bufferReader = readerResolver.bufferReader;
         bufferWriter = readerResolver.bufferWriter;
     }
+
     public override bool IsValueType()
     {
         return true;

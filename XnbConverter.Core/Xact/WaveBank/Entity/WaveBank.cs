@@ -9,9 +9,10 @@ namespace XnbConverter.Xact.WaveBank.Entity;
 public class WaveBank
 {
     #region Constants
+
     // from xact3wb.h
     public const int AdpcmMiniWaveFormatBlockAlignConversionOffset = 22;
-    
+
     private const int HEADER_VERSION = 43; // Current wavebank file version
 
     public const int BankNameLength = 64; // Wave bank friendly name length, in characters
@@ -20,23 +21,25 @@ public class WaveBank
     public const uint MaxDataSegmentSize = 0xFFFFFFFF; // Maximum wave bank data segment size, in bytes
 
     public const uint MaxCompactDataSegmentSize = 0x001FFFFF; // Maximum compact wave bank data segment size, in bytes
-    
+
     private const int BIT_DEPTH8 = 0x0; // 8-bit data (PCM only)
+
     private const int BIT_DEPTH16 = 0x1; // 16-bit data (PCM only)
+
     //
     // DVD data sizes
     //
     private const int DVD_SECTOR_SIZE = 2048;
+
     private const int DVD_BLOCK_SIZE = DVD_SECTOR_SIZE * 16;
+
     //
     // Bank alignment presets
     //
     private const int ALIGNMENT_MIN = 4; // Minimum alignment
     private const int ALIGNMENT_DVD = DVD_SECTOR_SIZE; // DVD-optimized alignment
-    
-    
-    
-    
+
+
     private const int ENTRY_NAMES = 0x00010000; // bank includes entry names
     private const int COMPACT = 0x00020000; // bank uses compact format
     private const int SYNC_DISABLED = 0x00040000; // bank is disabled for audition sync
@@ -47,7 +50,7 @@ public class WaveBank
     //
     // Bank flags
     //
-    
+
     // public static class Flags
     // {
     //     public const int Buffer = 0x00000000; // In-memory buffer
@@ -59,7 +62,7 @@ public class WaveBank
     //     public const int SeekTables = 0x00080000; // Bank includes seek tables.
     //     public const int Mask = 0x000F0000;
     // }
-    
+
     //
     // Entry flags
     //
@@ -71,7 +74,7 @@ public class WaveBank
     //     public const int IgnoreLoop = 0x00000008; // Used internally when the loop region can't be used
     //     public const int Mask = 0x00000008;
     // }
-    
+
     [Flags]
     public enum Flags : uint
     {
@@ -90,13 +93,13 @@ public class WaveBank
     //
     public enum WaveBankFormats
     {
-        Pcm   = 0x0,
-        Xma   = 0x1,
-        AdpcmMs = 0x2,////microsoft adpcm
-        Wma   = 0x3,
+        Pcm = 0x0,
+        Xma = 0x1,
+        AdpcmMs = 0x2, ////microsoft adpcm
+        Wma = 0x3,
         Unknown = -1
     }
-    
+
     //
     // Wave bank segment identifiers
     //
@@ -109,32 +112,34 @@ public class WaveBank
         EntryWaveData, // Entry wave data
         Count
     }
+
     #endregion
-    
-    
-    public readonly WaveBankHeader Header = new WaveBankHeader();
-    public readonly List<WaveBankEntry> Entries = new List<WaveBankEntry>();
-    public readonly WaveBankData Data = new WaveBankData();
+
+
+    public readonly WaveBankHeader Header = new();
+    public readonly List<WaveBankEntry> Entries = new();
+    public readonly WaveBankData Data = new();
 
     public class Region
     {
         public uint Offset = 0; // Region offset, in bytes
         public uint Length = 0; // Region length, in bytes
     }
+
     public class WaveBankHeader
     {
-        public string  Signature; // (uint32_t -> char[4]) File signature
-        public uint    Version = 0; // Version of the tool that created the file
-        public uint    SkipHeaderVersion = 0;
-        public uint    CompactFormat = 0;
+        public string Signature; // (uint32_t -> char[4]) File signature
+        public uint Version = 0; // Version of the tool that created the file
+        public uint SkipHeaderVersion = 0;
+        public uint CompactFormat = 0;
 
         public readonly Region[] Segments = new Region[(int)SegmentIndex.Count]
         {
-            new Region(),
-            new Region(),
-            new Region(),
-            new Region(),
-            new Region()
+            new(),
+            new(),
+            new(),
+            new(),
+            new()
         }; // Segment lookup table
     }
 
@@ -149,14 +154,18 @@ public class WaveBank
         public string? FilePath;
         public string? FileName = null;
         public string? FileExt;
-        public string GetPath() => FilePath + FileName + FileExt;
-        
+
+        public string GetPath()
+        {
+            return FilePath + FileName + FileExt;
+        }
+
         public uint FlagsAndDuration = 0; // dwFlags:4 and Duration:28
         [JsonIgnore] public byte[] Data;
-        
+
         [JsonIgnore] public uint Format = 0; // Entry format
-        public readonly Region PlayRegion = new Region(); // Region within the wave data segment that contains this entry
-        public readonly Region LoopRegion = new Region(); // Region within the wave data that should loop
+        public readonly Region PlayRegion = new(); // Region within the wave data segment that contains this entry
+        public readonly Region LoopRegion = new(); // Region within the wave data that should loop
 
         // XMA loop region
         // Note: this is not the same memory layout as the XMA loop region
@@ -213,12 +222,14 @@ public class WaveBank
                     code = WaveBankFormats.Unknown;
                     break;
             }
+
             return code.ToString();
         }
 
-        public void DecodeFormat(uint version, out WaveBankFormats code, out int channels, out int rate, out int align, out int bits)
+        public void DecodeFormat(uint version, out WaveBankFormats code, out int channels, out int rate, out int align,
+            out int bits)
         {
-            int fo = (int)Format;
+            var fo = (int)Format;
             switch (version)
             {
                 case 1:
@@ -232,11 +243,11 @@ public class WaveBank
                     // | |         SamplesPerSec
                     // | BlockAlign
                     // BitsPerSample
-                    code     = (WaveBankFormats)(fo         & ((1 << 1)  - 1));
-                    channels = (fo >> (1))                  & ((1 << 3)  - 1);
-                    rate     = (fo >> (1 + 3 + 1))          & ((1 << 18) - 1);
-                    align    = (fo >> (1 + 3 + 1 + 18))     & ((1 << 8)  - 1);
-                    bits     = (fo >> (1 + 3 + 1 + 18 + 8)) & ((1 << 1)  - 1);
+                    code = (WaveBankFormats)(fo & ((1 << 1) - 1));
+                    channels = (fo >> 1) & ((1 << 3) - 1);
+                    rate = (fo >> (1 + 3 + 1)) & ((1 << 18) - 1);
+                    align = (fo >> (1 + 3 + 1 + 18)) & ((1 << 8) - 1);
+                    bits = (fo >> (1 + 3 + 1 + 18 + 8)) & ((1 << 1) - 1);
                     break;
                 // case 23:
                 //     // I'm not 100% sure if the following is correct
@@ -264,11 +275,11 @@ public class WaveBank
                     // | |        SamplesPerSec
                     // | BlockAlign
                     // BitsPerSample
-                    code    = (WaveBankFormats)(fo      & ((1 << 2 ) - 1));
-                    channels = (fo >> (2))              & ((1 << 3 ) - 1);
-                    rate     = (fo >> (2 + 3))          & ((1 << 18) - 1);
-                    align    = (fo >> (2 + 3 + 18))     & ((1 << 8 ) - 1);
-                    bits     = (fo >> (2 + 3 + 18 + 8)) & ((1 << 1 ) - 1);
+                    code = (WaveBankFormats)(fo & ((1 << 2) - 1));
+                    channels = (fo >> 2) & ((1 << 3) - 1);
+                    rate = (fo >> (2 + 3)) & ((1 << 18) - 1);
+                    align = (fo >> (2 + 3 + 18)) & ((1 << 8) - 1);
+                    bits = (fo >> (2 + 3 + 18 + 8)) & ((1 << 1) - 1);
                     break;
             }
 
@@ -292,8 +303,8 @@ public class WaveBank
 
         public void PrintLog()
         {
-            if(!Helpers.Config.PInfo)return;
-            StringBuilder flagsText = new StringBuilder();
+            if (!Helpers.Config.PInfo) return;
+            var flagsText = new StringBuilder();
             if (0 != (Flag & Flags.Buffer)) flagsText.Append("in-memory, ");
             if (0 != (Flag & Flags.Streaming)) flagsText.Append("streaming, ");
             if (0 != (Flag & Flags.EntryNames)) flagsText.Append("bank+entry_names, ");
@@ -302,12 +313,10 @@ public class WaveBank
 
             Log.Info(
                 "\n- flags   {0}\n- file_num    {1}\n- bank name    {2}\n- entry meta size  {3}\n- entry name size  {4}\n- alignment    {5}",
-                flagsText.ToString(),EntryCount,BankName,EntryMetaDataElementSize,EntryNameElementSize,Alignment
+                flagsText.ToString(), EntryCount, BankName, EntryMetaDataElementSize, EntryNameElementSize, Alignment
             );
             if (EntryMetaDataElementSize < 24)
                 Log.Info("- EntryMetaDataElementSize is small");
         }
     }
-    
-    
 }

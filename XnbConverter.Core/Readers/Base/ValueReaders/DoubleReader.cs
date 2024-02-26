@@ -4,13 +4,15 @@ public class DoubleReader : BaseReader
 {
     public override void Init(ReaderResolver readerResolver)
     {
-        this.bufferReader = readerResolver.bufferReader;
-        this.bufferWriter = readerResolver.bufferWriter;
+        bufferReader = readerResolver.bufferReader;
+        bufferWriter = readerResolver.bufferWriter;
     }
+
     public override bool IsValueType()
     {
         return true;
     }
+
     /**
      * 从缓冲区读取Double值。
      * @param {BufferReader} buffer 缓冲区读取器
@@ -20,7 +22,7 @@ public class DoubleReader : BaseReader
     {
         return bufferReader.ReadDouble();
     }
-    
+
     /**
      * 将Double值写入缓冲区。
      * @param {BufferWriter} buffer 缓冲区写入器

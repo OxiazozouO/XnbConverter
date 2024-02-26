@@ -10,7 +10,7 @@ public class Program
     public static void Main(string[] args)
     {
         Helpers.NativeMethods.Init();
-        if (1 == 1)
+        if (1 == 0)
         {
             if (args.Length > 0)
             {
@@ -34,12 +34,12 @@ public class Program
             var runPack   = Parser.Default.ParseArguments<Version, Auto, Pack, Unpack>(pack  );
             // var runAuto   = Parser.Default.ParseArguments<Version, Auto, Pack, Unpack>(auto  );
             ReckonByTime( runUnpack );
-            ReckonByTime( runPack   );
-            ReckonByTime( runUnpack );
-            ReckonByTime( runPack   );
-            ReckonByTime( runUnpack );
-            ReckonByTime( runPack   );
-            ReckonByTime( runUnpack );
+            // ReckonByTime( runPack   );
+            // ReckonByTime( runUnpack );
+            // ReckonByTime( runPack   );
+            // ReckonByTime( runUnpack );
+            // ReckonByTime( runPack   );
+            // ReckonByTime( runUnpack );
             // ReckonByTime( runPack   );
             // ReckonByTime( runUnpack );
             // ReckonByTime( runPack   );

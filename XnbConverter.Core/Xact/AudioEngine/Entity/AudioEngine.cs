@@ -3,8 +3,10 @@
 public class AudioEngine
 {
     #region 用于音频引擎的类和枚举
+
     // 音频引擎常量
     public const int XGSF_FORMAT = 0x2A; // XGSF格式
+
     public enum RpcPointType //用于指定RpcPoint的插值方式。
     {
         Linear, // 线性
@@ -36,6 +38,7 @@ public class AudioEngine
         public double InitValue; // 初始值
         public double MaxValue; // 最大值
         public double MinValue; // 最小值
+
         public enum ControlType
         {
             Local,
@@ -50,10 +53,9 @@ public class AudioEngine
         public double Y; // Y坐标
         public RpcPointType Type = RpcPointType.Linear; // 类型
     }
-    
+
     public class RpcCurve
     {
-
         public uint FileOffset;
         public int Variable; // 变量
         public bool IsGlobal;
@@ -69,7 +71,7 @@ public class AudioEngine
     public ushort Crc; //文件的校验码，用于验证文件的完整性和准确性。
     public uint LastModifiedLow; //文件的最后修改时间的低位部分。
     public uint LastModifiedHigh; //文件的最后修改时间的高位部分。
-    public List<byte[]> Unkns = new List<byte[]>(); //未知数据
+    public List<byte[]> Unkns = new(); //未知数据
     public ushort numCats; //AudioCategory的数量
     public ushort numVars; //RpcVariable的数量
     public ushort numRpc; //RpcCurve的数量
@@ -87,7 +89,7 @@ public class AudioEngine
     public RpcCurve[] RpcCurves; //RpcCurve的集合
 
     //RpcVariable的名称索引，用于快速查找RpcVariable的索引。
-    public Dictionary<string, int> _variableLookup = new Dictionary<string, int>();
+    public Dictionary<string, int> _variableLookup = new();
     public RpcVariable[] _cueVariables;
     public RpcVariable[] _variables;
 
@@ -100,5 +102,5 @@ public class AudioEngine
     public ReverbSettings _reverbSettings;
 
     //AudioCategory的名称索引，用于快速查找AudioCategory的索引。
-    public Dictionary<string, int> _categoryLookup = new Dictionary<string, int>();
+    public Dictionary<string, int> _categoryLookup = new();
 }

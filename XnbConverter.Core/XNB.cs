@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text;
+using Newtonsoft.Json;
 using XnbConverter.Entity;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
@@ -12,7 +13,6 @@ namespace XnbConverter;
 /// <summary>
 /// 用于读取和写入XNB文件的XNB文件类
 /// </summary>
-
 public class XNB : IDisposable
 {
     // 用于掩码的常量
@@ -22,29 +22,34 @@ public class XNB : IDisposable
         // public const int COMPRESSED_LZ4_MASK = 64;
         // public const int COMPRESSED_LZX_MASK = 128;
         public const int XNB_COMPRESSED_PROLOGUE_SIZE = 14;
-    
+
         public const int FILE_SIZE_INDEX = 6;
         public const int CONTENT_ORIGINAL_SIZE_INDEX = 10;
     }
 
     // 目标平台
     private XnbObject.TargetTags Target;
+
     // 格式版本
     private byte FormatVersion;
+
     // HiDef标志
     private bool Hidef;
+
     // 压缩标志
     // 压缩类型
     private bool Lzx;
+
     private bool Lz4;
+
     //Xnb配置文件
     public XnbObject? XnbConfig;
     public object? Data;
-    
+
     // 由XNB文件使用的读取器数组。
     private BufferReader bufferReader;
     private BufferWriter bufferWriter;
-    
+
     /**
      * 将文件加载到XNB类中。
      * @param {String} filename 要加载的XNB文件。
@@ -52,13 +57,13 @@ public class XNB : IDisposable
     public void Load(string inputPath)
     {
         XnbConfig = new XnbObject();
-        XnbObject json = XnbConfig;
+        var json = XnbConfig;
         Log.Info("正在读取文件 \"{0}\" ...", inputPath);
 
-         // XNB缓冲区读取器
+        // XNB缓冲区读取器
         bufferReader = BufferReader.FormXnbFile(inputPath);
         // Console.WriteLine(XnbObject.CompressedMask.Lzx.ToString());
-        
+
         //验证XNB文件头
         var flags = _validateHeader(bufferReader);
 
@@ -66,7 +71,7 @@ public class XNB : IDisposable
         Log.Info("XNB文件验证成功！");
         // 读取文件大小
         // 文件大小
-        uint fileSize = bufferReader.ReadUInt32();
+        var fileSize = bufferReader.ReadUInt32();
         // 验证文件大小
         if (bufferReader.Size != fileSize)
             throw new XnbError("XNB文件已被截断！");
@@ -74,7 +79,7 @@ public class XNB : IDisposable
         // 打印文件大小
         Log.Debug("文件大小：{0} 字节。", fileSize);
         // 如果文件被压缩，则需要解压缩
-        if (Lz4 || Lzx) 
+        if (Lz4 || Lzx)
         {
             // 获取解压缩后的大小
             var decompressedSize = (int)bufferReader.ReadUInt32();
@@ -83,7 +88,7 @@ public class XNB : IDisposable
             if (Lzx)
             {
                 // 获取需要压缩的数据量
-                int compressedTodo = (int)fileSize - XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE;
+                var compressedTodo = (int)fileSize - XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE;
                 // 根据文件大小解压缩缓冲区
                 LZX.Decompress(bufferReader, compressedTodo, decompressedSize);
             }
@@ -91,11 +96,12 @@ public class XNB : IDisposable
             else if (Lz4)
             {
                 // 为LZ4解码分配缓冲区
-                byte[] trimmed = bufferReader.Buffer[XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE..bufferReader.Size];
+                var trimmed = bufferReader.Buffer[XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE..bufferReader.Size];
                 // 将修剪后的缓冲区解码到解压缩缓冲区
                 LZ4.Decode(trimmed, 0, trimmed.Length,
                     bufferReader.Buffer, XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE, decompressedSize);
             }
+
             // 重置字节位置以读取内容
             bufferReader.BytePosition = XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE;
         }
@@ -105,81 +111,80 @@ public class XNB : IDisposable
         // 注意：假设缓冲区现在已解压缩
 
         // 获取读取器的7位值
-        int count = bufferReader.Read7BitNumber();
+        var count = bufferReader.Read7BitNumber();
         // 记录读取器的数量
         Log.Debug("读取器数量：{0}", count);
-        
+
         // 用于导出的读取器的本地副本
-        json.Header = new()
+        json.Header = new XnbObject.HeaderDTO
         {
             Target = Target,
             FormatVersion = FormatVersion,
-            CompressedFlag = (XnbObject.CompressedMasks)flags
+            CompressedFlag = flags
         };
 
         // 创建StringReader的实例
         // 循环读取读取器的数量
-        // string[] strings = new string[count];
-        BaseReader[] ReaderArr = new BaseReader[count];
-        for (int i = 0; i < count; i++)
+        var sb = new StringBuilder();
+        BaseReader[] readerArr = new BaseReader[count];
+        var typeIndex = new StringBuilder();
+        for (var i = 0; i < count; i++)
         {
-            if (1 == 0)
-            {
-                // strings[i] = StringReader.ReadValue(bufferReader);
-                bufferReader.ReadInt32();
-            }
-            else
-            {
-                // 读取类型
-                string type = StringReader.ReadValueBy7Bit(bufferReader);
-                // 读取版本
-                uint version = bufferReader.ReadUInt32();
-                // 获取此类型的读取器  并将读取器添加到列表中
-                ReaderArr[i] = TypeReader.GetReader(type);
-                // 添加本地读取器
-                json.Readers.Add( new(){ Type = type, Version = version });
-            }
+            // 读取类型
+            var type = StringReader.ReadValueBy7Bit(bufferReader);
+            sb.Append(type).Append('\n');
+            // 读取版本
+            var version = bufferReader.ReadUInt32();
+            // 获取此类型的读取器  并将读取器添加到列表中
+            var info = TypeReader.GetReaderInfo(type);
+            if (i == 0)
+                json.Content = new ContentDTO
+                {
+                    Extension = info.Extension
+                };
+
+            readerArr[i] = info.Reader.CreateReader();
+            typeIndex.Append(i).Append('@').Append(info.Reader).Append('@')
+                .Append(i).Append('@').Append(info.Entity).Append('@');
+            // 添加本地读取器
+            json.Readers.Add(new XnbObject.ReadersDTO { Type = type, Version = version });
         }
 
         // 获取共享资源的7位值
-        int shared = bufferReader.Read7BitNumber();
-
+        var shared = bufferReader.Read7BitNumber();
         // 记录共享资源的数量
         Log.Debug("共享资源数量：{0}", shared);
 
         // 不接受共享资源，因为SDV XNB文件没有共享资源
         if (shared != 0)
             throw new XnbError("意外的共享资源（{0}）.", shared);
-
+        // sb.ToString().log();
         // 由已加载的读取器创建内容读取器 并读取内容
-        Data = new ReaderResolver(ReaderArr, bufferReader).Read<object>();
-        var _ = TypeReader.GetTypes(ReaderArr[0]);
-        json.Content = new ContentDTO
-        {
-            Extension = _.Extension
-        };
+        var readerResolver = new ReaderResolver(readerArr, bufferReader, typeIndex.ToString());
+        Data = readerResolver.Read<object>();
         // 成功加载XNB文件
         Log.Info("成功读取XNB文件！");
     }
+
     /**
      * 将JSON转换为XNB文件结构
      * @param {Object} json 要转换为XNB文件的JSON对象
      */
     public void Convert(string path)
     {
-        XnbObject? json = XnbConfig;
-        object? data = Data;
+        var json = XnbConfig;
+        var data = Data;
         // 捕获无效的JSON文件格式的异常
         try
         {
             // 设置头信息
             Target = json.Header.Target; // 目标平台
             FormatVersion = json.Header.FormatVersion; // 格式版本
-        
+
             _AnalysisFlag(json.Header.CompressedFlag);
             // Hidef = json.Header.Hidef; // 高清标志
             // 如果是Android平台，则暂时写入LZ4解压缩大小
-            bool lz4Compression = Target is Android or Ios;
+            var lz4Compression = Target is Android or Ios;
             // 是否启用压缩（根据目标平台和LZ4压缩标志判断） 
             if (lz4Compression)
             {
@@ -194,32 +199,35 @@ public class XNB : IDisposable
                 Lz4 = false;
                 Lzx = false;
             }
+
             // 用于存储文件的输出缓冲区
-            BufferWriter outBuffer = new BufferWriter();
-            
+            var outBuffer = new BufferWriter();
+
             // 将头信息写入缓冲区
             // 文件标识  // 目标平台
             outBuffer.WriteAsciiString("XNB" + (char)(byte)Target);
             // 格式版本
             outBuffer.WriteByte(FormatVersion);
             outBuffer.WriteByte((byte)json.Header.CompressedFlag); // 高清标志和压缩标志
-        
+
             // 写入临时文件大小
             outBuffer.WriteUInt32(0u);
-            
+
             // write the decompression size temporarily if android
             if (lz4Compression)
                 outBuffer.WriteUInt32(0u);
 
             // 写入读取器的数量
             outBuffer.Write7BitNumber(json.Readers.Count);
-        
-            
+            var typeIndex = new StringBuilder();
             BaseReader[] ReaderArr = new BaseReader[json.Readers.Count];
             for (var i = 0; i < json.Readers.Count; i++)
             {
                 var reader = json.Readers[i];
-                ReaderArr[i] = TypeReader.GetReader(reader.Type);
+                var info = TypeReader.GetReaderInfo(reader.Type);
+                ReaderArr[i] = info.Reader.CreateReader();
+                typeIndex.Append(i).Append('@').Append(info.Reader).Append('@')
+                    .Append(i).Append('@').Append(info.Entity).Append('@');
                 StringReader.WriteValueBy7Bit(outBuffer, reader.Type);
                 outBuffer.WriteUInt32(reader.Version);
             }
@@ -232,14 +240,16 @@ public class XNB : IDisposable
 
             // 写入0个共享资源
             outBuffer.Write7BitNumber(0);
-            
+
             // 创建内容读取器并写入内容 并将内容写入读取器解析器
-            new ReaderResolver(ReaderArr, outBuffer).Write(data);
-            
-            if (Lzx || Lz4)// 文件需要压缩
+            new ReaderResolver(ReaderArr, outBuffer, typeIndex.ToString()).Write(data);
+
+            if (Lzx || Lz4) // 文件需要压缩
             {
                 // 压缩LZX格式
-                if (Lzx){}
+                if (Lzx)
+                {
+                }
                 // 压缩LZ4格式
                 else if (Lz4)
                 {
@@ -248,29 +258,32 @@ public class XNB : IDisposable
                     // 创建用于存储压缩数据的缓冲区
                     var maximumLength = LZ4.MaximumOutputLength(contentSize);
                     var compressed = new byte[maximumLength];
-                    
+
                     // 将数据压缩到缓冲区中
-                    int compressedSize  = LZ4.Encode(outBuffer.Buffer, XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE, contentSize, 
-                                                    compressed      , 0                          , contentSize);
+                    var compressedSize = LZ4.Encode(outBuffer.Buffer, XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE,
+                        contentSize,
+                        compressed, 0, contentSize);
                     // 生成的xnb大小
-                    int fileLen = XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE + compressedSize;
-            
+                    var fileLen = XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE + compressedSize;
+
                     // 将解压缩大小写入缓冲区
                     outBuffer.WriteUInt32((uint)contentSize, XnbConstants.CONTENT_ORIGINAL_SIZE_INDEX);
                     // 将文件大小写入缓冲区
                     outBuffer.WriteUInt32((uint)fileLen, XnbConstants.FILE_SIZE_INDEX);
-                    
-                    compressed.AsSpan(0, compressedSize)// 切掉多余的部分
-                        .CopyTo(outBuffer.Buffer.AsSpan(XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE, compressedSize));// 将内容插入返回缓冲区
+
+                    compressed.AsSpan(0, compressedSize) // 切掉多余的部分
+                        .CopyTo(outBuffer.Buffer.AsSpan(XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE,
+                            compressedSize)); // 将内容插入返回缓冲区
                     //切掉多余的部分
                     outBuffer.BytePosition = fileLen;
                     // 返回缓冲区
                     goto save;
                 }
             }
+
             // 将文件大小写入缓冲区
             outBuffer.WriteUInt32((uint)outBuffer.BytePosition, XnbConstants.FILE_SIZE_INDEX);
-            
+
             save:
             outBuffer.SaveBufferToFile(path);
         }
@@ -279,6 +292,7 @@ public class XNB : IDisposable
             throw new XnbError(ex, "无效的JSON文件格式: " + ex.Message);
         }
     }
+
     /**
      * 确保XNB文件头部是有效的。
      * @private
@@ -291,7 +305,7 @@ public class XNB : IDisposable
             throw new XnbError("Buffer is null");
 
         // 从文件开头获取魔术值
-        string magic = bufferReader.ReadString(3);
+        var magic = bufferReader.ReadString(3);
         // 检查魔术值是否正确
         if (magic != "XNB")
             throw new XnbError("无效的文件魔术值，期望值为\"XNB\"，实际值为\"{0}\"", magic);
@@ -305,15 +319,20 @@ public class XNB : IDisposable
         // 读取目标平台
         switch (Target)
         {
-            case Windows: Log.Debug("目标平台：Microsoft Windows");
+            case Windows:
+                Log.Debug("目标平台：Microsoft Windows");
                 break;
-            case WindowsPhone7: Log.Debug("目标平台：Windows Phone 7");
+            case WindowsPhone7:
+                Log.Debug("目标平台：Windows Phone 7");
                 break;
-            case Xbox360: Log.Debug("目标平台：Xbox 360");
+            case Xbox360:
+                Log.Debug("目标平台：Xbox 360");
                 break;
-            case Android: Log.Debug("目标平台：Android");
+            case Android:
+                Log.Debug("目标平台：Android");
                 break;
-            case Ios: Log.Debug("目标平台：iOS");
+            case Ios:
+                Log.Debug("目标平台：iOS");
                 break;
             default:
                 Log.Warn("找到无效的目标平台\"{0}\"。", (char)Target);
@@ -326,15 +345,20 @@ public class XNB : IDisposable
         // 读取XNB格式版本
         switch (FormatVersion)
         {
-            case 0x3: Log.Debug("XNB格式版本：XNA Game Studio 3.0");
+            case 0x3:
+                Log.Debug("XNB格式版本：XNA Game Studio 3.0");
                 break;
-            case 0x4: Log.Debug("XNB格式版本：XNA Game Studio 3.1");
+            case 0x4:
+                Log.Debug("XNB格式版本：XNA Game Studio 3.1");
                 break;
-            case 0x5: Log.Debug("XNB格式版本：XNA Game Studio 4.0");
+            case 0x5:
+                Log.Debug("XNB格式版本：XNA Game Studio 4.0");
                 break;
-            default: Log.Warn("未知的XNB格式版本 {0}。", FormatVersion);
+            default:
+                Log.Warn("未知的XNB格式版本 {0}。", FormatVersion);
                 break;
         }
+
         // 读取标志位
         var flags = (XnbObject.CompressedMasks)bufferReader.ReadByte();
         _AnalysisFlag(flags);

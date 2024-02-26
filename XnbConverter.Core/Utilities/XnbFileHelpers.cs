@@ -17,10 +17,10 @@ public static class XnbFileHelpers
      */
     public static bool ExportFile(this XNB xnb, string filename)
     {
-        XnbObject? xnbObject = xnb.XnbConfig;
-        object? data = xnb.Data;
+        var xnbObject = xnb.XnbConfig;
+        var data = xnb.Data;
         // 获取文件的目录名
-        string dirname = Path.GetDirectoryName(filename);
+        var dirname = Path.GetDirectoryName(filename);
 
         // 如果目录不存在，则创建目录路径
         if (!Directory.Exists(dirname))
@@ -43,13 +43,10 @@ public static class XnbFileHelpers
             Log.Info("正在导出{0}...", content.Extension);
 
             // 获取文件的基本名称
-            string basename = Path.GetFileNameWithoutExtension(filename);
+            var basename = Path.GetFileNameWithoutExtension(filename);
             var ext = content.Extension.Split(' ');
             string[] paths = new string[ext.Length];
-            for (var i = 0; i < ext.Length; i++)
-            {
-                paths[i] = Path.Combine(dirname, basename + ext[i]);
-            }
+            for (var i = 0; i < ext.Length; i++) paths[i] = Path.Combine(dirname, basename + ext[i]);
 
             // 根据导出类型进行切换
             switch (content.Extension)
@@ -70,7 +67,7 @@ public static class XnbFileHelpers
                 //tbin and tmx
                 case /* 212 */Ext.TBIN:
                     // 保存文件数据
-                    TBin10 tbin = (TBin10)data;
+                    var tbin = (TBin10)data;
                     File.WriteAllBytes(paths[0], tbin.Data);
                     break;
 
@@ -113,17 +110,14 @@ public static class XnbFileHelpers
     public static void ResolveImports(this XNB xnb, string filename)
     {
         // 读取XNB配置文件
-        XnbObject? json = FileUtils.ToEntity<XnbObject>(filename);
+        var json = FileUtils.ToEntity<XnbObject>(filename);
         if (json?.Content is null)
             throw new XnbError("{0} 缺少 'content' 字段.", filename);
         var content = json.Content;
         var ext = content.Extension.Split(' ');
         var paths = new string[ext.Length];
         // 组成导出文件的路径
-        for (var i = 0; i < ext.Length; i++)
-        {
-            paths[i] = Path.ChangeExtension(filename, ext[i]);
-        }
+        for (var i = 0; i < ext.Length; i++) paths[i] = Path.ChangeExtension(filename, ext[i]);
 
         object? data = null;
         // 根据支持的文件扩展名进行切换
@@ -145,9 +139,9 @@ public static class XnbFileHelpers
                 break;
             // TBin地图
             case Ext.TBIN:
-                byte[] bytes = File.ReadAllBytes(paths[0]);
+                var bytes = File.ReadAllBytes(paths[0]);
                 TBin10Reader.RemoveTileSheetsExtension(ref bytes);
-                TBin10 tbin = new TBin10()
+                var tbin = new TBin10()
                 {
                     Data = bytes
                 };

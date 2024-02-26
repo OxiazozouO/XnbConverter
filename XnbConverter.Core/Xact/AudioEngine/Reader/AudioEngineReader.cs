@@ -12,8 +12,8 @@ namespace XnbConverter.Xact.AudioEngine.Reader;
  */
 public class AudioEngineReader : BaseReader
 {
-    public AudioCategoryReader audioCategoryReader = new AudioCategoryReader();
-    public ReverbSettingsReader reverbSettingsReader = new ReverbSettingsReader();
+    public AudioCategoryReader audioCategoryReader = new();
+    public ReverbSettingsReader reverbSettingsReader = new();
 
     public override void Init(ReaderResolver readerResolver)
     {
@@ -21,11 +21,12 @@ public class AudioEngineReader : BaseReader
         audioCategoryReader.Init(readerResolver);
         reverbSettingsReader.Init(readerResolver);
     }
-    
+
     public new static Entity.AudioEngine Read(string path)
     {
-        AudioEngineReader waveBankReader = new AudioEngineReader();
-        waveBankReader.Init(new ReaderResolver(){
+        var waveBankReader = new AudioEngineReader();
+        waveBankReader.Init(new ReaderResolver()
+        {
             bufferReader = BufferReader.FormFile(path)
         });
         return waveBankReader.Read();
@@ -36,10 +37,9 @@ public class AudioEngineReader : BaseReader
      * @private
      * @param {BufferReader} buffer
      */
-
     public override Entity.AudioEngine Read()
     {
-        Entity.AudioEngine result = new Entity.AudioEngine();
+        var result = new Entity.AudioEngine();
         // 读取魔术值
         result.Magic = bufferReader.ReadString(4);
         // 确保魔术值匹配
@@ -47,11 +47,11 @@ public class AudioEngineReader : BaseReader
             throw new XnbError("发现无效的魔术值，{0}", result.Magic);
 
         // 读取工具版本和格式版本
-        result.ToolVersion   = bufferReader.ReadUInt16();
+        result.ToolVersion = bufferReader.ReadUInt16();
         result.FormatVersion = bufferReader.ReadUInt16();
-        
+
         // 记录版本信息
-        Log.Debug("工具版本：{0}", result.ToolVersion  );
+        Log.Debug("工具版本：{0}", result.ToolVersion);
         Log.Debug("格式版本：{0}", result.FormatVersion);
         // 检查是否为已知格式
         if (result.FormatVersion != Entity.AudioEngine.XGSF_FORMAT)
@@ -70,19 +70,19 @@ public class AudioEngineReader : BaseReader
         result.numVars = bufferReader.ReadUInt16();
 
         Log.Debug("类别：{0}, 变量：{1}", result.numCats, result.numVars);
-        
+
         // 跳过两个未知的16位整数
         result.Unkns.Add(bufferReader.Read(4));
 
         // 读取RPC、DSP预设和参数的数量
-        result.numRpc        = bufferReader.ReadUInt16();
+        result.numRpc = bufferReader.ReadUInt16();
         result.numDspPresets = bufferReader.ReadUInt16();
-        result.numDspParams  = bufferReader.ReadUInt16();
+        result.numDspParams = bufferReader.ReadUInt16();
         // 获取类别和变量的偏移量
         result.catsOffset = bufferReader.ReadUInt32();
         result.varsOffset = bufferReader.ReadUInt32();
-        
-        
+
+
         Log.Debug("RPC: {0}", result.numRpc);
         Log.Debug("DSP预设: {0}", result.numDspPresets);
         Log.Debug("DSP参数: {0}", result.numDspParams);
@@ -101,10 +101,10 @@ public class AudioEngineReader : BaseReader
         result.catNamesOffset = bufferReader.ReadUInt32();
         result.varNamesOffset = bufferReader.ReadUInt32();
         // 读取RPC、DSP预设和参数的偏移量
-        result.rpcOffset       = bufferReader.ReadUInt32();
+        result.rpcOffset = bufferReader.ReadUInt32();
         result.dspPresetOffset = bufferReader.ReadUInt32();
         result.dspParamsOffset = bufferReader.ReadUInt32();
-        
+
         Log.Debug("类别名称索引偏移量: {0}", result.catNameIndexOffset);
         Log.Debug("变量名称索引偏移量: {0}", result.varNameIndexOffset);
         Log.Debug("类别名称偏移量: {0}", result.catNamesOffset);
@@ -115,22 +115,22 @@ public class AudioEngineReader : BaseReader
 
         // 定位到类别名称偏移量以读取类别
         bufferReader.BytePosition = (int)result.catNamesOffset;
-        
+
         string[] categoryNames = new string[result.numCats];
-        for (int i = 0; i < result.numCats; i++)
+        for (var i = 0; i < result.numCats; i++)
             categoryNames[i] = bufferReader.ReadString();
-        
+
         Log.Debug("类别: {0}", string.Join(", ", categoryNames));
-        
+
         // 获取实际的类别数据
         result._categories = new AudioCategory[result.numCats];
         bufferReader.BytePosition = (int)result.catsOffset;
-        for (int i = 0; i < result.numCats; i++)
+        for (var i = 0; i < result.numCats; i++)
         {
             result._categories[i] = audioCategoryReader.Read();
             result._categories[i].name = categoryNames[i];
-            
-            result._categoryLookup.Add (categoryNames[i], i);
+
+            result._categoryLookup.Add(categoryNames[i], i);
         }
 
 
@@ -138,7 +138,7 @@ public class AudioEngineReader : BaseReader
         bufferReader.BytePosition = (int)result.varNamesOffset;
         // 读取变量名称
         string[] varNames = new string[result.numVars];
-        for (int i = 0; i < result.numVars; i++)
+        for (var i = 0; i < result.numVars; i++)
             varNames[i] = bufferReader.ReadString();
         Log.Debug("变量: {0}", string.Join(", ", varNames));
 
@@ -149,7 +149,7 @@ public class AudioEngineReader : BaseReader
         // 定位到变量偏移量
         bufferReader.BytePosition = (int)result.varsOffset;
         // 循环遍历变量
-        for (var i=0; i < result.numVars; i++)
+        for (var i = 0; i < result.numVars; i++)
         {
             var v = new Entity.AudioEngine.RpcVariable();
             v.Name = varNames[i];
@@ -161,51 +161,48 @@ public class AudioEngineReader : BaseReader
 
             variables.Add(v);
             if (!v.IsGlobal)
+            {
                 cueVariables.Add(v);
+            }
             else
             {
                 globalVariables.Add(v);
-                
+
                 result._variableLookup.Add(v.Name, globalVariables.Count - 1);
             }
         }
+
         result._cueVariables = cueVariables.ToArray();
         result._variables = globalVariables.ToArray();
-        
+
         // RPC曲线
-        List<Entity.AudioEngine.RpcCurve> reverbCurves = new List<Entity.AudioEngine.RpcCurve>();
+        List<Entity.AudioEngine.RpcCurve> reverbCurves = new();
         result.RpcCurves = new Entity.AudioEngine.RpcCurve[result.numRpc];
         if (result.numRpc > 0)
         {
             bufferReader.BytePosition = (int)result.rpcOffset;
-            for (int i = 0; i < result.numRpc; i++)
+            for (var i = 0; i < result.numRpc; i++)
             {
-                Entity.AudioEngine.RpcCurve curve = new Entity.AudioEngine.RpcCurve();
+                var curve = new Entity.AudioEngine.RpcCurve();
                 curve.FileOffset = (uint)bufferReader.BytePosition;
                 var variable = variables[bufferReader.ReadUInt16()];
                 curve.IsGlobal = variable.IsGlobal;
                 if (variable.IsGlobal)
-                {
                     curve.Variable = globalVariables.FindIndex(e => e.Name == variable.Name);
-                }
                 else
-                {
                     curve.Variable = cueVariables.FindIndex(e => e.Name == variable.Name);
-                }
-                
-                byte pointCount = bufferReader.ReadByte();
-                curve.Parameter =  (Entity.AudioEngine.RpcParameter)bufferReader.ReadUInt16();
+
+                var pointCount = bufferReader.ReadByte();
+                curve.Parameter = (Entity.AudioEngine.RpcParameter)bufferReader.ReadUInt16();
                 curve.Points = new Entity.AudioEngine.RpcPoint[pointCount];
-                for (int j = 0; j < pointCount; j++)
-                {
+                for (var j = 0; j < pointCount; j++)
                     curve.Points[j] = new Entity.AudioEngine.RpcPoint
                     {
                         X = bufferReader.ReadSingle(),
                         Y = bufferReader.ReadSingle(),
                         Type = (Entity.AudioEngine.RpcPointType)bufferReader.ReadByte()
                     };
-                }
-                
+
                 var dspParameter = curve.Parameter - Entity.AudioEngine.RpcParameter.NumParameters;
                 if (dspParameter >= 0 && variable.IsGlobal)
                     reverbCurves.Add(curve);
@@ -215,7 +212,7 @@ public class AudioEngineReader : BaseReader
         }
 
         result._reverbCurves = reverbCurves.ToArray();
-        
+
         if (result.numDspPresets > 0)
         {
             // Note:  It seemed like MS designed this to support multiple
@@ -232,7 +229,7 @@ public class AudioEngineReader : BaseReader
             result._reverbSettings = reverbSettingsReader.Read();
         }
 
-        
+
         Log.Debug(JsonConvert.SerializeObject(reverbCurves, Formatting.Indented));
 
         return result;

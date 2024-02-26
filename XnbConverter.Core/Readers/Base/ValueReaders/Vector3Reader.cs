@@ -6,9 +6,10 @@ public class Vector3Reader : BaseReader
 {
     public override void Init(ReaderResolver readerResolver)
     {
-        this.bufferReader = readerResolver.bufferReader;
-        this.bufferWriter = readerResolver.bufferWriter;
+        bufferReader = readerResolver.bufferReader;
+        bufferWriter = readerResolver.bufferWriter;
     }
+
     public override bool IsValueType()
     {
         return true;
@@ -16,9 +17,9 @@ public class Vector3Reader : BaseReader
 
     public override object Read()
     {
-        float x = bufferReader.ReadSingle();
-        float y = bufferReader.ReadSingle();
-        float z = bufferReader.ReadSingle();
+        var x = bufferReader.ReadSingle();
+        var y = bufferReader.ReadSingle();
+        var z = bufferReader.ReadSingle();
         return new Vector3 { X = x, Y = y, Z = z };
     }
 

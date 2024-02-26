@@ -8,14 +8,14 @@ public class Sym3x3
     public static Vector3 ExtractIndicesFromPackedBytes(int n, Vector3[] points, float[] weights)
     {
         // compute the centroid
-        float total = 0.0f;
-        float[] floats = Pool.RentFloat(16);
-        Span<float> fSpan = floats.AsSpan();
-        Span<float> centroid = fSpan[..3];
+        var total = 0.0f;
+        var floats = Pool.RentFloat(16);
+        var fSpan = floats.AsSpan();
+        var centroid = fSpan[..3];
         centroid.Fill(0.0f);
         // Vector3 centroid = new Vector3();
 
-        for (int i = 0; i < n; ++i)
+        for (var i = 0; i < n; ++i)
         {
             total += weights[i];
             // centroid += weights[i] * points[i];
@@ -30,14 +30,14 @@ public class Sym3x3
             centroid[1] /= total;
             centroid[2] /= total;
         }
-        
+
         // Vector3 a;
-        Span<float> a = fSpan[3..6];
-        Span<float> b = fSpan[6..9];
+        var a = fSpan[3..6];
+        var b = fSpan[6..9];
         // accumulate the covariance matrix
-        Span<float> matrix = fSpan[9..];
+        var matrix = fSpan[9..];
         // Vector3 b;
-        for (int i = 0; i < n; ++i)
+        for (var i = 0; i < n; ++i)
         {
             a[0] = points[i].X - centroid[0];
             a[1] = points[i].Y - centroid[1];
@@ -46,7 +46,7 @@ public class Sym3x3
             b[0] = weights[i] * a[0];
             b[1] = weights[i] * a[1];
             b[2] = weights[i] * a[2];
-            
+
             matrix[0] += a[0] * b[0];
             matrix[1] += a[0] * b[1];
             matrix[2] += a[0] * b[2];
@@ -55,11 +55,11 @@ public class Sym3x3
             matrix[5] += a[2] * b[2];
         }
 
-        Span<float> w = centroid;
-        Span<float> v = a;
+        var w = centroid;
+        var v = a;
         v.Fill(1.0f);
         float f;
-        for (int i = 0; i < 8; ++i)
+        for (var i = 0; i < 8; ++i)
         {
             // matrix multiply
             w[0] = v[0] * matrix[0] + v[1] * matrix[1] + v[2] * matrix[2];
@@ -74,7 +74,8 @@ public class Sym3x3
             v[1] = w[1] / f;
             v[2] = w[2] / f;
         }
+
         Pool.Return(floats);
-        return new Vector3(v[0], v[1],v[2]);
+        return new Vector3(v[0], v[1], v[2]);
     }
 }

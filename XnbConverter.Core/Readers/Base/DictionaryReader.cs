@@ -5,7 +5,7 @@
  * @class
  * @extends BaseReader
  */
-public class DictionaryReader<TK,TV,K,V> : BaseReader where TK : BaseReader, new() where TV : BaseReader, new()
+public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, new() where TV : BaseReader, new()
 {
     private int _keyReader;
     private int _valueReader;
@@ -22,8 +22,8 @@ public class DictionaryReader<TK,TV,K,V> : BaseReader where TK : BaseReader, new
         base.Init(readerResolver);
         _bK = new TK().IsValueType();
         _bV = new TV().IsValueType();
-        _keyReader = readerResolver.GetIndex<TK>();
-        _valueReader = readerResolver.GetIndex<TV>();
+        _keyReader = readerResolver.GetIndex(typeof(TK));
+        _valueReader = readerResolver.GetIndex(typeof(TV));
     }
 
     public override Dictionary<K, V> Read()
@@ -32,16 +32,16 @@ public class DictionaryReader<TK,TV,K,V> : BaseReader where TK : BaseReader, new
         var dictionary = new Dictionary<K, V>();
 
         // 读取字典的大小
-        uint size = bufferReader.ReadUInt32();
-        
+        var size = bufferReader.ReadUInt32();
+
         // 循环读取字典的数据
-        while (size --> 0)
+        while (size-- > 0)
         {
             // 获取键
-            K key = _bK ? readerResolver.ReadValue<K>(_keyReader) : readerResolver.Read<K>();
+            var key = _bK ? readerResolver.ReadValue<K>(_keyReader) : readerResolver.Read<K>();
             // 获取值
-            V value = _bV ? readerResolver.ReadValue<V>(_valueReader) : readerResolver.Read<V>();
-            
+            var value = _bV ? readerResolver.ReadValue<V>(_valueReader) : readerResolver.Read<V>();
+
             // 将键值对添加到字典中
             dictionary.Add(key, value);
         }
@@ -49,7 +49,7 @@ public class DictionaryReader<TK,TV,K,V> : BaseReader where TK : BaseReader, new
         // 返回字典对象
         return dictionary;
     }
-    
+
     public override void Write(object input)
     {
         // 写入字典的条目数
@@ -70,7 +70,7 @@ public class DictionaryReader<TK,TV,K,V> : BaseReader where TK : BaseReader, new
                 readerResolver.Write(_valueReader, value);
         }
     }
-    
+
     public override bool IsValueType()
     {
         return false;

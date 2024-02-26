@@ -1,4 +1,5 @@
 ﻿namespace XnbConverter.Readers;
+
 /**
 * 所有读取器的基类。
 * @abstract
@@ -9,7 +10,7 @@ public abstract class BaseReader
     protected ReaderResolver readerResolver;
     protected BufferReader bufferReader;
     protected BufferWriter bufferWriter;
-    
+
     /**
      * 返回类型是否通常需要特殊的读取器。
      * @public
@@ -18,19 +19,12 @@ public abstract class BaseReader
      */
     public abstract bool IsValueType();
 
-    
+
     public virtual void Init(ReaderResolver readerResolver)
     {
         this.readerResolver = readerResolver;
-        this.bufferReader = readerResolver.bufferReader;
-        this.bufferWriter = readerResolver.bufferWriter;
-    }
-    
-    protected void Init(string path)
-    {
-        Init(new ReaderResolver(){
-            bufferReader = BufferReader.FormFile(path)
-        });
+        bufferReader = readerResolver.bufferReader;
+        bufferWriter = readerResolver.bufferWriter;
     }
 
     /**
@@ -42,8 +36,11 @@ public abstract class BaseReader
      */
     public abstract object Read();
 
-    protected static object Read(string path) => throw new NotImplementedException();
-    
+    protected static object Read(string path)
+    {
+        throw new NotImplementedException();
+    }
+
 
     /**
      * 写入缓冲区。

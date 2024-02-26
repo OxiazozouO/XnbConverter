@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "fAa1qvuaKxGK1DkN4l65mF8JqnE9nGqzAQVYZHvX3dpbX8TWMOunCk3zIGuTKKwmVEMzU6OatWTVKIEVocGZDQ==",
+  "dgSpecHash": "Ea22UVq14o17ql9/GJm86VXUnj4tH1upzIWYU5lTsyeCQ5HJ5/cdNZ4VjMUfmuOsFLhnaYtHiD5I+k/njII6jA==",
   "success": true,
   "projectFilePath": "D:\\XnbConverter\\XnbConverter.Core\\XnbConverter.Core.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\jiang\\.nuget\\packages\\lz4pcl\\1.0.0\\lz4pcl.1.0.0.nupkg.sha512",
+    "C:\\Users\\jiang\\.nuget\\packages\\monogame.framework.desktopgl\\3.8.1.303\\monogame.framework.desktopgl.3.8.1.303.nupkg.sha512",
     "C:\\Users\\jiang\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\jiang\\.nuget\\packages\\sixlabors.imagesharp\\3.0.2\\sixlabors.imagesharp.3.0.2.nupkg.sha512"
   ],

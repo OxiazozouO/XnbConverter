@@ -7,7 +7,7 @@ public class AudioCategory
     public string name;
     public AudioEngine engine;
     public List<XactSound> Sounds;
-    
+
     // This is a bit gross, but we use an array here
     // instead of a field since AudioCategory is a struct
     // This allows us to save _volume when the user
@@ -27,21 +27,21 @@ public class AudioCategory
     public byte volumeDecibels;
     public byte visibilityFlags;
     public ushort unkn;
-    
-    
-    public enum MaxInstanceBehavior 
+
+
+    public enum MaxInstanceBehavior
     {
         FailToPlay,
         Queue,
         ReplaceOldest,
         ReplaceQuietest,
-        ReplaceLowestPriority,
+        ReplaceLowestPriority
     }
 
-    public enum CrossfadeType 
+    public enum CrossfadeType
     {
         Linear,
         Logarithmic,
-        EqualPower,
+        EqualPower
     }
 }

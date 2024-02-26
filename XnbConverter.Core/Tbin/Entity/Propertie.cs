@@ -10,20 +10,12 @@ public class Propertie
     {
         parsedData = new List<object>();
         string[] elements = ((string)Value).Split(' ');
-        foreach (string element in elements)
-        {
-            if (int.TryParse(element, out int intValue))
-            {
+        foreach (var element in elements)
+            if (int.TryParse(element, out var intValue))
                 parsedData.Add(intValue);
-            }
-            else if (double.TryParse(element, out double floatValue))
-            {
+            else if (double.TryParse(element, out var floatValue))
                 parsedData.Add(floatValue);
-            }
             else
-            {
                 parsedData.Add(element);
-            }
-        }
     }
 }

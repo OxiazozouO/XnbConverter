@@ -14,10 +14,12 @@ public class CharReader : BaseReader
         bufferReader = readerResolver.bufferReader;
         bufferWriter = readerResolver.bufferWriter;
     }
+
     public override bool IsValueType()
     {
         return true;
     }
+
     /**
      * 从缓冲区读取字符。
      * @param {BufferReader} buffer 缓冲区读取器
@@ -25,12 +27,13 @@ public class CharReader : BaseReader
      */
     public override object Read()
     {
-        byte b = bufferReader.PeekByte();
-        int charSize = GetCharSize(b);
-        byte[] charBytes = bufferReader.Read(charSize);
-        char c = Encoding.UTF8.GetChars(charBytes)[0];
+        var b = bufferReader.PeekByte();
+        var charSize = GetCharSize(b);
+        var charBytes = bufferReader.Read(charSize);
+        var c = Encoding.UTF8.GetChars(charBytes)[0];
         return c;
     }
+
     /**
      * 将字符写入缓冲区。
      * @param {BufferWriter} buffer 缓冲区写入器
@@ -40,16 +43,17 @@ public class CharReader : BaseReader
     public override void Write(object content)
     {
         var input = content.ToString();
-        byte[] buf = Encoding.Default.GetBytes(input);
+        var buf = Encoding.Default.GetBytes(input);
         bufferWriter.Write(buf);
     }
+
     /**
      * 获取特定字符的大小，对于一些占用多个字节的特殊字符。
      * @param {Number} byte 字节值
      * @returns {Number} 字符大小
-     */ 
+     */
     private static int GetCharSize(byte b)
     {
-        return (int)((( 0xE5000000 >> (( b >> 3 ) & 0x1e )) & 3 ) + 1);
+        return (int)(((0xE5000000 >> ((b >> 3) & 0x1e)) & 3) + 1);
     }
 }

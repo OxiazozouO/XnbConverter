@@ -11,13 +11,15 @@ public class IntVector2Reader : BaseReader
 {
     public override void Init(ReaderResolver readerResolver)
     {
-        this.bufferReader = readerResolver.bufferReader;
-        this.bufferWriter = readerResolver.bufferWriter;
+        bufferReader = readerResolver.bufferReader;
+        bufferWriter = readerResolver.bufferWriter;
     }
+
     public override bool IsValueType()
     {
         return true;
     }
+
     /**
      * 从缓冲区读取Vector2。
      * @param {BufferReader} buffer 缓冲区读取器
@@ -25,16 +27,16 @@ public class IntVector2Reader : BaseReader
      */
     public override object Read()
     {
-        int x = bufferReader.ReadInt32();
-        int y = bufferReader.ReadInt32();
+        var x = bufferReader.ReadInt32();
+        var y = bufferReader.ReadInt32();
 
-        return new IntVector2{ X = x, Y = y };
+        return new IntVector2 { X = x, Y = y };
     }
 
     public override void Write(object content)
     {
         var input = (IntVector2)content;
-        
+
         bufferWriter.WriteInt32(input.X);
         bufferWriter.WriteInt32(input.Y);
     }

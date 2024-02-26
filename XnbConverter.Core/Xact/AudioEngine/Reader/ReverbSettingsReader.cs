@@ -5,7 +5,8 @@ namespace XnbConverter.Xact.AudioEngine.Reader;
 
 public class ReverbSettingsReader : BaseReader
 {
-    private DspParameterReader dspParameterReader = new DspParameterReader();
+    private DspParameterReader dspParameterReader = new();
+
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
@@ -19,7 +20,7 @@ public class ReverbSettingsReader : BaseReader
 
     public override ReverbSettings Read()
     {
-        ReverbSettings result = new ReverbSettings();
+        var result = new ReverbSettings();
         result.Parameters = new[]
         {
             dspParameterReader.Read(), // ReflectionsDelayMs
@@ -43,7 +44,7 @@ public class ReverbSettingsReader : BaseReader
             dspParameterReader.Read(), // DecayTimeSec
             dspParameterReader.Read(), // DensityPct
             dspParameterReader.Read(), // RoomSizeFeet
-            dspParameterReader.Read(), // WetDryMixPct
+            dspParameterReader.Read() // WetDryMixPct
         };
 
         return result;

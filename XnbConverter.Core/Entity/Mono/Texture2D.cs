@@ -6,10 +6,9 @@ namespace XnbConverter.Entity.Mono;
 
 public class Texture2D
 {
-    private static List<Task> tasks = new List<Task>();
-    
-    [JsonIgnore]
-    public byte[] Data{ set; get; }
+    private static List<Task> tasks = new();
+
+    [JsonIgnore] public byte[] Data { set; get; }
     public int Format { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
@@ -27,19 +26,17 @@ public class Texture2D
     {
         tasks.Add(Task.Run(async () =>
         {
-            using Image<Rgba32> image = new Image<Rgba32>(Width, Height);
-            int index = -1;
-            for (int y = 0; y < Height; y++)
+            using var image = new Image<Rgba32>(Width, Height);
+            var index = -1;
+            for (var y = 0; y < Height; y++)
+            for (var x = 0; x < Width; x++)
             {
-                for (int x = 0; x < Width; x++)
-                {
-                    Rgba32 pixel = new Rgba32();
-                    pixel.R = Data[++index];
-                    pixel.G = Data[++index];
-                    pixel.B = Data[++index];
-                    pixel.A = Data[++index];
-                    image[x, y] = pixel;
-                }
+                var pixel = new Rgba32();
+                pixel.R = Data[++index];
+                pixel.G = Data[++index];
+                pixel.B = Data[++index];
+                pixel.A = Data[++index];
+                image[x, y] = pixel;
             }
 
             await image.SaveAsPngAsync(path);
@@ -53,24 +50,23 @@ public class Texture2D
      */
     public static Texture2D FromPng(string path)
     {
-        Texture2D t2d = new Texture2D();
+        var t2d = new Texture2D();
         path = Path.GetFullPath(path);
-        using Image<Rgba32> image = Image.Load<Rgba32>(path);
+        using var image = Image.Load<Rgba32>(path);
         t2d.Width = image.Width;
         t2d.Height = image.Height;
         t2d.Data = new byte[t2d.Width * t2d.Height * 4];
-        int index = -1;
-        for (int y = 0; y < t2d.Height; y++)
+        var index = -1;
+        for (var y = 0; y < t2d.Height; y++)
+        for (var x = 0; x < t2d.Width; x++)
         {
-            for (int x = 0; x < t2d.Width; x++)
-            {
-                Rgba32 pixel = image[x, y];
-                t2d.Data[++index] = pixel.R;
-                t2d.Data[++index] = pixel.G;
-                t2d.Data[++index] = pixel.B;
-                t2d.Data[++index] = pixel.A;
-            }
+            var pixel = image[x, y];
+            t2d.Data[++index] = pixel.R;
+            t2d.Data[++index] = pixel.G;
+            t2d.Data[++index] = pixel.B;
+            t2d.Data[++index] = pixel.A;
         }
+
         return t2d;
     }
 

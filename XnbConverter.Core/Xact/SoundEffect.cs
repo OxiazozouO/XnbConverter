@@ -5,10 +5,10 @@ namespace XnbConverter.Xact;
 
 public class SoundEffect
 {
+    public WaveForm WaveForm = new();
 
-    public WaveForm WaveForm = new WaveForm();
+    public ExData exData = new();
 
-    public ExData exData = new ExData();
     public class ExData
     {
         public uint LoopStart;
@@ -19,7 +19,7 @@ public class SoundEffect
     public void Save(string json, string wavPath)
     {
         File.WriteAllText(json, JsonConvert.SerializeObject(exData, Formatting.Indented));
-        SoundEffectReader.Save(this,wavPath);
+        SoundEffectReader.Save(this, wavPath);
     }
 
     public static SoundEffect FormWave(string json, string path)

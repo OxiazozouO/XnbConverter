@@ -5,7 +5,7 @@
  * @class
  * @extends BaseReader
  */
-public class ListReader<TK,K> : BaseReader where TK : BaseReader, new()
+public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
 {
     private int _reader;
     private bool _bK;
@@ -19,20 +19,19 @@ public class ListReader<TK,K> : BaseReader where TK : BaseReader, new()
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
-        _reader = readerResolver.GetIndex<TK>();
+        _reader = readerResolver.GetIndex(typeof(K));
         _bK = new TK().IsValueType();
     }
 
     public override List<K> Read()
     {
         var size = bufferReader.ReadUInt32();
-
         var list = new List<K>();
         K value;
-        
+
         if (_bK)
         {
-            while (size --> 0)
+            while (size-- > 0)
             {
                 value = readerResolver.ReadValue<K>(_reader);
                 list.Add(value);
@@ -40,8 +39,8 @@ public class ListReader<TK,K> : BaseReader where TK : BaseReader, new()
         }
         else
         {
-            int index = 0;
-            while (size --> 0)
+            var index = 0;
+            while (size-- > 0)
             {
                 value = readerResolver.Read<K>();
                 list.Add(value);
@@ -60,14 +59,16 @@ public class ListReader<TK,K> : BaseReader where TK : BaseReader, new()
     public override void Write(object content)
     {
         var input = (List<K>)content;
-        
-        bufferWriter.WriteUInt32( (uint)input.Count);
-        if (_bK) foreach (var t in input)
-            readerResolver.WriteValue(_reader, t);
-        else foreach (var t in input)
-            readerResolver.Write(_reader, t);
+
+        bufferWriter.WriteUInt32((uint)input.Count);
+        if (_bK)
+            foreach (var t in input)
+                readerResolver.WriteValue(_reader, t);
+        else
+            foreach (var t in input)
+                readerResolver.Write(_reader, t);
     }
-    
+
     /**
      * 返回类型是否通常需要特殊的读取器。
      * @public
@@ -78,7 +79,7 @@ public class ListReader<TK,K> : BaseReader where TK : BaseReader, new()
     {
         return false;
     }
-    
+
     public override Type GetResultType()
     {
         return typeof(List<K>);

@@ -20,10 +20,10 @@ public class LayerReader : BaseReader
     {
         base.Init(readerResolver);
         stringReader.Init(readerResolver);
-        intVector2Reader = readerResolver.GetIndex<IntVector2Reader>();
-        propertieListReader = readerResolver.GetIndex<ListReader<PropertieReader, Propertie>>();
-        staticTileReader = readerResolver.GetIndex<StaticTileReader>();
-        animatedTilerReader = readerResolver.GetIndex<AnimatedTilerReader>();
+        intVector2Reader = readerResolver.GetIndex(typeof(IntVector2));
+        propertieListReader = readerResolver.GetIndex(typeof(List<Propertie>));
+        staticTileReader = readerResolver.GetIndex(typeof(StaticTile));
+        animatedTilerReader = readerResolver.GetIndex(typeof(AnimatedTile));
     }
 
     public override bool IsValueType()
@@ -33,7 +33,7 @@ public class LayerReader : BaseReader
 
     public override Layer Read()
     {
-        Layer result = new Layer();
+        var result = new Layer();
 
         result.Id = stringReader.ReadByInt32();
         result.Visible = bufferReader.ReadByte();
@@ -51,39 +51,37 @@ public class LayerReader : BaseReader
         result.Tiles = new List<BaseTile>((int)(x * y));
         result.Index = new List<char>();
         result._sizeArr = new List<int>();
-        for (int j = 0; j < y; ++j)
+        for (var j = 0; j < y; ++j)
+        for (var i = 0; i < x;)
         {
-            for (int i = 0; i < x;)
+            var c = (char)bufferReader.ReadByte();
+            result.Index.Add(c);
+            switch (c)
             {
-                char c = (char)bufferReader.ReadByte();
-                result.Index.Add(c);
-                switch (c)
+                case 'N': //NULL SIZE
                 {
-                    case 'N': //NULL SIZE
-                    {
-                        int size = bufferReader.ReadInt32();
-                        result._sizeArr.Add(size);
-                        for (int n = 0; n < size; ++n)
-                            result.Tiles.Add(null);
-                        i += size;
-                    }
-                        break;
-                    case 'S': //Static Tile
-                        StaticTile tmp = readerResolver.ReadValue<StaticTile>(staticTileReader);
-                        tmp.TileSheet = result._currTileSheet[^1];
-                        result.Tiles.Add(tmp); //reader, currTileSheet
-                        ++i;
-                        break;
-                    case 'A': //Animated Tile
-                        result.Tiles.Add(readerResolver.ReadValue<AnimatedTile>(animatedTilerReader));
-                        ++i;
-                        break;
-                    case 'T': //
-                        result._currTileSheet.Add(stringReader.ReadByInt32());
-                        break;
-                    default:
-                        throw new Exception("Bad tile data");
+                    var size = bufferReader.ReadInt32();
+                    result._sizeArr.Add(size);
+                    for (var n = 0; n < size; ++n)
+                        result.Tiles.Add(null);
+                    i += size;
                 }
+                    break;
+                case 'S': //Static Tile
+                    var tmp = readerResolver.ReadValue<StaticTile>(staticTileReader);
+                    tmp.TileSheet = result._currTileSheet[^1];
+                    result.Tiles.Add(tmp); //reader, currTileSheet
+                    ++i;
+                    break;
+                case 'A': //Animated Tile
+                    result.Tiles.Add(readerResolver.ReadValue<AnimatedTile>(animatedTilerReader));
+                    ++i;
+                    break;
+                case 'T': //
+                    result._currTileSheet.Add(stringReader.ReadByInt32());
+                    break;
+                default:
+                    throw new Exception("Bad tile data");
             }
         }
 
@@ -92,7 +90,7 @@ public class LayerReader : BaseReader
 
     public override void Write(object content)
     {
-        Layer input = (Layer)content;
+        var input = (Layer)content;
 
         stringReader.WriteByInt32(input.Id);
         bufferWriter.WriteByte(input.Visible);
@@ -101,63 +99,56 @@ public class LayerReader : BaseReader
         readerResolver.WriteValue(intVector2Reader, input.TileSize);
         readerResolver.WriteValue(propertieListReader, input.Properties);
 
-        int x = input.LayerSize.X;
-        int y = input.LayerSize.Y;
+        var x = input.LayerSize.X;
+        var y = input.LayerSize.Y;
 
-        int sizeIndex = -1;
-        int tilesIndex = 0;
-        int currTileSheetIndex = 0;
-        int index = -1;
-        StringBuilder sb = new StringBuilder();
+        var sizeIndex = -1;
+        var tilesIndex = 0;
+        var currTileSheetIndex = 0;
+        var index = -1;
+        var sb = new StringBuilder();
         int ans;
-        for (int j = 0; j < y; ++j)
-        {
+        for (var j = 0; j < y; ++j)
             // sb.Length = 0;
             // ans = tilesIndex;
-            for (int i = 0; i < x;)
+        for (var i = 0; i < x;)
+        {
+            var c = input.Index[++index];
+            bufferWriter.WriteByte((byte)c);
+            switch (c)
             {
-                char c = input.Index[++index];
-                bufferWriter.WriteByte((byte)c);
-                switch (c)
+                case 'N':
                 {
-                    case 'N':
-                    {
-                        int size = input._sizeArr[++sizeIndex];
-                        bufferWriter.WriteInt32(size);
-                        if (i + size > x)
-                        {
-                            throw new AggregateException($"i 最大为{x},现在为{i}");
-                        }
+                    var size = input._sizeArr[++sizeIndex];
+                    bufferWriter.WriteInt32(size);
+                    if (i + size > x) throw new AggregateException($"i 最大为{x},现在为{i}");
 
-                        tilesIndex += size;
-                        i += size;
-                        // sb.Append('+').Append(size);
-                    }
-                        break;
-                    case 'S':
-                        StaticTile tmp = (StaticTile)input.Tiles[tilesIndex++];
-                        readerResolver.WriteValue(staticTileReader, tmp);
-                        ++i;
-                        // sb.Append('+').Append(1);
-                        break;
-                    case 'A':
-                        readerResolver.WriteValue(animatedTilerReader, input.Tiles[tilesIndex++]);
-                        ++i;
-                        // sb.Append('+').Append(1);
-                        break;
-                    case 'T':
-                        stringReader.WriteByInt32(input._currTileSheet[++currTileSheetIndex]);
-                        break;
-                    default:
-                        throw new Exception("Bad tile data");
+                    tilesIndex += size;
+                    i += size;
+                    // sb.Append('+').Append(size);
                 }
+                    break;
+                case 'S':
+                    var tmp = (StaticTile)input.Tiles[tilesIndex++];
+                    readerResolver.WriteValue(staticTileReader, tmp);
+                    ++i;
+                    // sb.Append('+').Append(1);
+                    break;
+                case 'A':
+                    readerResolver.WriteValue(animatedTilerReader, input.Tiles[tilesIndex++]);
+                    ++i;
+                    // sb.Append('+').Append(1);
+                    break;
+                case 'T':
+                    stringReader.WriteByInt32(input._currTileSheet[++currTileSheetIndex]);
+                    break;
+                default:
+                    throw new Exception("Bad tile data");
             }
-
-            // sb.Append("ans:" + (tilesIndex-ans) + "  w:"+x+"\n");
-            // // if(tilesIndex-ans !=x)
-            //     Console.WriteLine(sb.ToString());
         }
-
+        // sb.Append("ans:" + (tilesIndex-ans) + "  w:"+x+"\n");
+        // // if(tilesIndex-ans !=x)
+        //     Console.WriteLine(sb.ToString());
         // Console.WriteLine("\n\n\n");
     }
 }

@@ -12,8 +12,8 @@ public class DspParameterReader : BaseReader
 
     public override DspParameter Read()
     {
-        DspParameter result = new DspParameter();
-        
+        var result = new DspParameter();
+
         result.unkn1 = bufferReader.ReadByte();
         result.Value = bufferReader.ReadSingle();
         result.MinValue = bufferReader.ReadSingle();

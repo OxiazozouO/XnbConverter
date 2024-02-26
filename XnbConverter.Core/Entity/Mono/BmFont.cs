@@ -2,5 +2,5 @@
 
 public class BmFont
 {
-    public string Data{ set; get; }
+    public string Data { set; get; }
 }

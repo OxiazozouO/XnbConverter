@@ -3,7 +3,7 @@ using XnbConverter.Xact.WaveBank.Entity;
 
 namespace XnbConverter.Xact.WaveBank.Reader;
 
-public class ChunkReader: BaseReader,IReaderFileUtil<Chunk>
+public class ChunkReader : BaseReader, IReaderFileUtil<Chunk>
 {
     public override bool IsValueType()
     {
@@ -12,17 +12,17 @@ public class ChunkReader: BaseReader,IReaderFileUtil<Chunk>
 
     public override Chunk Read()
     {
-        Chunk result = new Chunk();
+        var result = new Chunk();
 
-        result.Id   = bufferReader.ReadString(4);
+        result.Id = bufferReader.ReadString(4);
         result.Size = bufferReader.ReadUInt32();
-        
+
         return result;
     }
 
     public override void Write(object input)
     {
-        Chunk chunk = (Chunk)input;
+        var chunk = (Chunk)input;
         bufferWriter.WriteAsciiString(chunk.Id);
         bufferWriter.WriteUInt32(chunk.Size);
     }
@@ -35,11 +35,11 @@ public class ChunkReader: BaseReader,IReaderFileUtil<Chunk>
 
     public Chunk Load()
     {
-        Chunk result = new Chunk();
+        var result = new Chunk();
 
-        result.Id   = bufferReader.ReadString(4);
+        result.Id = bufferReader.ReadString(4);
         result.Size = bufferReader.ReadUInt32();
-        
+
         return result;
     }
 }

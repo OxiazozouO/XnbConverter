@@ -2,6 +2,6 @@
 
 public class Chunk
 {
-    public string Id;//fmt data seek
+    public string Id; //fmt data seek
     public uint Size;
 }

@@ -4,23 +4,24 @@ public class NullableReader<T, N> : BaseReader where T : BaseReader, new()
 {
     private int reader;
     private bool b;
+
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
-        reader = readerResolver.GetIndex<T>();
+        reader = readerResolver.GetIndex(typeof(T));
         b = new T().IsValueType();
     }
 
     public override object Read()
     {
-        bool hasValue = bufferReader.ReadBoolean();
+        var hasValue = bufferReader.ReadBoolean();
         return hasValue ? b ? readerResolver.ReadValue<N>(reader) : readerResolver.Read<N>() : null;
     }
 
     public override void Write(object input)
     {
-        bool c = input is not null;
-        
+        var c = input is not null;
+
         bufferWriter.WriteByte((byte)(c ? 1 : 0));
         if (!c) return;
         if (b)

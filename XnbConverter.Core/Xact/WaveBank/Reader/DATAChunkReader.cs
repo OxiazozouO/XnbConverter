@@ -4,7 +4,7 @@ using XnbConverter.Xact.WaveBank.Entity;
 
 namespace XnbConverter.Xact.WaveBank.Reader;
 
-public class DATAChunkReader: BaseReader,IReaderFileUtil<DATAChunk>
+public class DATAChunkReader : BaseReader, IReaderFileUtil<DATAChunk>
 {
     public override bool IsValueType()
     {
@@ -13,18 +13,18 @@ public class DATAChunkReader: BaseReader,IReaderFileUtil<DATAChunk>
 
     public override DATAChunk Read()
     {
-        DATAChunk result = new DATAChunk();
+        var result = new DATAChunk();
 
         result.DataSize = bufferReader.ReadUInt32();
         result.Data = bufferReader.Read((int)result.DataSize);
-        
+
         return result;
     }
 
     public override void Write(object input)
     {
-        DATAChunk dataChunk = (DATAChunk)input;
-        
+        var dataChunk = (DATAChunk)input;
+
         bufferWriter.WriteUInt32(dataChunk.DataSize);
         bufferWriter.Write(dataChunk.Data);
     }
@@ -38,7 +38,7 @@ public class DATAChunkReader: BaseReader,IReaderFileUtil<DATAChunk>
 
     public DATAChunk Load()
     {
-        DATAChunk result = new DATAChunk();
+        var result = new DATAChunk();
         result.DataSize = bufferReader.ReadUInt32();
         result.Data = bufferReader.Read((int)result.DataSize);
         return result;

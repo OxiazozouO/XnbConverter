@@ -20,10 +20,7 @@ public abstract class ColourFit : IDisposable
         {
             Compress3(block);
 
-            if (!Colours.IsTransparent)
-            {
-                Compress4(block);
-            }
+            if (!Colours.IsTransparent) Compress4(block);
         }
         else
         {

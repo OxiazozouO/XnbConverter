@@ -13,12 +13,10 @@ public static class FileUtils
      * @param {String} output
      * @param {Function} cb
      */
-    public static Dictionary<string, List<(string,string)>> BuildFiles(string? input, string? output)
+    public static Dictionary<string, List<(string, string)>> BuildFiles(string? input, string? output)
     {
         if (Path.GetExtension(output) is not "") //输出的不为文件夹
-        {
             output = Path.GetDirectoryName(output);
-        }
 
         try
         {
@@ -36,36 +34,28 @@ public static class FileUtils
 
         string[] files;
         if (Directory.Exists(input)) //为文件夹且存在
-        {
             files = GetFiles(input, "*.*", SearchOption.AllDirectories);
-        }
         else if (File.Exists(input))
-        {
             files = new[] { input };
-        }
         else //无效路径
-        {
             throw new XnbError("无效的输入路径: {0}", Path.GetFullPath(input));
-        }
 
         //构建输出路径
-        Dictionary<string, List<(string,string)>> map = new Dictionary<string, List<(string,string)>>();
-        string fileName     ;
-        string ext          ;
+        Dictionary<string, List<(string, string)>> map = new();
+        string fileName;
+        string ext;
         string secondaryPath;
-        string path         ;
+        string path;
         foreach (var file in files)
         {
-            fileName      = Path.GetFileNameWithoutExtension(file);
-            ext           = Path.GetExtension(file);
+            fileName = Path.GetFileNameWithoutExtension(file);
+            ext = Path.GetExtension(file);
             secondaryPath = file[input.Length..^(fileName.Length + ext.Length)];
-            path          = output + secondaryPath;
-            if (!map.ContainsKey(ext))
-            {
-                map[ext] = new List<(string,string)>();
-            }
+            path = output + secondaryPath;
+            if (!map.ContainsKey(ext)) map[ext] = new List<(string, string)>();
             map[ext].Add((file, path + fileName));
         }
+
         return map;
     }
 
@@ -78,18 +68,15 @@ public static class FileUtils
         foreach (var value in list)
         {
             var path = Path.GetDirectoryName(value.Item2);
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
         }
     }
-    
-    public static void ToJson(this object data,string path)
+
+    public static void ToJson(this object data, string path)
     {
         WriteAllText(path, JsonConvert.SerializeObject(data, Formatting.Indented));
     }
-    
+
     public static T? ToEntity<T>(string path)
     {
         return JsonConvert.DeserializeObject<T>(ReadAllText(path));

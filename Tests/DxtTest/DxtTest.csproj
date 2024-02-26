@@ -10,29 +10,29 @@
 
 
     <ItemGroup>
-      <Content Include="..\..\.config\bin\ffmpeg\ffmpeg.exe">
-        <Link>.config\bin\ffmpeg\ffmpeg.exe</Link>
-      </Content>
-      <Content Include="..\..\.config\bin\ffmpeg\LICENSE.md">
-        <Link>.config\bin\ffmpeg\LICENSE.md</Link>
-      </Content>
-      <Content Include="..\..\.config\config.json">
-        <Link>.config\config.json</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.zh-CN.json">
-        <Link>.config\i18n\error.zh-CN.json</Link>
-      </Content>
-      <Content Include="..\..\.config\i18n\ui.zh-CN.json">
-        <Link>.config\i18n\ui.zh-CN.json</Link>
-      </Content>
+        <Content Include="..\..\.config\bin\ffmpeg\ffmpeg.exe">
+            <Link>.config\bin\ffmpeg\ffmpeg.exe</Link>
+        </Content>
+        <Content Include="..\..\.config\bin\ffmpeg\LICENSE.md">
+            <Link>.config\bin\ffmpeg\LICENSE.md</Link>
+        </Content>
+        <Content Include="..\..\.config\config.json">
+            <Link>.config\config.json</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\..\.config\i18n\error.zh-CN.json">
+            <Link>.config\i18n\error.zh-CN.json</Link>
+        </Content>
+        <Content Include="..\..\.config\i18n\ui.zh-CN.json">
+            <Link>.config\i18n\ui.zh-CN.json</Link>
+        </Content>
     </ItemGroup>
 
 
     <ItemGroup>
-      <ProjectReference Include="..\..\XnbConverter.Core\XnbConverter.Core.csproj">
-        <Private>True</Private>
-      </ProjectReference>
+        <ProjectReference Include="..\..\XnbConverter.Core\XnbConverter.Core.csproj">
+            <Private>True</Private>
+        </ProjectReference>
     </ItemGroup>
 
 </Project>

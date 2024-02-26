@@ -1,6 +1,4 @@
-﻿
-
-using XnbConverter.Entity.Mono;
+﻿using XnbConverter.Entity.Mono;
 
 namespace XnbConverter.Tbin.Entity;
 
@@ -40,11 +38,11 @@ public class Layer
     /// The list of tiles.
     /// </summary>
     public List<BaseTile> Tiles { get; set; }
-    
-    
+
+
     public List<char> Index { get; set; }
-    
+
     public List<int> _sizeArr { get; set; }
-    
+
     public List<string> _currTileSheet { get; set; }
 }

@@ -17,5 +17,8 @@ public class StaticTile : BaseTile
     /// </summary>
     public byte BlendMode { get; set; }
 
-    public string GetId() => TileSheet + "@" + TileIndex;
+    public string GetId()
+    {
+        return TileSheet + "@" + TileIndex;
+    }
 }

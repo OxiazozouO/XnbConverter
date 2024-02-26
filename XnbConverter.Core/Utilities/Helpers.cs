@@ -6,11 +6,11 @@ namespace XnbConverter.Utilities;
 
 public static class Helpers
 {
-    public const string ConfigPath = @"@$"".\.config\config.json";
-    public const string I18nPath = @"@$"".\.config\i18n\{0}.json";
+    public const string ConfigPath = @".\.config\config.json";
+    public const string I18nPath = @".\.config\i18n\{0}.json";
     public static readonly string FFmpegPath = $"{Path.GetFullPath(@".config\bin\ffmpeg\ffmpeg.exe")}";
-    
-    
+
+
     private static Configuration? _config;
     private static Configuration? _configTmp;
 
@@ -22,10 +22,11 @@ public static class Helpers
             return _config;
         }
     }
+
     public static void EnableMultithreading()
     {
         _configTmp = _config;
-        _config = _configTmp.Copy(2|4,2|4,_configTmp.Concurrency);
+        _config = _configTmp.Copy(2 | 4, 2 | 4, _configTmp.Concurrency);
     }
 
     public static void TurnOffMultithreading()
@@ -40,12 +41,9 @@ public static class Helpers
         get
         {
             if (_textTip is not null) return _textTip;
-            string filename = "error";
-            if (Config.Locale != "default")
-            {
-                filename += '.' + Config.Locale;
-            }
-            _textTip ??= GetObject<ErrorHelpers>(string.Format(I18nPath,filename));
+            var filename = "error";
+            if (Config.Locale != "default") filename += '.' + Config.Locale;
+            _textTip ??= GetObject<ErrorHelpers>(string.Format(I18nPath, filename));
 
             return _textTip;
         }
@@ -54,7 +52,7 @@ public static class Helpers
     private static T GetObject<T>(string path)
     {
         if (!File.Exists(path))
-            throw new FileLoadException(string.Format("配置文件{0}不存在！",path));
+            throw new FileLoadException(string.Format("配置文件{0}不存在！", path));
 
         return JsonConvert.DeserializeObject<T>(File.ReadAllText(path)) ??
                throw new FileLoadException("读取json失败！");
@@ -88,18 +86,18 @@ public static class Helpers
             Info = 1,
             Warn = 2,
             Error = 4,
-            Debug = 8,
+            Debug = 8
         }
 
         public Configuration Copy(int printMod, int saveMod, int concurrency)
         {
-            Configuration result = new Configuration()
+            var result = new Configuration()
             {
                 LogTime = LogTime,
                 TimeFormat = TimeFormat,
                 Concurrency = concurrency,
                 LogPrintingOptions = (LogLevels)printMod,
-                LogSaveOptions = (LogLevels)saveMod,
+                LogSaveOptions = (LogLevels)saveMod
             };
             return result;
         }
@@ -132,6 +130,7 @@ public static class Helpers
         }
 
         [JsonIgnore] private readonly int _concurrency;
+
         [JsonProperty]
         public int Concurrency
         {
@@ -149,7 +148,6 @@ public static class Helpers
         [JsonIgnore] public bool SDebug { get; private set; }
 
         [JsonProperty] public string Locale;
-
     }
 
     public class ErrorHelpers

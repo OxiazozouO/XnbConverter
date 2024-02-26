@@ -1,4 +1,5 @@
 ﻿namespace XnbConverter.Readers.Base.ValueReaders;
+
 /**
  * Boolean Reader
  * @class
@@ -13,8 +14,8 @@ public class BooleanReader : BaseReader
 
     public override void Init(ReaderResolver readerResolver)
     {
-        this.bufferReader = readerResolver.bufferReader;
-        this.bufferWriter = readerResolver.bufferWriter;
+        bufferReader = readerResolver.bufferReader;
+        bufferWriter = readerResolver.bufferWriter;
     }
 
     /**
@@ -24,10 +25,10 @@ public class BooleanReader : BaseReader
      */
     public override object Read()
     {
-        byte value = bufferReader.ReadByte();
+        var value = bufferReader.ReadByte();
         return value != 0;
     }
-    
+
     /**
      * 将布尔值写入缓冲区。
      * @param {BufferWriter} buffer 缓冲区写入器

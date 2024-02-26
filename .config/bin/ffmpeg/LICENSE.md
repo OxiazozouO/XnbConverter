@@ -75,7 +75,6 @@ There are a handful of files under other licensing terms, namely:
   those three files in the documentation.
 * `tests/reference.pnm` is under the expat license.
 
-
 ## External libraries
 
 FFmpeg can be combined with a number of external libraries, which sometimes
@@ -84,6 +83,7 @@ affect the licensing of binaries resulting from the combination.
 ### Compatible libraries
 
 The following libraries are under GPL version 2:
+
 - avisynth
 - frei0r
 - libcdio
@@ -100,6 +100,7 @@ When combining them with FFmpeg, FFmpeg needs to be licensed as GPL as well by
 passing `--enable-gpl` to configure.
 
 The following libraries are under LGPL version 3:
+
 - gmp
 - libaribb24
 - liblensfun

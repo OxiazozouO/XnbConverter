@@ -5,9 +5,10 @@ using StringReader = XnbConverter.Readers.Base.StringReader;
 
 namespace XnbConverter.Tbin.Readers;
 
-public class PropertieReader: BaseReader
+public class PropertieReader : BaseReader
 {
     private StringReader stringReader = new();
+
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
@@ -21,7 +22,7 @@ public class PropertieReader: BaseReader
 
     public override Propertie Read()
     {
-        Propertie result = new Propertie();
+        var result = new Propertie();
         result.Key = stringReader.ReadByInt32();
         result.Type = bufferReader.ReadByte();
         result.Value = result.Type switch
@@ -38,7 +39,7 @@ public class PropertieReader: BaseReader
 
     public override void Write(object content)
     {
-        Propertie input = (Propertie)content;
+        var input = (Propertie)content;
         stringReader.WriteByInt32(input.Key);
         bufferWriter.WriteByte(input.Type);
 

@@ -9,22 +9,18 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <DebugType>embedded</DebugType>
+        <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <DebugType>embedded</DebugType>
+        <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="LZ4PCL" Version="1.0.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-      <Folder Include="StardewValley\Readers\" />
+        <PackageReference Include="LZ4PCL" Version="1.0.0"/>
+        <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2"/>
     </ItemGroup>
 
 </Project>

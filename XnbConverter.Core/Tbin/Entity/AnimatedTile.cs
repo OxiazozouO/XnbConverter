@@ -11,11 +11,10 @@ public class AnimatedTile : BaseTile
     /// 此平铺的框架，作为静态平铺。
     /// </summary>
     public List<StaticTile> Frames { get; set; }
-    
+
     public int _frameCount { get; set; }
-    
+
     public List<char> Index { get; set; }
-    
+
     public List<string> _currTileSheet { get; set; }
-    
 }

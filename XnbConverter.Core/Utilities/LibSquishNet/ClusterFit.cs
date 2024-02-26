@@ -13,11 +13,11 @@ public class ClusterFit : ColourFit
 
     private Vector4[] PointsWeights = Pool.RentVector4(16);
 
-    private Vector4 XsumWsum = new Vector4();
+    private Vector4 XsumWsum = new();
 
-    private Vector4 Metric = new Vector4();
+    private Vector4 Metric = new();
 
-    private Vector4 BestError = new Vector4();
+    private Vector4 BestError = new();
 
     public ClusterFit(ColourSet colours, bool isDxt1, bool isColourIterativeClusterFit)
         : base(colours, isDxt1)
@@ -121,6 +121,7 @@ public class ClusterFit : ColourFit
 
             if (same) return false;
         }
+
         // copy the ordering and weight all the points
         var unweighted = Colours.Points;
         var weights = Colours.Weights;
@@ -135,9 +136,10 @@ public class ClusterFit : ColourFit
             PointsWeights[i] = x;
             XsumWsum += x;
         }
+
         return true;
     }
-    
+
     private static readonly Vector4 V1 = new(3.0f, 3.0f, 3.0f, 9.0f);
     private static readonly Vector4 V2 = new(2.0f, 2.0f, 2.0f, 4.0f);
     private static readonly Vector4 TwothirdsTwothirds2 = V2 / V1;
@@ -152,7 +154,7 @@ public class ClusterFit : ColourFit
 
         // check all possible clusters and iterate on the total order
         var bestStart = Vector4.Zero;
-        var bestEnd   = Vector4.Zero;
+        var bestEnd = Vector4.Zero;
         var bestError = BestError;
         var bestIteration = 0;
         int bestI = 0, bestJ = 0;
@@ -173,33 +175,33 @@ public class ClusterFit : ColourFit
                     var part2 = XsumWsum - part1 - part0;
 
                     // compute least squares terms directly
-                    Vector4  _ = part1 * Vector4.HalfHalf2;
-                    Vector4 alphax_sum = _ + part0;
-                    float alpha2_sum = alphax_sum.W;
+                    var _ = part1 * Vector4.HalfHalf2;
+                    var alphax_sum = _ + part0;
+                    var alpha2_sum = alphax_sum.W;
 
-                    Vector4  betax_sum = _ + part2;
-                    float beta2_sum = betax_sum.W;
+                    var betax_sum = _ + part2;
+                    var beta2_sum = betax_sum.W;
 
-                    float alphabeta_sum = _.W;
+                    var alphabeta_sum = _.W;
 
                     // compute the least-squares optimal points
-                    float factor = alpha2_sum * beta2_sum - alphabeta_sum * alphabeta_sum;
-                    Vector4 a = (beta2_sum  * alphax_sum - alphabeta_sum * betax_sum ) / factor;
-                    Vector4 b = (alpha2_sum * betax_sum  - alphabeta_sum * alphax_sum) / factor;
-                    
+                    var factor = alpha2_sum * beta2_sum - alphabeta_sum * alphabeta_sum;
+                    var a = (beta2_sum * alphax_sum - alphabeta_sum * betax_sum) / factor;
+                    var b = (alpha2_sum * betax_sum - alphabeta_sum * alphax_sum) / factor;
+
                     // clamp to the grid
                     a = (Vector4.Grid * a.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector4.Grid;
                     b = (Vector4.Grid * b.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector4.Grid;
 
                     // compute the error (we skip the constant xxsum)
-                    Vector4 e1 = alpha2_sum * a * a + beta2_sum * b * b;
-                    Vector4 e2 = alphabeta_sum * a * b - a * alphax_sum;
-                    Vector4 e3 = e2 - b * betax_sum;
-                    Vector4 e4 = 2.0f * e3 + e1;
+                    var e1 = alpha2_sum * a * a + beta2_sum * b * b;
+                    var e2 = alphabeta_sum * a * b - a * alphax_sum;
+                    var e3 = e2 - b * betax_sum;
+                    var e4 = 2.0f * e3 + e1;
 
                     // apply the metric to the error term
-                    Vector4 e5 = e4 * Metric;
-                    Vector4 error = new Vector4(e5.X + e5.Y + e5.Z);
+                    var e5 = e4 * Metric;
+                    var error = new Vector4(e5.X + e5.Y + e5.Z);
 
                     // keep the solution if it wins
                     if (error.CompareAnyLessThan(bestError))
@@ -232,17 +234,17 @@ public class ClusterFit : ColourFit
             if (iterationIndex == IterationCount) break;
 
             // stop if a new iteration is an ordering that has already been tried
-            Vector4 axis = bestEnd - bestStart;
+            var axis = bestEnd - bestStart;
 
             if (!ConstructOrdering(axis, iterationIndex)) break;
         }
 
         // save the block if necessary
         if (!bestError.CompareAnyLessThan(BestError)) return;
-        
-        byte[] unordered = Pool.RentNewByte(16);
-        Span<byte> span = Order.AsSpan(16 * bestIteration, count);
-        int m = 0;
+
+        var unordered = Pool.RentNewByte(16);
+        var span = Order.AsSpan(16 * bestIteration, count);
+        var m = 0;
         for (; m < bestI; ++m)
             unordered[span[m]] = 0;
         for (; m < bestJ; ++m)
@@ -250,7 +252,7 @@ public class ClusterFit : ColourFit
         for (; m < count; m++)
             unordered[span[m]] = 1;
 
-        byte[] bestIndices = Colours.RemapIndices(unordered);
+        var bestIndices = Colours.RemapIndices(unordered);
 
         // save the block
         ColourBlock.WriteColourBlock3(bestStart.To565(), bestEnd.To565(), bestIndices, block);
@@ -263,22 +265,22 @@ public class ClusterFit : ColourFit
     protected override void Compress4(Span<byte> block)
     {
         // declare variables
-        int count = Colours.Count;
+        var count = Colours.Count;
 
         // prepare an ordering using the principle axis
         ConstructOrdering(Principle);
 
         // check all possible clusters and iterate on the total order
-        Vector4 bestStart = Vector4.Zero;
-        Vector4 bestEnd = Vector4.Zero;
-        Vector4 bestError = BestError;
-        Vector4 part0 = new Vector4();
-        Vector4 part1 = new Vector4();
-        Vector4 part2Tmp = new Vector4();
+        var bestStart = Vector4.Zero;
+        var bestEnd = Vector4.Zero;
+        var bestError = BestError;
+        var part0 = new Vector4();
+        var part1 = new Vector4();
+        var part2Tmp = new Vector4();
         Vector4 part2, part3, alphaxSum, betaxSum, e1, e2, e3, e4, e5, error, a, b;
         int bestIteration = 0, bestI = 0, bestJ = 0, bestK = 0;
         float factor, beta2Sum, alpha2Sum, alphaBetaSum;
-        
+
         // loop over iterations (we avoid the case that all points in first or last cluster)
         for (var iterationIndex = 0;;)
         {
@@ -288,14 +290,14 @@ public class ClusterFit : ColourFit
             {
                 // second cluster [i,j) is one third along
                 part1.Clear();
-                for (int j = i;;)
+                for (var j = i;;)
                 {
                     // third cluster [j,k) is two thirds along
                     int minK;
                     if (j == 0)
                     {
                         part2 = PointsWeights[0];
-                        minK =  1;
+                        minK = 1;
                     }
                     else
                     {
@@ -303,7 +305,8 @@ public class ClusterFit : ColourFit
                         part2 = part2Tmp;
                         minK = j;
                     }
-                    for (int k = minK;;)
+
+                    for (var k = minK;;)
                     {
                         // last cluster [k,count) is at the end
                         part3 = XsumWsum - part2 - part1 - part0;
@@ -319,8 +322,8 @@ public class ClusterFit : ColourFit
 
                         // compute the least-squares optimal points
                         factor = beta2Sum * alpha2Sum - alphaBetaSum * alphaBetaSum;
-                        a = (beta2Sum  * alphaxSum - alphaBetaSum * betaxSum ) / factor;
-                        b = (alpha2Sum * betaxSum  - alphaBetaSum * alphaxSum) / factor;
+                        a = (beta2Sum * alphaxSum - alphaBetaSum * betaxSum) / factor;
+                        b = (alpha2Sum * betaxSum - alphaBetaSum * alphaxSum) / factor;
 
                         // clamp to the grid
                         a = (Vector4.Grid * a.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector4.Grid;
@@ -381,10 +384,10 @@ public class ClusterFit : ColourFit
         // save the block if necessary
         if (!bestError.CompareAnyLessThan(BestError)) return;
         // remap the indices
-        byte[] unordered = Pool.RentNewByte(16);
-        
-        Span<byte> span = Order.AsSpan(16 * bestIteration, count);
-        int m = 0;
+        var unordered = Pool.RentNewByte(16);
+
+        var span = Order.AsSpan(16 * bestIteration, count);
+        var m = 0;
         for (; m < bestI; ++m)
             unordered[span[m]] = 0;
         for (; m < bestJ; ++m)
@@ -393,7 +396,7 @@ public class ClusterFit : ColourFit
             unordered[span[m]] = 3;
         for (; m < count; ++m)
             unordered[span[m]] = 1;
-        
+
         var bestIndices = Colours.RemapIndices(unordered);
 
         // save the block                // get the packed values

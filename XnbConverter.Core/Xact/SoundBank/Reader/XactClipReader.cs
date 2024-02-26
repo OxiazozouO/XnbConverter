@@ -14,23 +14,23 @@ public class XactClipReader : BaseReader
 
     public override object Read()
     {
-        XactClip result = new XactClip();
-        
-        result.VolumeDb         = bufferReader.ReadByte();
-        result.ClipOffset       = bufferReader.ReadUInt32();
-        result.FilterQAndFlags  = bufferReader.ReadUInt16();
-        result.FilterFrequency  = bufferReader.ReadUInt16();
+        var result = new XactClip();
+
+        result.VolumeDb = bufferReader.ReadByte();
+        result.ClipOffset = bufferReader.ReadUInt32();
+        result.FilterQAndFlags = bufferReader.ReadUInt16();
+        result.FilterFrequency = bufferReader.ReadUInt16();
         Log.Debug("偏移量: {0}", result.ClipOffset);
-        
-        
+
+
         var oldPosition = bufferReader.BytePosition;
         bufferReader.BytePosition = (int)result.ClipOffset;
-        
-        byte numEvents = bufferReader.ReadByte();
+
+        var numEvents = bufferReader.ReadByte();
         result.WaveIndexs = new WaveIndex[numEvents];
-        for (int i = 0; i < numEvents; i++)
+        for (var i = 0; i < numEvents; i++)
         {
-            WaveIndex w = new WaveIndex();
+            var w = new WaveIndex();
             w.EventInfo = bufferReader.ReadUInt32();
             w.RandomOffset = bufferReader.ReadUInt16() * 0.001f;
 
@@ -42,12 +42,12 @@ public class XactClipReader : BaseReader
                 case 1:
                     w.unkn.Add(bufferReader.Read(1));
                     w.EventFlags = bufferReader.ReadByte();
-                    
-                    w.TrackIndex    = bufferReader.ReadUInt16();
+
+                    w.TrackIndex = bufferReader.ReadUInt16();
                     w.WaveBankIndex = bufferReader.ReadByte();
-                    w.LoopCount     = bufferReader.ReadByte();
-                    w.PanAngle      = bufferReader.ReadUInt16() / 100.0f;
-                    w.PanArc        = bufferReader.ReadUInt16() / 100.0f;
+                    w.LoopCount = bufferReader.ReadByte();
+                    w.PanAngle = bufferReader.ReadUInt16() / 100.0f;
+                    w.PanArc = bufferReader.ReadUInt16() / 100.0f;
 
                     // bufferReader.Skip(5);
 
@@ -56,7 +56,7 @@ public class XactClipReader : BaseReader
                 case 3:
                     w.unkn.Add(bufferReader.Read(1));
                     w.EventFlags = bufferReader.ReadByte();
-                    
+
                     w.LoopCount = bufferReader.ReadByte();
                     w.PanAngle = bufferReader.ReadUInt16() / 100.0f;
                     w.PanArc = bufferReader.ReadUInt16() / 100.0f;
@@ -66,10 +66,10 @@ public class XactClipReader : BaseReader
 
                     // Not sure what most of this is.
                     w.MoreFlags = bufferReader.ReadByte();
-                    
+
                     // Unknown!
                     w.unkn.Add(bufferReader.Read(5));
-                    
+
                     // Read in the variation playlist.
                     w.WaveBanks = new int[w.NumTracks];
                     w.Tracks = new int[w.NumTracks];
@@ -88,18 +88,19 @@ public class XactClipReader : BaseReader
                         };
                         totalWeights += maxWeight - minWeight;
                     }
+
                     break;
-                
+
                 case 4:
                     w.unkn.Add(bufferReader.Read(1));
                     w.EventFlags = bufferReader.ReadByte();
 
-                    w.TrackIndex    = bufferReader.ReadUInt16();
+                    w.TrackIndex = bufferReader.ReadUInt16();
                     w.WaveBankIndex = bufferReader.ReadByte();
-                    w.LoopCount     = bufferReader.ReadByte();
-                    w.PanAngle      = bufferReader.ReadUInt16();
-                    w.PanArc        = bufferReader.ReadUInt16();
-                    
+                    w.LoopCount = bufferReader.ReadByte();
+                    w.PanAngle = bufferReader.ReadUInt16();
+                    w.PanArc = bufferReader.ReadUInt16();
+
                     // Pitch variation range
                     w.MinPitch = bufferReader.ReadInt16() / 1000.0f;
                     w.MaxPitch = bufferReader.ReadInt16() / 1000.0f;
@@ -111,21 +112,21 @@ public class XactClipReader : BaseReader
                     // Filter variation
                     w.MinFrequency = bufferReader.ReadSingle();
                     w.MaxFrequency = bufferReader.ReadSingle();
-                    w.MinQ         = bufferReader.ReadSingle();
-                    w.MaxQ         = bufferReader.ReadSingle();
+                    w.MinQ = bufferReader.ReadSingle();
+                    w.MaxQ = bufferReader.ReadSingle();
 
                     // Unknown!
                     w.unkn.Add(bufferReader.Read(1));
 
                     w.VariationFlags = bufferReader.ReadByte();
-                    
+
                     Log.Debug("EventPlayWavePitchVolumeFilterVariation");
                     break;
-                
+
                 case 6:
                     // Unknown!
                     w.unkn.Add(bufferReader.Read(1));
-                    
+
                     // Event flags
                     w.EventFlags = bufferReader.ReadByte();
 
@@ -165,8 +166,8 @@ public class XactClipReader : BaseReader
                     totalWeights = 0;
                     for (var j = 0; j < w.NumTracks; j++)
                     {
-                        w.Tracks[j]     = bufferReader.ReadUInt16();
-                        w.WaveBanks[j]  = bufferReader.ReadByte();
+                        w.Tracks[j] = bufferReader.ReadUInt16();
+                        w.WaveBanks[j] = bufferReader.ReadByte();
                         var minWeight = bufferReader.ReadByte();
                         var maxWeight = bufferReader.ReadByte();
                         w.Weights[j] = new byte[]
@@ -177,12 +178,13 @@ public class XactClipReader : BaseReader
 
                         totalWeights += maxWeight - minWeight;
                     }
+
                     break;
-                
+
                 case 7:
                     // Pitch Event
                     throw new NotImplementedException("Pitch event");
-                
+
                 case 8:
                     // Unknown!
                     w.unkn.Add(bufferReader.Read(2));
@@ -195,7 +197,7 @@ public class XactClipReader : BaseReader
                     // Unknown!
                     bufferReader.Read(9);
                     break;
-                
+
                 case 17:
                     // Volume Repeat Event
                     throw new NotImplementedException("Volume repeat event");
@@ -203,13 +205,15 @@ public class XactClipReader : BaseReader
                 case 9:
                     // Marker Event
                     throw new NotImplementedException("Marker event");
-                
+
                 default:
                     throw new Exception();
             }
+
             result.WaveIndexs[i] = w;
         }
-        bufferReader.BytePosition = oldPosition;//??????
+
+        bufferReader.BytePosition = oldPosition; //??????
         return result;
     }
 

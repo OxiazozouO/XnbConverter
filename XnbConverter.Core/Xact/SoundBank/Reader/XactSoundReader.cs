@@ -4,9 +4,10 @@ using XnbConverter.Xact.SoundBank.Entity;
 
 namespace XnbConverter.Xact.SoundBank.Reader;
 
-public class XactSoundReader: BaseReader
+public class XactSoundReader : BaseReader
 {
-    public XactClipReader xactClipReader = new XactClipReader();
+    public XactClipReader xactClipReader = new();
+
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
@@ -20,23 +21,23 @@ public class XactSoundReader: BaseReader
 
     public override XactSound Read()
     {
-        XactSound result = new XactSound();
-        result.Flags      = bufferReader.ReadByte();
+        var result = new XactSound();
+        result.Flags = bufferReader.ReadByte();
         result.CategoryId = bufferReader.ReadUInt16();
         result.VolumeFlag = bufferReader.ReadByte();
-        result.Pitch      = bufferReader.ReadInt16() / 1000.0f;
-        result.Priority   = bufferReader.ReadByte();
-        result.Filter     = bufferReader.ReadUInt16();
-        
-        bool complexSound = (result.Flags & 1) != 0;
-        
+        result.Pitch = bufferReader.ReadInt16() / 1000.0f;
+        result.Priority = bufferReader.ReadByte();
+        result.Filter = bufferReader.ReadUInt16();
+
+        var complexSound = (result.Flags & 1) != 0;
+
         if (complexSound)
         {
             result.NumClips = bufferReader.ReadByte();
         }
         else
         {
-            result.TrackIndex    = bufferReader.ReadUInt16();
+            result.TrackIndex = bufferReader.ReadUInt16();
             result.WaveBankIndex = bufferReader.ReadByte();
             // wave
             Log.Debug("轨道索引: {0}", result.TrackIndex);
@@ -46,18 +47,15 @@ public class XactSoundReader: BaseReader
         if ((result.Flags & 14) != 0)
         {
             var current = bufferReader.BytePosition;
-            
+
             result.ExtraDataLen = bufferReader.ReadUInt16();
-            
+
             var numPresets = bufferReader.ReadByte();
             result.AudioEngineFileOffsets = new uint[numPresets];
-            for (int i = 0; i < numPresets; i++)
+            for (var i = 0; i < numPresets; i++)
                 result.AudioEngineFileOffsets[i] = bufferReader.ReadUInt32();
 
-            if (complexSound)
-            {
-                Log.Info("额外数据长度: {0}", result.ExtraDataLen);
-            }
+            if (complexSound) Log.Info("额外数据长度: {0}", result.ExtraDataLen);
 
             // TODO: 解析 RPC+DSP 相关内容
             bufferReader.BytePosition = current + result.ExtraDataLen;
@@ -70,7 +68,7 @@ public class XactSoundReader: BaseReader
         if (complexSound)
         {
             result.SoundClips = new XactClip[result.NumClips];
-            for (int i = 0; i < result.NumClips; i++)
+            for (var i = 0; i < result.NumClips; i++)
                 result.SoundClips[i] = (XactClip)xactClipReader.Read();
         }
 
@@ -79,6 +77,5 @@ public class XactSoundReader: BaseReader
 
     public override void Write(object input)
     {
-        
     }
 }
