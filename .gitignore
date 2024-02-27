@@ -1,8 +1,8 @@
 #保留的文件
-!*/.config/
-!*/.resources/
-!*/.config/**
-!*/.resources/**
+!.config/
+!.resources/
+!.config/**
+!.resources/**
 
 
 # 默认忽略的文件
@@ -23,7 +23,6 @@
 
 # 文件夹
 bin/
-*.dll
 obj/
 artifacts/
 .dotnet/
@@ -37,6 +36,8 @@ BenchmarkDotNet.Artifacts/
 src/SignalR/clients/**/dist/
 modules/
 .ionide/
+packages/
+
 
 # 文件扩展名
 *.aps
@@ -61,22 +62,8 @@ modules/
 *.userprefs
 *.vspx
 *.zip
-
-# 排除规则
-# 排除 Visual Studio 项目文件
 *.sln.cache
-
-# 排除 NuGet 包目录
-packages/
-
-# 排除 Visual Studio 编译器生成的文件
-*.pdb
-
-# 排除调试日志和临时文件
 *.tmp
-
-# 排除敏感信息文件
-appsettings.json
-
-# 排除 macOS 系统生成的文件
 .DS_Store
+
+appsettings.json
