@@ -42,9 +42,9 @@ packages/
 # 文件扩展名
 *.aps
 *.binlog
-*.dll
+#*.dll
 *.DS_Store
-*.exe
+#*.exe
 *.idb
 *.lib
 *.log
