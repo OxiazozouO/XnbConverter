@@ -31,13 +31,13 @@ public static class TypeReader
 
     public static ReaderInfo GetReaderInfo(string full)
     {
-        if (map.TryGetValue(full, out var info)) return info;
+        if (Map.TryGetValue(full, out var info)) return info;
         List<string> className = ParseType(full);
         var n = 0;
         var type = GetTypeAt(className, ref n);
         var ext = ExtMap.TryGetValue(className[0], out var value) ? value : Ext.JSON;
-        map[full] = new ReaderInfo { Reader = type.Item1, Entity = type.Item2, Extension = ext };
-        return map[full];
+        Map[full] = new ReaderInfo { Reader = type.Item1, Entity = type.Item2, Extension = ext };
+        return Map[full];
     }
 
     public static BaseReader CreateReader(this Type type)
@@ -53,7 +53,7 @@ public static class TypeReader
     // typeof(Int32).FullName;
     // typeof(TailorItemRecipe).FullName;
 
-    private static Dictionary<string, ReaderInfo> map = new();
+    private static readonly Dictionary<string, ReaderInfo> Map = new();
 
     private static (Type, Type) GetTypeAt(List<string> list, ref int index)
     {
