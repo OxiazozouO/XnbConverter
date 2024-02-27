@@ -6,9 +6,10 @@ namespace XnbConverter.Utilities;
 
 public static class Helpers
 {
-    public const string ConfigPath = @".\.config\config.json";
-    public const string I18nPath = @".\.config\i18n\{0}.json";
-    public static readonly string FFmpegPath = $"{Path.GetFullPath(@".config\bin\ffmpeg\ffmpeg.exe")}";
+    public static readonly string ConfigPath = @".\.config\config.json";
+    public static readonly string I18NPath = @".\.config\i18n\{0}.json";
+    public static readonly string DllPath = @".\.config\custom_dll\";
+    public static readonly string FFmpegPath = Path.GetFullPath(@".config\bin\ffmpeg\ffmpeg.exe");
 
 
     private static Configuration? _config;
@@ -43,7 +44,7 @@ public static class Helpers
             if (_textTip is not null) return _textTip;
             var filename = "error";
             if (Config.Locale != "default") filename += '.' + Config.Locale;
-            _textTip ??= GetObject<ErrorHelpers>(string.Format(I18nPath, filename));
+            _textTip ??= GetObject<ErrorHelpers>(string.Format(I18NPath, filename));
 
             return _textTip;
         }

@@ -301,7 +301,7 @@ public class XNB : IDisposable
     {
         // 确保缓冲区不为null
         if (bufferReader == null)
-            throw new XnbError("Buffer is null");
+            throw new XnbError("缓冲区为空");
 
         // 从文件开头获取魔术值
         var magic = bufferReader.ReadString(3);

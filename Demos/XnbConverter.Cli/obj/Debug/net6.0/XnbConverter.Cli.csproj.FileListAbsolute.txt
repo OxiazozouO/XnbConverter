@@ -1,5 +1,0 @@
-D:\XnbConverter\XnbConverter.Cli\obj\Debug\net6.0\XnbConverter.Cli.csproj.AssemblyReference.cache
-D:\XnbConverter\XnbConverter.Cli\obj\Debug\net6.0\XnbConverter.Cli.GeneratedMSBuildEditorConfig.editorconfig
-D:\XnbConverter\XnbConverter.Cli\obj\Debug\net6.0\XnbConverter.Cli.AssemblyInfoInputs.cache
-D:\XnbConverter\XnbConverter.Cli\obj\Debug\net6.0\XnbConverter.Cli.AssemblyInfo.cs
-D:\XnbConverter\XnbConverter.Cli\obj\Debug\net6.0\XnbConverter.Cli.csproj.CoreCompileInputs.cache

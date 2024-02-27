@@ -1,8 +1,0 @@
-D:\XnbConverter\XnbConverter.Cli\bin\Release\net6.0\win-x64\publish\XnbConverter.Cli.pdb
-D:\XnbConverter\XnbConverter.Cli\bin\Release\net6.0\win-x64\publish\.config\config.json
-D:\XnbConverter\XnbConverter.Cli\bin\Release\net6.0\win-x64\publish\.config\error.json
-D:\XnbConverter\XnbConverter.Cli\bin\Release\net6.0\win-x64\publish\bin\pack.bat
-D:\XnbConverter\XnbConverter.Cli\bin\Release\net6.0\win-x64\publish\bin\unpack.bat
-D:\XnbConverter\XnbConverter.Cli\bin\Release\net6.0\win-x64\publish\bin\音频信息查看.bat
-D:\XnbConverter\XnbConverter.Cli\bin\Release\net6.0\win-x64\publish\XnbConverter.Core.pdb
-D:\XnbConverter\XnbConverter.Cli\bin\Release\net6.0\win-x64\publish\XnbConverter.Cli.exe

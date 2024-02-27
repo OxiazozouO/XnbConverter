@@ -1,8 +1,0 @@
-{
-    "Locale" : "default",                                //default    zh_CN  
-    "LogTime" : true,                                              //true 或 false   这个选项决定是否打印日志的时候打印时间
-    "TimeFormat" : "MM-dd HH:mm:ss",               //"yyyy-MM-dd HH:mm:ss"、"MM-dd HH:mm:ss"等    这个参数决定打印时间的格式、更多格式请参考字符串日期格式
-    "LogPrintingOptions" : "Info, Warn, Error",      //Info, Warn, Error, Debug  （只有四个可选项）      日志的打印选项，决定在控制台打印的信息的类型，选项之间请用英文“,”隔开
-    "LogSaveOptions" : "Error",                              //Info, Warn, Error, Debug   （只有四个可选项）     保存日志的选项，决定程序保存什么类型的日志到日志文件，选项之间请用英文“,”隔开
-    "Concurrency" : 15                                           // Concurrency   is   >0 and < 16   推荐设置 15    并行处理文件的数量，推荐15个
-}

@@ -1,3 +1,0 @@
-D:\XnbConverter\Tests\DxtTest\bin\Release\net7.0\win-x86\publish\DxtTest.pdb
-D:\XnbConverter\Tests\DxtTest\bin\Release\net7.0\win-x86\publish\.config\config.json
-D:\XnbConverter\Tests\DxtTest\bin\Release\net7.0\win-x86\publish\DxtTest.exe

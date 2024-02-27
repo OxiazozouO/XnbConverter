@@ -32,12 +32,24 @@ public static class TypeReader
     public static ReaderInfo GetReaderInfo(string full)
     {
         if (Map.TryGetValue(full, out var info)) return info;
-        List<string> className = ParseType(full);
-        var n = 0;
-        var type = GetTypeAt(className, ref n);
-        var ext = ExtMap.TryGetValue(className[0], out var value) ? value : Ext.JSON;
-        Map[full] = new ReaderInfo { Reader = type.Item1, Entity = type.Item2, Extension = ext };
-        return Map[full];
+        ReaderInfo newInfo = new ReaderInfo();
+        List<string> className = new List<string>();
+        List<string> classFull = new List<string>();
+        ParseType(full,ref className,ref classFull);
+        int n = 0;
+        try
+        {
+            (newInfo.Reader,newInfo.Entity) = GetTypeAt(className, ref n);
+        }
+        catch (Exception e)
+        {
+            throw new XnbError("获取读取器时发生错误！\n程序集:\"{0}\"\n是否不在{1}文件夹里或者尚未实现\n{2}",
+                classFull[n],Helpers.DllPath,e.Message);
+        }
+
+        newInfo.Extension = ExtMap.TryGetValue(className[0], out var value) ? value : Ext.JSON;
+        Map[full] = newInfo;
+        return newInfo;
     }
 
     public static BaseReader CreateReader(this Type type)
@@ -106,7 +118,7 @@ public static class TypeReader
             return (exx, ex);
         }
 
-        throw new Exception();
+        throw new ReaderTypeError("未加载的类：{0}！", full);
     }
 
     private static readonly Dictionary<string, Type> ReaderTypes = new();
@@ -146,22 +158,26 @@ public static class TypeReader
         };
         foreach (var type in tt) Entities.Add(Regex.Replace(type.Name, @"`\d+$", ""), type);
 
-        foreach (var file in Directory.GetFiles(@".\dll\", "*.dll", SearchOption.AllDirectories))
+        foreach (var file in Directory.GetFiles(Helpers.DllPath, "*.dll", SearchOption.AllDirectories))
         foreach (var type in Assembly.LoadFile(Path.GetFullPath(file)).GetExportedTypes())
             ExtendTypes.Add(type.Name, type);
     }
 
-    public static List<string> ParseType(string full)
+    public static void ParseType(string full,ref List<string> nameList,ref List<string> fullList)
     {
-        List<string> ss = new();
-        List<string> ts = new();
+        string fullCopy = full;
+        List<string> tNames = new List<string>();
+        List<string> tFulls = new List<string>();
         var i = full.IndexOf('`');
         ReadOnlySpan<char> l;
         var tag = -1;
         if (i == -1)
         {
             var strings = full.Split(',');
-            if (strings.Length > 1) full = strings[0].Trim('[');
+            if (strings.Length > 1)
+            {
+                full = strings[0].Trim('[');
+            }
         }
         else
         {
@@ -175,21 +191,28 @@ public static class TypeReader
         else
         {
             var n = full[i + 1] - '0';
-            var names = GetNames(full, n);
-            foreach (var t in names) ts.AddRange(ParseType(t));
+            
+            foreach (var tf in GetFulls(full, n))
+            {
+                ParseType(tf, ref tNames, ref tFulls);
+            }
 
             l = full[..i] + "`" + n;
         }
 
         var ret = l.ToString().Replace("Reader", "");
         var name = ret[(ret.LastIndexOf('.') + 1)..];
-        if (name != "Reflective`1") ss.Add(name + "@" + ret);
+        if (name != "Reflective`1")
+        {
+            nameList.Add(name + "@" + ret);
+            fullList.Add(fullCopy);
+        }
 
-        ss.AddRange(ts);
-        return ss;
+        nameList.AddRange(tNames);
+        fullList.AddRange(tFulls);
     }
 
-    public static List<string> GetNames(ReadOnlySpan<char> s, int n)
+    public static List<string> GetFulls(ReadOnlySpan<char> s, int n)
     {
         List<string> list = new();
         var index = s.IndexOf('[');

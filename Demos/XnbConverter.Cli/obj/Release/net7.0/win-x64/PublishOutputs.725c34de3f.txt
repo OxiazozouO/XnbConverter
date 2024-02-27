@@ -1,3 +1,0 @@
-D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x64\publish\XnbConverter.Cli.pdb
-D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x64\publish\.config\config.json
-D:\XnbConverter\Demos\XnbConverter.Cli\bin\Release\net7.0\win-x64\publish\XnbConverter.Cli.exe
