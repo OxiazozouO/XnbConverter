@@ -1,3 +1,10 @@
+#保留的文件
+!*/.config/
+!*/.resources/
+!*/.config/*
+!*/.resources/*
+
+
 # 默认忽略的文件
 /shelf/
 /workspace.xml
@@ -16,6 +23,7 @@
 
 # 文件夹
 bin/
+*.dll
 obj/
 artifacts/
 .dotnet/
