@@ -1,8 +1,8 @@
 #保留的文件
 !*/.config/
 !*/.resources/
-!*/.config/*
-!*/.resources/*
+!*/.config/**
+!*/.resources/**
 
 
 # 默认忽略的文件
