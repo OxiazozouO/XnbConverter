@@ -24,16 +24,6 @@
 
 
     <ItemGroup>
-        <Content Include="..\..\.config\bin\ffmpeg\ffmpeg.exe">
-            <Link>.config\bin\ffmpeg\ffmpeg.exe</Link>
-        </Content>
-        <Content Include="..\..\.config\bin\ffmpeg\LICENSE.md">
-            <Link>.config\bin\ffmpeg\LICENSE.md</Link>
-        </Content>
-        <Content Include="..\..\.config\config.json">
-            <Link>.config\config.json</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
         <Content Update="Tool\pack.bat">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
@@ -43,8 +33,25 @@
         <Content Update="Tool\音频信息查看.bat">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <Content Include="..\..\.config\config.json">
+          <Link>Properties\.config\config.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\..\.config\custom_dll\StardewValley.GameData.dll">
+          <Link>Properties\.config\custom_dll\StardewValley.GameData.dll</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\..\.config\ffmpeg\ffmpeg.exe">
+          <Link>Properties\.config\ffmpeg\ffmpeg.exe</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\..\.config\ffmpeg\LICENSE.md">
+          <Link>Properties\.config\ffmpeg\LICENSE.md</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
         <Content Include="..\..\.config\i18n\error.zh-CN.json">
-            <Link>.config\i18n\error.zh-CN.json</Link>
+          <Link>Properties\.config\i18n\error.zh-CN.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <Content Include="..\..\.resources\App.ico">
             <Link>App.ico</Link>
