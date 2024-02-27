@@ -34,23 +34,23 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <Content Include="..\..\.config\config.json">
-          <Link>Properties\.config\config.json</Link>
+          <Link>.config\config.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <Content Include="..\..\.config\custom_dll\StardewValley.GameData.dll">
-          <Link>Properties\.config\custom_dll\StardewValley.GameData.dll</Link>
+          <Link>.config\custom_dll\StardewValley.GameData.dll</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <Content Include="..\..\.config\ffmpeg\ffmpeg.exe">
-          <Link>Properties\.config\ffmpeg\ffmpeg.exe</Link>
+          <Link>.config\ffmpeg\ffmpeg.exe</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <Content Include="..\..\.config\ffmpeg\LICENSE.md">
-          <Link>Properties\.config\ffmpeg\LICENSE.md</Link>
+          <Link>.config\ffmpeg\LICENSE.md</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <Content Include="..\..\.config\i18n\error.zh-CN.json">
-          <Link>Properties\.config\i18n\error.zh-CN.json</Link>
+          <Link>.config\i18n\error.zh-CN.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
         <Content Include="..\..\.resources\App.ico">

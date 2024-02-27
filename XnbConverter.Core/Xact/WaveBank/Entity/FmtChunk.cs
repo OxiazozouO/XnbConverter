@@ -1,4 +1,4 @@
-﻿using XnbConverter.Utilities;
+using XnbConverter.Utilities;
 using static XnbConverter.Xact.WaveBank.Entity.FmtChunk.AudioFormats;
 
 namespace XnbConverter.Xact.WaveBank.Entity;

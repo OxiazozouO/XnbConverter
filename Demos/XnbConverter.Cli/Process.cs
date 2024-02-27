@@ -1,4 +1,4 @@
-﻿using XnbConverter.Utilities;
+using XnbConverter.Utilities;
 
 namespace XnbConverter.Cli;
 
@@ -39,20 +39,20 @@ public static class Process
             if (xnb.ExportFile(output))
             {
                 // 记录文件已保存
-                Log.Info("输出文件已保存：{0}\n", output);
+                Log.Info("输出文件已保存：{0}", output);
                 // 增加成功计数
                 _success++;
             }
             else
             {
-                Log.Error("文件｛0｝无法保存！\n", output);
+                Log.Error("文件｛0｝无法保存！", output);
                 _fail++;
             }
         }
         catch (Exception ex)
         {
             // 记录错误日志
-            Log.Error("文件名：{0}\n{1}", input, ex);
+            Log.Error("文件名：{0} {1}", input, ex);
             // 增加失败计数
             _fail++;
         }
@@ -92,7 +92,7 @@ public static class Process
         catch (Exception ex)
         {
             // 记录错误日志
-            Log.Error("文件名：{0}\n{1}\n{2}\n", input, ex.Message, ex.StackTrace);
+            Log.Error("文件名：{0} {1} {2}", input, ex.Message, ex.StackTrace);
             // 增加失败计数
             _fail++;
         }finally

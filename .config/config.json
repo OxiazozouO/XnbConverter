@@ -1,5 +1,5 @@
 {
-  "Locale": "default",
+  "Locale": "auto",
   //default    zh_CN  
   "LogTime": true,
   //true 或 false   这个选项决定是否打印日志的时候打印时间

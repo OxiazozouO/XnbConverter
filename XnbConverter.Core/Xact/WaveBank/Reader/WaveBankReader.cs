@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using static XnbConverter.Xact.WaveBank.Entity.WaveBank;
@@ -235,8 +235,10 @@ public class WaveBankReader : BaseReader
 
         if (Helpers.Config.PInfo)
         {
+            
             Log.Info("index   length    fmt     freq  c  b     filename");
-            Log.Info("=========================================================================");
+            string s = "=========================================================================";
+            Log.Info(s);
         }
 
         for (var i = 0; i < count; i++)
@@ -252,9 +254,9 @@ public class WaveBankReader : BaseReader
             if (Helpers.Config.PInfo)
             {
                 //log
-                Log.Info(
-                    $"{i,5}{entry.PlayRegion.Length,9}{codecStr,9}{rate,7}{channels,3}{(bits > 0 ? 16 : 8),3}     {entry.GetPath()}");
-                Log.Debug("\noffset : {0},\nformat : {1},\nflags : {2},\nregion_offset : {3},\nregion_length : {4}\n",
+                string s = $"{i,5}{entry.PlayRegion.Length,9}{codecStr,9}{rate,7}{channels,3}{(bits > 0 ? 16 : 8),3}     {entry.GetPath()}";
+                Log.Info(s);
+                Log.Debug("offset : {0},format : {1},flags : {2},region_offset : {3},region_length : {4}",
                     entry.PlayRegion.Offset, entry.Format, entry.FlagsAndDuration, entry.LoopRegion.Offset,
                     entry.LoopRegion.Length
                 );
@@ -265,8 +267,6 @@ public class WaveBankReader : BaseReader
 
             WaveFormReader.Save(entry.Data, entry.GetPath(), code, rate, channels, bits, align);
         }
-
-        Console.WriteLine("end");
     }
 
     public override void Write(object input)

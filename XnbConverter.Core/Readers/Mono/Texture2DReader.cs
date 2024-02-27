@@ -1,4 +1,4 @@
-﻿using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 using static System.Math;

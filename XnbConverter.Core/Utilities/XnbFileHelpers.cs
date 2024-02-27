@@ -3,7 +3,7 @@ using XnbConverter.Entity.Mono;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Tbin.Readers;
 using XnbConverter.Xact;
-using static XnbConverter.Readers.TypeReader;
+using static XnbConverter.Readers.TypeReadHelper;
 using Texture2D = XnbConverter.Entity.Mono.Texture2D;
 
 namespace XnbConverter.Utilities;

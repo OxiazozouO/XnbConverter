@@ -1,4 +1,4 @@
-﻿#region HEADER
+#region HEADER
 
 /* This file was derived from libmspack
  * (C) 2003-2004 Stuart Caie.
@@ -196,7 +196,7 @@ public class LZX : IDisposable
             j += 1 << extra_bits[i];
         }
 
-        Log.Debug("额外位数：{0}", string.Join(" ", extra_bits));
+        Log.Debug("额外位数：{0}", extra_bits.ToJoinStr());
         Log.Debug("位置基址：{0}", JsonConvert.SerializeObject(position_base));
     }
 

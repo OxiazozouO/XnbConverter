@@ -15,15 +15,8 @@ public static class FFmpegUtil
 
         var fmt = GetConfig(format);
 
-        var arguments = string.Format("{0} {1} {2} {3} {4} {5} {6} {7} {8}",
-            "-i", $"\"{inputPath}\"",
-            "-v quiet", //不输出任何信息
-            "-acodec", fmt, //指定输出音频使用 PCM 编码,并指定音频采样格式
-            "-nostdin", //禁用标准输入，防止FFmpeg尝试读取输入流。
-            "-map_metadata -1", //禁用元数据映射，即不复制输入文件的元数据到输出文件	
-            "-y", //自动覆盖输出文件，如果输出文件已存在。
-            $"\"{outputPath}\""
-        );
+        var arguments =
+            $"-i \"{inputPath}\" -v quiet -acodec {fmt} -nostdin -map_metadata -1 -y \"{outputPath}\"";
 
         var process = Process.Start(new ProcessStartInfo
         {

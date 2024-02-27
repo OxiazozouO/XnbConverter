@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Entity;

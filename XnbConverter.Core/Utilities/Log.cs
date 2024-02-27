@@ -80,10 +80,39 @@ public static class Log
 
     public static void Save()
     {
+        string info = "info.txt";
+        string err = "info.txt";
+        string now = DateTime.Now.ToString(".yyyy-MM-dd.");
+        if (File.Exists(info) && new FileInfo(info).LastWriteTime.Day != DateTime.Now.Day)
+        {
+            var p1 = Path.GetFullPath(info);
+            var p2 = Path.GetFullPath(info.Replace(".", now));
+            File.Move(p1,p2);
+        }
+        if (File.Exists(err) && new FileInfo(info).LastWriteTime.Day != DateTime.Now.Day)
+        {
+            var p1 = Path.GetFullPath(err);
+            var p2 = Path.GetFullPath(err.Replace(".", now));
+            File.Move(p1,p2);
+        }
+
         if (Helpers.Config.SInfo)
-            File.AppendAllText(".\\info.txt", InfoLog.ToString());
+        {
+            var str = InfoLog.ToString();
+            if (str != "")
+            {
+                File.AppendAllText(info, str);
+            }
+        }
+
         if (Helpers.Config.SError)
-            File.AppendAllText(".\\error.txt", ErrorLog.ToString());
+        {
+            var str = ErrorLog.ToString();
+            if (str != "")
+            {
+                File.AppendAllText(err, str);
+            }
+        }
     }
 
 
@@ -92,9 +121,19 @@ public static class Log
         File.WriteAllBytes(path, data);
     }
 
-    public static void log(this byte[] strings)
+    // public static void log(this byte[] strings)
+    // {
+    //     Console.WriteLine(strings.ToJoinStr());
+    // }
+
+    public static string ToJoinStr(this IEnumerable<string?> strings)
     {
-        Console.WriteLine(string.Join(" ", strings));
+        return string.Join(",", strings);
+    }
+    
+    public static string ToJoinStr<T>(this IEnumerable<T> strings)
+    {
+        return string.Join(",", strings);
     }
 
     public static void log(this object s)

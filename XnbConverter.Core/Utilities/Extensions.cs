@@ -33,3 +33,21 @@ public class ReaderTypeError : XnbError
     {
     }
 }
+
+
+public class TbinError : XnbError
+{
+    public TbinError(string message) : base(message)
+    {
+    }
+
+    public TbinError(string message, params object[] str)
+        : base(message, str)
+    {
+    }
+
+    public TbinError(Exception ex, string message, params object[] str)
+        : base(message, str)
+    {
+    }
+}

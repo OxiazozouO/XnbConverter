@@ -1,10 +1,10 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using XnbConverter.Utilities;
 
 namespace XnbConverter.Readers;
 
-public static class TypeReader
+public static class TypeReadHelper
 {
     public static class Ext
     {
@@ -20,12 +20,11 @@ public static class TypeReader
 
     private static readonly Dictionary<string, string> ExtMap = new()
     {
-        ["Texture2DReader"] = Ext.TEXTURE_2D,
-        ["TideReader"] = Ext.TBIN,
-        ["SoundEffectReader"] = Ext.SoundEffect,
-        ["SpriteFontReader"] = Ext.SPRITE_FONT,
-        ["XmlSourceReader"] = Ext.BM_FONT,
-        ["EffectReader"] = Ext.EFFECT,
+        ["Texture2D"] = Ext.TEXTURE_2D,
+        ["Tide"] = Ext.TBIN,
+        ["SoundEffect"] = Ext.SoundEffect,
+        ["SpriteFont"] = Ext.SPRITE_FONT,
+        ["XmlSource"] = Ext.BM_FONT,
         ["Effect"] = Ext.EFFECT
     };
 
@@ -43,11 +42,11 @@ public static class TypeReader
         }
         catch (Exception e)
         {
-            throw new XnbError("获取读取器时发生错误！\n程序集:\"{0}\"\n是否不在{1}文件夹里或者尚未实现\n{2}",
+            throw new XnbError("获取读取器时发生错误！请检查程序集:{0}是否在{1}文件夹里， 或者尚未实现{2}",
                 classFull[n],Helpers.DllPath,e.Message);
         }
 
-        newInfo.Extension = ExtMap.TryGetValue(className[0], out var value) ? value : Ext.JSON;
+        newInfo.Extension = ExtMap.TryGetValue(className[0].Split('@')[0], out var value) ? value : Ext.JSON;
         Map[full] = newInfo;
         return newInfo;
     }
@@ -55,7 +54,7 @@ public static class TypeReader
     public static BaseReader CreateReader(this Type type)
     {
         return (BaseReader)Activator.CreateInstance(type)
-               ?? throw new XnbError(Helpers.TextTip.UnrealizedTypes, type);
+               ?? throw new XnbError("未实现的类型：{0}", type);
     }
 
     // private static string ssss =
@@ -125,7 +124,7 @@ public static class TypeReader
     private static readonly Dictionary<string, Type> ExtendTypes = new();
     private static readonly Dictionary<string, Type> Entities = new();
 
-    static TypeReader()
+    static TypeReadHelper()
     {
         string[] reads =
             { "XnbConverter.Readers.Base", "XnbConverter.Readers.Base.ValueReaders", "XnbConverter.Readers.Mono" };

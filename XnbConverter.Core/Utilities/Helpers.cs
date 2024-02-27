@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -35,16 +36,19 @@ public static class Helpers
         _config = _configTmp;
     }
 
-    private static ErrorHelpers? _textTip;
+    private static Dictionary<string,string>? _textTip;
 
-    public static ErrorHelpers TextTip
+    public static Dictionary<string,string> I18N
     {
         get
         {
             if (_textTip is not null) return _textTip;
             var filename = "error";
-            if (Config.Locale != "default") filename += '.' + Config.Locale;
-            _textTip ??= GetObject<ErrorHelpers>(string.Format(I18NPath, filename));
+            if (Config.Locale == "auto")
+            {
+                filename += '.' + CultureInfo.InstalledUICulture.ToString();
+            }
+            _textTip ??= GetObject<Dictionary<string,string>>(string.Format(I18NPath, filename));
 
             return _textTip;
         }
@@ -149,12 +153,5 @@ public static class Helpers
         [JsonIgnore] public bool SDebug { get; private set; }
 
         [JsonProperty] public string Locale;
-    }
-
-    public class ErrorHelpers
-    {
-        public string Type;
-        public string UnrealizedTypes;
-        public string InvalidReaderType;
     }
 }

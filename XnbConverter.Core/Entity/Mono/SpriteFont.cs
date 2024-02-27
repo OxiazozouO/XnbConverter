@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using XnbConverter.Utilities;
 
 namespace XnbConverter.Entity.Mono;

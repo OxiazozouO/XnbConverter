@@ -1,4 +1,4 @@
-﻿using XnbConverter.Readers;
+using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.SoundBank.Entity;
 using XnbConverter.Xact.WaveBank;
@@ -108,7 +108,7 @@ public class SoundBankReader : BaseReader
         for (var i = 0; i < header.NumWaveBanks; i++)
             result.WaveBankNames.Add(bufferReader.ReadString(64));
 
-        Log.Debug("Wave Banks: {0}", string.Join(", ", result.WaveBankNames)); // 波形库名称
+        Log.Debug("Wave Banks: {0}", result.WaveBankNames.ToJoinStr()); // 波形库名称
 
         // 解析cue name table
         bufferReader.BytePosition = (int)header.CueNamesOffset; //266
@@ -140,7 +140,7 @@ public class SoundBankReader : BaseReader
         }
 
 
-        Log.Debug($"Cues: {string.Join(", ", CueNames)}"); // 提示音
+        Log.Debug("Cues: {0}",CueNames.ToJoinStr()); // 提示音
         var totalCueCount = 0;
 
         if (header.NumComplexCues > 0)

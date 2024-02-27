@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Newtonsoft.Json;
 using XnbConverter.Entity;
 using XnbConverter.Readers;
@@ -58,7 +58,7 @@ public class XNB : IDisposable
     {
         XnbConfig = new XnbObject();
         var json = XnbConfig;
-        Log.Info("正在读取文件 \"{0}\" ...", inputPath);
+        Log.Info("正在读取文件 {0} ...", inputPath);
 
         // XNB缓冲区读取器
         bufferReader = BufferReader.FormXnbFile(inputPath);
@@ -136,7 +136,7 @@ public class XNB : IDisposable
             // 读取版本
             var version = bufferReader.ReadUInt32();
             // 获取此类型的读取器  并将读取器添加到列表中
-            var info = TypeReader.GetReaderInfo(type);
+            var info = TypeReadHelper.GetReaderInfo(type);
             if (i == 0)
                 json.Content = new ContentDTO
                 {
@@ -224,7 +224,7 @@ public class XNB : IDisposable
             for (var i = 0; i < json.Readers.Count; i++)
             {
                 var reader = json.Readers[i];
-                var info = TypeReader.GetReaderInfo(reader.Type);
+                var info = TypeReadHelper.GetReaderInfo(reader.Type);
                 ReaderArr[i] = info.Reader.CreateReader();
                 typeIndex.Append(i).Append('@').Append(info.Reader).Append('@')
                     .Append(i).Append('@').Append(info.Entity).Append('@');
@@ -232,7 +232,7 @@ public class XNB : IDisposable
                 outBuffer.WriteUInt32(reader.Version);
             }
 
-            if (json.Content.Extension == TypeReader.Ext.JSON)
+            if (json.Content.Extension == TypeReadHelper.Ext.JSON)
             {
                 var t = ReaderArr[0].GetResultType();
                 data = JsonConvert.DeserializeObject((string)data, t);
@@ -307,7 +307,7 @@ public class XNB : IDisposable
         var magic = bufferReader.ReadString(3);
         // 检查魔术值是否正确
         if (magic != "XNB")
-            throw new XnbError("无效的文件魔术值，期望值为\"XNB\"，实际值为\"{0}\"", magic);
+            throw new XnbError("无效的文件魔术值，期望值为XNB，实际值为{0}", magic);
 
         // 调试打印找到有效的XNB魔术值
         Log.Debug("找到有效的XNB魔术值！");
@@ -334,7 +334,7 @@ public class XNB : IDisposable
                 Log.Debug("目标平台：iOS");
                 break;
             default:
-                Log.Warn("找到无效的目标平台\"{0}\"。", (char)Target);
+                Log.Warn("找到无效的目标平台{0}。", (char)Target);
                 break;
         }
 

@@ -1,4 +1,5 @@
-﻿using Auto_Tbin;
+﻿using System.Globalization;
+using Auto_Tbin;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Tbin.Readers;
 

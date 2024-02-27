@@ -1,4 +1,4 @@
-﻿using XnbConverter.Readers;
+using XnbConverter.Readers;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Utilities;
 using StringReader = XnbConverter.Readers.Base.StringReader;

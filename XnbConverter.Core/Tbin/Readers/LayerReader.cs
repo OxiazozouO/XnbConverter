@@ -1,9 +1,10 @@
-﻿using System.Text;
+using System.Text;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Readers;
 using XnbConverter.Readers.Base;
 using XnbConverter.Readers.Base.ValueReaders;
 using XnbConverter.Tbin.Entity;
+using XnbConverter.Utilities;
 using StringReader = XnbConverter.Readers.Base.StringReader;
 
 namespace XnbConverter.Tbin.Readers;
@@ -121,7 +122,10 @@ public class LayerReader : BaseReader
                 {
                     var size = input._sizeArr[++sizeIndex];
                     bufferWriter.WriteInt32(size);
-                    if (i + size > x) throw new AggregateException($"i 最大为{x},现在为{i}");
+                    if (i + size > x)
+                    {
+                        throw new TbinError("i 最大为{0},现在为{1}",x,i);
+                    }
 
                     tilesIndex += size;
                     i += size;
@@ -143,7 +147,7 @@ public class LayerReader : BaseReader
                     stringReader.WriteByInt32(input._currTileSheet[++currTileSheetIndex]);
                     break;
                 default:
-                    throw new Exception("Bad tile data");
+                    throw new TbinError("Bad tile data");
             }
         }
         // sb.Append("ans:" + (tilesIndex-ans) + "  w:"+x+"\n");

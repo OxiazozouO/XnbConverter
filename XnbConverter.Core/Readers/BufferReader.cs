@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using XnbConverter.Entity;
 using XnbConverter.Utilities;

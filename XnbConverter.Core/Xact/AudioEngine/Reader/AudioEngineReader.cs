@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.AudioEngine.Entity;
@@ -120,7 +120,7 @@ public class AudioEngineReader : BaseReader
         for (var i = 0; i < result.numCats; i++)
             categoryNames[i] = bufferReader.ReadString();
 
-        Log.Debug("类别: {0}", string.Join(", ", categoryNames));
+        Log.Debug("类别: {0}", categoryNames.ToJoinStr());
 
         // 获取实际的类别数据
         result._categories = new AudioCategory[result.numCats];
@@ -140,7 +140,7 @@ public class AudioEngineReader : BaseReader
         string[] varNames = new string[result.numVars];
         for (var i = 0; i < result.numVars; i++)
             varNames[i] = bufferReader.ReadString();
-        Log.Debug("变量: {0}", string.Join(", ", varNames));
+        Log.Debug("变量: {0}", varNames.ToJoinStr());
 
         // 读取变量本身
         var variables = new List<Entity.AudioEngine.RpcVariable>();
