@@ -3,7 +3,7 @@ using XnbConverter.Entity.Mono;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Tbin.Readers;
 using XnbConverter.Xact;
-using static XnbConverter.Readers.TypeReadHelper;
+using static XnbConverter.Utilities.TypeReadHelper;
 using Texture2D = XnbConverter.Entity.Mono.Texture2D;
 
 namespace XnbConverter.Utilities;
@@ -89,7 +89,7 @@ public static class XnbFileHelpers
                     // 保存文件数据
                     File.WriteAllText(paths[0], ((BmFont)data).Data);
                     break;
-                case Ext.SoundEffect:
+                case Ext.SOUND_EFFECT:
                     var sound = (SoundEffect)data;
                     sound.Save(paths[0], paths[1]);
                     break;
@@ -163,7 +163,7 @@ public static class XnbFileHelpers
             case Ext.JSON:
                 data = File.ReadAllText(paths[0]);
                 break;
-            case Ext.SoundEffect:
+            case Ext.SOUND_EFFECT:
                 var soundEffect = SoundEffect.FormWave(paths[0], paths[1]);
                 data = soundEffect;
                 break;

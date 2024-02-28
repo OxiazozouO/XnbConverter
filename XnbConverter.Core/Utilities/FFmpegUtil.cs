@@ -7,7 +7,7 @@ public static class FFmpegUtil
 {
     public static bool Convert(string inputPath, string? outputPath = null, AudioFormats? format = null)
     {
-        if (Helpers.FFmpegPath is null)
+        if (Helpers.SysPath.FFmpeg is null)
             throw new Exception("FFmpeg not found");
 
         inputPath = Path.GetFullPath(inputPath);
@@ -20,7 +20,7 @@ public static class FFmpegUtil
 
         var process = Process.Start(new ProcessStartInfo
         {
-            FileName = Helpers.FFmpegPath,
+            FileName = Helpers.SysPath.FFmpeg,
             WindowStyle = ProcessWindowStyle.Hidden,
             UseShellExecute = false,
             Arguments = arguments

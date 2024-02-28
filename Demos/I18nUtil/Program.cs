@@ -1,40 +1,61 @@
-﻿using System.Net.Http.Json;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-public class Program
+namespace I18nUtil;
+
+public static class Program
 {
     public static void Main(string[] args)
     {
-        // TipsToMap();
-        MapToTips();
+        CodeToJson(".zh-CN",false);
+        // JsonToTips(".zh-CN");
+        // AllToAt();
     }
 
-    private static void TipsToMap()
+    private static readonly string[] LocaleNames = new[]
     {
-        string[] getArr = new[]
-        {
-            "new XnbError", 
-            "new ReaderTypeError",
-            "Log.Info",
-            "Log.Debug",
-            "Log.Warn",
-            "Log.Error",
-            "TbinError"
-        };
-        string path = @"..\..\..\..\..\";
+        ".default",
+        ".de-DE",
+        ".es-ES",
+        ".fr-FR",
+        ".hu-HU",
+        ".it-IT",
+        ".ja-JP",
+        ".ko-KR",
+        ".pt-BR",
+        ".ru-RU",
+        ".tr-TR",
+        ".zh-CN"
+    };
 
-        Dictionary<string, List<I18nInfo>> map = new();
-        List<I18nInfo> infos = new List<I18nInfo>();
-        foreach (var file in Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories))
+    private static readonly string[] GetArr = new[]
+    {
+        "new XnbError",
+        "new ReaderTypeError",
+        "Log.Info",
+        "Log.Debug",
+        "Log.Warn",
+        "Log.Error",
+        "TbinError"
+    };
+
+
+    private static void CodeToJson(string codeLocaleName, bool isReplaceCodeFile = false)
+    {
+        if (!LocaleNames.Contains(codeLocaleName))
+        {
+            throw new ArgumentException();
+        }
+
+        Dictionary<string, List<I18NInfo>> map = new();
+        foreach (var file in Directory.GetFiles(PathStr.CD, "*.cs", SearchOption.AllDirectories))
         {
             if (file.Contains("Helpers.cs")) continue;
             if (file.Contains("Demos\\I18nUtil")) continue;
             string textCopy = File.ReadAllText(file);
             ReadOnlySpan<char> text = textCopy.AsSpan();
 
-            for (var j = 0; j < getArr.Length; j++)
+            foreach (var s in GetArr)
             {
-                var s = getArr[j];
                 int index = 0;
                 while (true)
                 {
@@ -49,29 +70,19 @@ public class Program
                     ReadOnlySpan<char> content = "";
                     for (int i = index; i < text.Length; i++)
                     {
-                        if (text[i] != '(' && text[i] != ')')
-                        {
-                            continue;
-                        }
-
                         if (text[i] == '(')
                         {
                             ++ans;
                         }
-
-                        if (ans == 1)
+                        else if (text[i] == ')')
                         {
-                            if (text[i] == ')')
+                            if (ans == 1)
                             {
                                 content = text[(index + 1)..i];
                                 index = i + 1;
                                 break;
                             }
-                        }
 
-
-                        if (text[i] == ')')
-                        {
                             ans--;
                         }
                     }
@@ -79,51 +90,76 @@ public class Program
                     if (content.IndexOf('\"') == -1) continue;
                     if (!map.ContainsKey(file))
                     {
-                        map[file] = new List<I18nInfo>();
+                        map[file] = new List<I18NInfo>();
                     }
 
-                    I18nInfo info = new I18nInfo(content.ToString());
+                    string str = content.ToString();
+                    if (str == "")
+                    {
+                        continue;
+                    }
+
+                    I18NInfo info = new I18NInfo(str);
+                    Console.WriteLine(str);
                     if (content.IndexOf("Helpers.I18N[\"") != -1)
                     {
                         info.Id = info.CutStr;
                     }
 
-                    infos.Add(info);
                     map[file].Add(info);
                 }
             }
         }
 
-        var f = Directory.GetFiles(path + @".config\i18n\", "error.*", SearchOption.AllDirectories)[0];
-        Dictionary<string, string> ord = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(f));
-
-
+        //<tipId, <Locale, Tip>>
+        var ordLocale = PathStr.ALL.ToEntity<Dictionary<string, Dictionary<string, string>>>();
+        var newLocale = new Dictionary<string, Dictionary<string, string>>();
         foreach (var (key, value) in map)
         {
             string name = Path.GetFileNameWithoutExtension(key) + ".";
             for (var i = 0; i < value.Count; i++)
             {
                 var info = value[i];
-                if (info.Id != null)
+                Dictionary<string, string> dictionary;
+                if (info.Id == "")//Text
                 {
-                    string id = info.Id;
-                    info.CutStr = ord[id];
-                    info.Id = name + i;
-                    info.UpdateStr = info.OrdStr.Replace(id, info.Id);
-                }
-                else
-                {
-                    info.Id = name + i;
+                    dictionary = new Dictionary<string, string>
+                    {
+                        [codeLocaleName] = info.CutStr
+                    };
+                    foreach (var s in LocaleNames)
+                    {
+                        dictionary.TryAdd(s, "");
+                    }
+
+                    info.Id = name + (i+1);
                     info.UpdateStr =
                         info.OrdStr.Replace($"\"{info.CutStr}\"", $"Helpers.I18N[\"{info.Id}\"]");
                 }
+                else//Helpers.I18N[]
+                {
+                    string id = info.Id;//旧id
+                    dictionary = ordLocale[id];
+                    info.CutStr = dictionary[codeLocaleName]; //<tipId, <Locale, Tip>>
+                    info.Id = name + (i+1);
+                    info.UpdateStr = info.OrdStr.Replace(id, info.Id);
+                }
 
-                info.UpdateStr=info.UpdateStr.Replace("\\\"", "\"").Replace(@"\n","\n");
+                info.UpdateStr = info.UpdateStr.Replace("\\\"", "\"").Replace(@"\n", "\n");
+                newLocale.Add(info.Id, dictionary);
             }
         }
 
-        Dictionary<string, string> ret = infos.ToDictionary(info => info.Id, info => info.CutStr);
+        newLocale.ToJson(PathStr.ALL);
 
+        if (isReplaceCodeFile)
+        {
+            ReplaceCodeFile(map);
+        }
+    }
+
+    private static void ReplaceCodeFile(Dictionary<string, List<I18NInfo>> map)
+    {
         foreach (var (key, value) in map)
         {
             string text = File.ReadAllText(key);
@@ -131,21 +167,36 @@ public class Program
             {
                 text = text.Replace(info.OrdStr, info.UpdateStr);
             }
+
             File.WriteAllText(key, text);
         }
-
-        File.WriteAllText(path + @".config\i18n\error.zh-CN.json",
-            JsonConvert.SerializeObject(ret, Formatting.Indented));
     }
 
-    public static void MapToTips()
+    private static class PathStr
     {
-        string path = @"..\..\..\..\..\";
-        Dictionary<string, string> ord = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-            File.ReadAllText(path + @".config\i18n\error.zh-CN.json"));
-        Dictionary<string, List<I18nInfo>> map = new();
-        List<I18nInfo> infos = new List<I18nInfo>();
-        foreach (var file in Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories))
+        public const string CD = @"..\..\..\..\..\";
+        public const string FILES = CD + @".config\i18n\";
+        public const string ALL = FILES + "error_all.json";
+    }
+
+    private static void JsonToTips(string localeName)
+    {
+        if (!LocaleNames.Contains(localeName))
+        {
+            throw new ArgumentException();
+        }
+
+        var ordLocale = PathStr.ALL.ToEntity<Dictionary<string, Dictionary<string, string>>>();
+        foreach (var dictionary in ordLocale.Values)
+        {
+            if (dictionary[localeName] == "")
+            {
+                throw new ArgumentException();
+            }
+        }
+
+        Dictionary<string, List<I18NInfo>> map = new();
+        foreach (var file in Directory.GetFiles(PathStr.CD, "*.cs", SearchOption.AllDirectories))
         {
             if (file.Contains("Helpers.cs")) continue;
             if (file.Contains("Demos\\I18nUtil")) continue;
@@ -163,45 +214,62 @@ public class Program
 
                 index += n + s.Length;
                 n = text[index..].IndexOf(']');
-                ReadOnlySpan<char> content =  text.Slice(index+1,n-2);
+                ReadOnlySpan<char> content = text.Slice(index + 1, n - 2);
                 index += n;
-                
+
                 if (!map.ContainsKey(file))
                 {
-                    map[file] = new List<I18nInfo>();
+                    map[file] = new List<I18NInfo>();
                 }
 
-                I18nInfo info = new I18nInfo();
+                I18NInfo info = new I18NInfo();
                 Console.WriteLine(content.ToString());
                 info.OrdStr = $"Helpers.I18N[\"{content.ToString()}\"]";
-                info.UpdateStr = $"\"{ord[content.ToString()]}\"".Replace("\\\"", "\"").Replace(@"\n","\n");
-
-                infos.Add(info);
+                info.UpdateStr = $"\"{ordLocale[content.ToString()][localeName]}\"".Replace("\\\"", "\"")
+                    .Replace(@"\n", "\n");
                 map[file].Add(info);
             }
         }
-        foreach (var (key, value) in map)
+        ReplaceCodeFile(map);
+    }
+
+    private static void AllToAt()
+    {
+        var ordLocale =
+            PathStr.ALL.ToEntity<Dictionary<string, Dictionary<string, string>>>(); //<tipId, <localeId,tip> >
+        var newLocales = new Dictionary<string, Dictionary<string, string>>(); //<localeId, <tipId,tip> >
+        foreach (var (tipId, value) in ordLocale)
         {
-            string text = File.ReadAllText(key);
-            foreach (var info in value)
+            foreach (var (localeId, tip) in value)
             {
-                text = text.Replace(info.OrdStr, info.UpdateStr);
+                if (!newLocales.ContainsKey(localeId))
+                {
+                    newLocales[localeId] = new Dictionary<string, string>();
+                }
+
+                newLocales[localeId].Add(tipId, tip);
             }
-            File.WriteAllText(key,text);
+        }
+
+        foreach (var (ex, obj) in newLocales)
+        {
+            string ext = ex == ".default" ? "" : ex;
+            obj.ToJson(PathStr.FILES + "error" + ext + ".json");
         }
     }
 
-    private class I18nInfo
+    private class I18NInfo
     {
         public string OrdStr;
         public string UpdateStr;
         public string CutStr;
-        public string Id;
+        public string Id = "";
 
-        public I18nInfo()
+        public I18NInfo()
         {
         }
-        public I18nInfo(string ordStr)
+
+        public I18NInfo(string ordStr)
         {
             OrdStr = ordStr;
             int l = OrdStr.IndexOf('\"') + 1;
@@ -209,5 +277,15 @@ public class Program
 
             CutStr = OrdStr[l..r];
         }
+    }
+
+    public static void ToJson(this object data, string path)
+    {
+        File.WriteAllText(path, JsonConvert.SerializeObject(data, Formatting.Indented));
+    }
+
+    public static T ToEntity<T>(this string path) where T : new()
+    {
+        return File.Exists(path) ? (JsonConvert.DeserializeObject<T>(File.ReadAllText(path)) ?? new T()) : new T();
     }
 }

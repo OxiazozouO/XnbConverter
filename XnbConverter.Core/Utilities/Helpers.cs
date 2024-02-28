@@ -7,10 +7,13 @@ namespace XnbConverter.Utilities;
 
 public static class Helpers
 {
-    public static readonly string ConfigPath = @".\.config\config.json";
-    public static readonly string I18NPath = @".\.config\i18n\{0}.json";
-    public static readonly string DllPath = @".\.config\custom_dll\";
-    public static readonly string FFmpegPath = Path.GetFullPath(@".config\bin\ffmpeg\ffmpeg.exe");
+    public static class SysPath
+    {
+        public const string Config = @".\.config\config.json";
+        public const string I18N = @".\.config\i18n\{0}.json";
+        public const string Dll = @".\.config\custom_dll.json";
+        public static readonly string FFmpeg = Path.GetFullPath(@".config\bin\ffmpeg\ffmpeg.exe");
+    }
 
 
     private static Configuration? _config;
@@ -20,7 +23,7 @@ public static class Helpers
     {
         get
         {
-            _config ??= GetObject<Configuration>(ConfigPath) ?? throw new InvalidOperationException();
+            _config ??= GetObject<Configuration>(SysPath.Config) ?? throw new InvalidOperationException();
             return _config;
         }
     }
@@ -36,9 +39,9 @@ public static class Helpers
         _config = _configTmp;
     }
 
-    private static Dictionary<string,string>? _textTip;
+    private static Dictionary<string, string>? _textTip;
 
-    public static Dictionary<string,string> I18N
+    public static Dictionary<string, string> I18N
     {
         get
         {
@@ -48,7 +51,8 @@ public static class Helpers
             {
                 filename += '.' + CultureInfo.InstalledUICulture.ToString();
             }
-            _textTip ??= GetObject<Dictionary<string,string>>(string.Format(I18NPath, filename));
+
+            _textTip ??= GetObject<Dictionary<string, string>>(string.Format(SysPath.I18N, filename));
 
             return _textTip;
         }
@@ -57,7 +61,7 @@ public static class Helpers
     private static T GetObject<T>(string path)
     {
         if (!File.Exists(path))
-            throw new FileLoadException(string.Format("配置文件{0}不存在！", path));
+            throw new FileLoadException($"配置文件{path}不存在！");
 
         return JsonConvert.DeserializeObject<T>(File.ReadAllText(path)) ??
                throw new FileLoadException("读取json失败！");
@@ -107,8 +111,8 @@ public static class Helpers
             return result;
         }
 
-        public bool LogTime { get; set; }
-        public string TimeFormat { get; set; }
+        public bool LogTime { get; private init; }
+        public string TimeFormat { get; private init; }
 
         [JsonProperty]
         private LogLevels LogPrintingOptions

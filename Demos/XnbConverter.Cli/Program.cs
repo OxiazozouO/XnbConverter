@@ -1,4 +1,6 @@
-﻿using CommandLine;
+﻿using System;
+using System.Threading.Tasks;
+using CommandLine;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 using static XnbConverter.Cli.Process;

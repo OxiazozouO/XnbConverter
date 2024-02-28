@@ -1,8 +1,8 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
-using XnbConverter.Utilities;
+using XnbConverter.Readers;
 
-namespace XnbConverter.Readers;
+namespace XnbConverter.Utilities;
 
 public static class TypeReadHelper
 {
@@ -15,14 +15,14 @@ public static class TypeReadHelper
         public const string TBIN = ".tbin";
         public const string BM_FONT = ".xml";
         public const string SPRITE_FONT = ".json .png";
-        public const string SoundEffect = ".json .wav";
+        public const string SOUND_EFFECT = ".json .wav";
     }
 
     private static readonly Dictionary<string, string> ExtMap = new()
     {
         ["Texture2D"] = Ext.TEXTURE_2D,
         ["Tide"] = Ext.TBIN,
-        ["SoundEffect"] = Ext.SoundEffect,
+        ["SoundEffect"] = Ext.SOUND_EFFECT,
         ["SpriteFont"] = Ext.SPRITE_FONT,
         ["XmlSource"] = Ext.BM_FONT,
         ["Effect"] = Ext.EFFECT
@@ -34,16 +34,16 @@ public static class TypeReadHelper
         ReaderInfo newInfo = new ReaderInfo();
         List<string> className = new List<string>();
         List<string> classFull = new List<string>();
-        ParseType(full,ref className,ref classFull);
+        ParseType(full, ref className, ref classFull);
         int n = 0;
         try
         {
-            (newInfo.Reader,newInfo.Entity) = GetTypeAt(className, ref n);
+            (newInfo.Reader, newInfo.Entity) = GetTypeAt(className, ref n);
         }
         catch (Exception e)
         {
             throw new XnbError("获取读取器时发生错误！请检查程序集:{0}是否在{1}文件夹里， 或者尚未实现{2}",
-                classFull[n],Helpers.DllPath,e.Message);
+                classFull[n], Helpers.SysPath.Dll, e.Message);
         }
 
         newInfo.Extension = ExtMap.TryGetValue(className[0].Split('@')[0], out var value) ? value : Ext.JSON;
@@ -155,14 +155,35 @@ public static class TypeReadHelper
             typeof(uint), typeof(Array), typeof(Nullable), typeof(string),
             Type.GetType("System.Collections.Generic.List`1"), Type.GetType("System.Collections.Generic.Dictionary`2")
         };
-        foreach (var type in tt) Entities.Add(Regex.Replace(type.Name, @"`\d+$", ""), type);
+        foreach (var type in tt)
+        {
+            Entities.Add(Regex.Replace(type.Name, @"`\d+$", ""), type);
+        }
 
-        foreach (var file in Directory.GetFiles(Helpers.DllPath, "*.dll", SearchOption.AllDirectories))
-        foreach (var type in Assembly.LoadFile(Path.GetFullPath(file)).GetExportedTypes())
-            ExtendTypes.Add(type.Name, type);
+        InitExtendTypes();
     }
 
-    public static void ParseType(string full,ref List<string> nameList,ref List<string> fullList)
+    private static void InitExtendTypes()
+    {
+        var files = Helpers.SysPath.Dll.ToEntity<List<string>>();
+        if (files == null) return;
+        foreach (var file in files)
+        {
+            if (!File.Exists(file))
+            {
+                Log.Warn("{0} 不存在，dll加载失败，可能导致解析xnb不成功", file);
+                continue;
+            }
+
+            foreach (var type in Assembly.LoadFile(Path.GetFullPath(file)).GetExportedTypes())
+            {
+                ExtendTypes.Add(type.Name, type);
+            }
+        }
+        files.ToJson(Helpers.SysPath.Dll);
+    }
+
+    private static void ParseType(string full, ref List<string> nameList, ref List<string> fullList)
     {
         string fullCopy = full;
         List<string> tNames = new List<string>();
@@ -190,7 +211,7 @@ public static class TypeReadHelper
         else
         {
             var n = full[i + 1] - '0';
-            
+
             foreach (var tf in GetFulls(full, n))
             {
                 ParseType(tf, ref tNames, ref tFulls);
@@ -211,7 +232,7 @@ public static class TypeReadHelper
         fullList.AddRange(tFulls);
     }
 
-    public static List<string> GetFulls(ReadOnlySpan<char> s, int n)
+    private static List<string> GetFulls(ReadOnlySpan<char> s, int n)
     {
         List<string> list = new();
         var index = s.IndexOf('[');

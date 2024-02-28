@@ -77,7 +77,7 @@ public static class FileUtils
         WriteAllText(path, JsonConvert.SerializeObject(data, Formatting.Indented));
     }
 
-    public static T? ToEntity<T>(string path)
+    public static T? ToEntity<T>(this string path)
     {
         return JsonConvert.DeserializeObject<T>(ReadAllText(path));
     }
