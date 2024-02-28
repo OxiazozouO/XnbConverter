@@ -25,7 +25,7 @@ public static class FileUtils
         }
         catch (Exception ex)
         {
-            throw new XnbError(ex, "无效的输出路径");
+            throw new XnbError("无效的输出路径{0}\n{1}",output,ex.Message);
         }
 
         //文件+文件夹 获取文件数组  保证输出文件夹存在，构建输出的文件路径数组

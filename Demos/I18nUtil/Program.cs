@@ -6,9 +6,17 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        CodeToJson(".zh-CN",false);
-        // JsonToTips(".zh-CN");
-        // AllToAt();
+    }
+
+    public static void Edit()
+    {
+        CodeToJson(".zh-CN", true);
+        AllToAt();
+    }
+
+    public static void BackEdit()
+    {
+        JsonToTips(".zh-CN");
     }
 
     private static readonly string[] LocaleNames = new[]
@@ -47,6 +55,8 @@ public static class Program
         }
 
         Dictionary<string, List<I18NInfo>> map = new();
+        List<I18NInfo> infos = new List<I18NInfo>();
+        Dictionary<string, I18NInfo> set = new();
         foreach (var file in Directory.GetFiles(PathStr.CD, "*.cs", SearchOption.AllDirectories))
         {
             if (file.Contains("Helpers.cs")) continue;
@@ -87,7 +97,12 @@ public static class Program
                         }
                     }
 
-                    if (content.IndexOf('\"') == -1) continue;
+                    if (content.IndexOf('\"') == -1)
+                    {
+                        Console.WriteLine("\n\n坏数据：" + content.ToString() + "\n\n");
+                        continue;
+                    }
+
                     if (!map.ContainsKey(file))
                     {
                         map[file] = new List<I18NInfo>();
@@ -101,12 +116,21 @@ public static class Program
 
                     I18NInfo info = new I18NInfo(str);
                     Console.WriteLine(str);
-                    if (content.IndexOf("Helpers.I18N[\"") != -1)
+                    if (set.TryGetValue(info.CutStr, out var value))
                     {
-                        info.Id = info.CutStr;
+                        info = value;
+                        info.Flag = 1;
                     }
-
+                    else
+                    {
+                        if (content.IndexOf("Helpers.I18N[\"") != -1)
+                        {
+                            info.Id = info.CutStr;
+                        }
+                        set.Add(info.CutStr, info);
+                    }
                     map[file].Add(info);
+                    infos.Add(info);
                 }
             }
         }
@@ -117,11 +141,11 @@ public static class Program
         foreach (var (key, value) in map)
         {
             string name = Path.GetFileNameWithoutExtension(key) + ".";
-            for (var i = 0; i < value.Count; i++)
+            int index = 0;
+            foreach (var info in value)
             {
-                var info = value[i];
                 Dictionary<string, string> dictionary;
-                if (info.Id == "")//Text
+                if (info.Id == "") //Text
                 {
                     dictionary = new Dictionary<string, string>
                     {
@@ -132,16 +156,29 @@ public static class Program
                         dictionary.TryAdd(s, "");
                     }
 
-                    info.Id = name + (i+1);
+                    info.Id = name + ++index;
                     info.UpdateStr =
                         info.OrdStr.Replace($"\"{info.CutStr}\"", $"Helpers.I18N[\"{info.Id}\"]");
+                    if (info.Flag == 1)
+                    {
+                        info.Flag = 2;
+                    }
                 }
-                else//Helpers.I18N[]
+                else //Helpers.I18N[] or 重复赋值
                 {
-                    string id = info.Id;//旧id
+                    if (info.Flag == 1)
+                    {
+                        info.Flag = 2;
+                    }
+                    else if (info.Flag > 1)
+                    {
+                        continue;
+                    }
+
+                    string id = info.Id; //旧id
                     dictionary = ordLocale[id];
                     info.CutStr = dictionary[codeLocaleName]; //<tipId, <Locale, Tip>>
-                    info.Id = name + (i+1);
+                    info.Id = name + ++index;
                     info.UpdateStr = info.OrdStr.Replace(id, info.Id);
                 }
 
@@ -230,6 +267,7 @@ public static class Program
                 map[file].Add(info);
             }
         }
+
         ReplaceCodeFile(map);
     }
 
@@ -264,6 +302,7 @@ public static class Program
         public string UpdateStr;
         public string CutStr;
         public string Id = "";
+        public int Flag = 0; //可以忽略
 
         public I18NInfo()
         {

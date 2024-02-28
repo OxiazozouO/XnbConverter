@@ -378,20 +378,6 @@
     ".tr-TR": ""
   },
   "Process.3": {
-    ".zh-CN": "输出文件已保存：{0}",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "Process.4": {
     ".zh-CN": "文件｛0｝无法保存！",
     ".default": "",
     ".de-DE": "",
@@ -405,7 +391,7 @@
     ".ru-RU": "",
     ".tr-TR": ""
   },
-  "Process.5": {
+  "Process.4": {
     ".zh-CN": "文件名：{0} {1}",
     ".default": "",
     ".de-DE": "",
@@ -419,7 +405,7 @@
     ".ru-RU": "",
     ".tr-TR": ""
   },
-  "Process.6": {
+  "Process.5": {
     ".zh-CN": "文件名：{0} {1} {2}",
     ".default": "",
     ".de-DE": "",
@@ -490,34 +476,6 @@
     ".tr-TR": ""
   },
   "ReaderResolver.2": {
-    ".zh-CN": "无效的读取器索引 {0}",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "ReaderResolver.3": {
-    ".zh-CN": "找不到读取器, 索引：{0}",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "ReaderResolver.4": {
     ".zh-CN": "找不到读取器, 索引：{0}",
     ".default": "",
     ".de-DE": "",
@@ -714,20 +672,6 @@
     ".tr-TR": ""
   },
   "PropertieReader.1": {
-    ".zh-CN": "错误的地图属性类型：{0}",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "PropertieReader.2": {
     ".zh-CN": "错误的地图属性类型：{0}",
     ".default": "",
     ".de-DE": "",
@@ -1694,20 +1638,6 @@
     ".tr-TR": ""
   },
   "SoundBankReader.27": {
-    ".zh-CN": "WaveBank Index: {0}",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "SoundBankReader.28": {
     ".zh-CN": "发现 {0} 个提示音!",
     ".default": "",
     ".de-DE": "",
@@ -1721,7 +1651,7 @@
     ".ru-RU": "",
     ".tr-TR": ""
   },
-  "SoundBankReader.29": {
+  "SoundBankReader.28": {
     ".zh-CN": "不支持的SoundBank格式 {0}.",
     ".default": "",
     ".de-DE": "",

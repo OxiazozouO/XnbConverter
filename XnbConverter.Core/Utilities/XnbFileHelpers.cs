@@ -110,9 +110,11 @@ public static class XnbFileHelpers
     public static void ResolveImports(this XNB xnb, string filename)
     {
         // 读取XNB配置文件
-        var json = FileUtils.ToEntity<XnbObject>(filename);
-        if (json?.Content is null)
-            throw new XnbError("{0} 缺少 'content' 字段.", filename);
+        var json = filename.ToEntity<XnbObject>();
+        if(json is null)
+            throw new XnbError("{0} 文件为空。", filename);
+        if (json.Content is null)
+            throw new XnbError("{0} 缺少 'content' 字段。", filename);
         var content = json.Content;
         var ext = content.Extension.Split(' ');
         var paths = new string[ext.Length];

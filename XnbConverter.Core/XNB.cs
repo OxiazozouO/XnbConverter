@@ -288,7 +288,7 @@ public class XNB : IDisposable
         }
         catch (Exception ex)
         {
-            throw new XnbError(ex, "无效的JSON文件格式: " + ex.Message);
+            throw new XnbError("无效的JSON文件格式: {0}",ex.Message);
         }
     }
 

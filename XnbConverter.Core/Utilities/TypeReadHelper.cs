@@ -42,8 +42,18 @@ public static class TypeReadHelper
         }
         catch (Exception e)
         {
-            throw new XnbError("获取读取器时发生错误！请检查程序集:{0}是否在{1}文件夹里， 或者尚未实现{2}",
-                classFull[n], Helpers.SysPath.Dll, e.Message);
+            string str;
+            if (classFull[n].Contains("Microsoft.Xna.Framework.Content"))
+            {
+                str = className[n].Split('@')[1];
+                throw new XnbError("尚未实现的类型：{0}\n{1}", str, e.Message);
+            }
+
+            string[] strings = classFull[n].Split(',');
+            str = strings.Length == 1 ? classFull[n] : classFull[n].Split(',')[1];
+            throw new XnbError(
+                "获取读取器时发生错误！\n请检查程序集: {0}\n对应的dll文件路径是否存在，或者路径是否正确写入到 {1} 文件中。\ndll文件可能为 {2}.dll\n错误信息: {3}",
+                classFull[n], Path.GetFullPath(Helpers.SysPath.Dll), str, e.Message);
         }
 
         newInfo.Extension = ExtMap.TryGetValue(className[0].Split('@')[0], out var value) ? value : Ext.JSON;
@@ -171,7 +181,8 @@ public static class TypeReadHelper
         {
             if (!File.Exists(file))
             {
-                Log.Warn("{0} 不存在，dll加载失败，可能导致解析xnb不成功", file);
+                Log.Warn("{0} 不存在，dll加载失败，可能导致解析xnb不成功，\n请把正确的文件路径修改到{1}",
+                    file, Path.GetFullPath(Helpers.SysPath.Dll));
                 continue;
             }
 
@@ -180,6 +191,7 @@ public static class TypeReadHelper
                 ExtendTypes.Add(type.Name, type);
             }
         }
+
         files.ToJson(Helpers.SysPath.Dll);
     }
 
