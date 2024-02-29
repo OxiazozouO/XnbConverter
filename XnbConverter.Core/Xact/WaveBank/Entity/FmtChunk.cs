@@ -27,15 +27,15 @@ public class FmtChunk
         {
             case "SoundEffect":
                 b = FmtTag is Pcm;
-                if (!b) throw new XnbError("对于SoundEffect仅支持Pcm格式的wav, 目前的格式为{0}", FmtTag.ToString());
+                if (!b) throw new XnbError(Helpers.I18N["FmtChunk.1"], FmtTag.ToString());
                 break;
             case "Xact":
                 b = FmtTag is Pcm or AdpcmMs;
-                if (!b) throw new XnbError("对于Xact，仅支持Pcm或AdpcmMs格式的wav, 目前的格式为{0}", FmtTag.ToString());
+                if (!b) throw new XnbError(Helpers.I18N["FmtChunk.2"], FmtTag.ToString());
                 break;
             case "All":
                 b = FmtTag is Pcm or AdpcmMs or Ieee or Ima4;
-                if (!b) throw new XnbError("不是游戏支持的类型！");
+                if (!b) throw new XnbError(Helpers.I18N["FmtChunk.3"]);
                 break;
             default:
                 throw new NotImplementedException();

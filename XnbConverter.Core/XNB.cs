@@ -58,7 +58,7 @@ public class XNB : IDisposable
     {
         XnbConfig = new XnbObject();
         var json = XnbConfig;
-        Log.Info("正在读取文件 {0} ...", inputPath);
+        Log.Info(Helpers.I18N["XNB.6"], inputPath);
 
         // XNB缓冲区读取器
         bufferReader = BufferReader.FormXnbFile(inputPath);
@@ -68,22 +68,22 @@ public class XNB : IDisposable
         var flags = _validateHeader(bufferReader);
 
         // 我们成功验证了该文件
-        Log.Info("XNB文件验证成功！");
+        Log.Info(Helpers.I18N["XNB.7"]);
         // 读取文件大小
         // 文件大小
         var fileSize = bufferReader.ReadUInt32();
         // 验证文件大小
         if (bufferReader.Size != fileSize)
-            throw new XnbError("XNB文件已被截断！");
+            throw new XnbError(Helpers.I18N["XNB.1"]);
 
         // 打印文件大小
-        Log.Debug("文件大小：{0} 字节。", fileSize);
+        Log.Debug(Helpers.I18N["XNB.9"], fileSize);
         // 如果文件被压缩，则需要解压缩
         if (Lz4 || Lzx)
         {
             // 获取解压缩后的大小
             var decompressedSize = (int)bufferReader.ReadUInt32();
-            Log.Debug("解压缩后大小：{0} 字节。", decompressedSize);
+            Log.Debug(Helpers.I18N["XNB.10"], decompressedSize);
             // 解压缩LZX格式
             if (Lzx)
             {
@@ -106,14 +106,14 @@ public class XNB : IDisposable
             bufferReader.BytePosition = XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE;
         }
 
-        Log.Debug("从字节位置读取：{0}", bufferReader.BytePosition);
+        Log.Debug(Helpers.I18N["XNB.11"], bufferReader.BytePosition);
 
         // 注意：假设缓冲区现在已解压缩
 
         // 获取读取器的7位值
         var count = bufferReader.Read7BitNumber();
         // 记录读取器的数量
-        Log.Debug("读取器数量：{0}", count);
+        Log.Debug(Helpers.I18N["XNB.12"], count);
 
         // 用于导出的读取器的本地副本
         json.Header = new XnbObject.HeaderDTO
@@ -153,17 +153,17 @@ public class XNB : IDisposable
         // 获取共享资源的7位值
         var shared = bufferReader.Read7BitNumber();
         // 记录共享资源的数量
-        Log.Debug("共享资源数量：{0}", shared);
+        Log.Debug(Helpers.I18N["XNB.13"], shared);
 
         // 不接受共享资源，因为SDV XNB文件没有共享资源
         if (shared != 0)
-            throw new XnbError("意外的共享资源（{0}）.", shared);
+            throw new XnbError(Helpers.I18N["XNB.2"], shared);
         // sb.ToString().log();
         // 由已加载的读取器创建内容读取器 并读取内容
         var readerResolver = new ReaderResolver(readerArr, bufferReader, typeIndex.ToString());
         Data = readerResolver.Read(0);
         // 成功加载XNB文件
-        Log.Info("成功读取XNB文件！");
+        Log.Info(Helpers.I18N["XNB.8"]);
     }
 
     /**
@@ -280,6 +280,7 @@ public class XNB : IDisposable
                     goto save;
                 }
             }
+
             // 将文件大小写入缓冲区
             outBuffer.WriteUInt32((uint)outBuffer.BytePosition, XnbConstants.FILE_SIZE_INDEX);
 
@@ -288,7 +289,7 @@ public class XNB : IDisposable
         }
         catch (Exception ex)
         {
-            throw new XnbError("无效的JSON文件格式: {0}",ex.Message);
+            throw new XnbError(Helpers.I18N["XNB.3"], ex.Message);
         }
     }
 
@@ -301,41 +302,28 @@ public class XNB : IDisposable
     {
         // 确保缓冲区不为null
         if (bufferReader == null)
-            throw new XnbError("缓冲区为空");
+            throw new XnbError(Helpers.I18N["XNB.4"]);
 
         // 从文件开头获取魔术值
         var magic = bufferReader.ReadString(3);
         // 检查魔术值是否正确
         if (magic != "XNB")
-            throw new XnbError("无效的文件魔术值，期望值为XNB，实际值为{0}", magic);
+            throw new XnbError(Helpers.I18N["XNB.5"], magic);
 
         // 调试打印找到有效的XNB魔术值
-        Log.Debug("找到有效的XNB魔术值！");
+        Log.Debug(Helpers.I18N["XNB.14"]);
 
         // 加载目标平台
         Target = (XnbObject.TargetTags)(byte)bufferReader.ReadString(1).ToLower().ToCharArray()[0];
 
         // 读取目标平台
-        switch (Target)
+        if (Enum.IsDefined(typeof(XnbObject.TargetTags), Target))
         {
-            case Windows:
-                Log.Debug("目标平台：Microsoft Windows");
-                break;
-            case WindowsPhone7:
-                Log.Debug("目标平台：Windows Phone 7");
-                break;
-            case Xbox360:
-                Log.Debug("目标平台：Xbox 360");
-                break;
-            case Android:
-                Log.Debug("目标平台：Android");
-                break;
-            case Ios:
-                Log.Debug("目标平台：iOS");
-                break;
-            default:
-                Log.Warn("找到无效的目标平台{0}。", (char)Target);
-                break;
+            Log.Debug(Helpers.I18N["XNB.15"], Target.ToString());
+        }
+        else
+        {
+            Log.Warn(Helpers.I18N["XNB.18"], (char)Target);
         }
 
         // 读取格式版本
@@ -344,17 +332,11 @@ public class XNB : IDisposable
         // 读取XNB格式版本
         switch (FormatVersion)
         {
-            case 0x3:
-                Log.Debug("XNB格式版本：XNA Game Studio 3.0");
-                break;
-            case 0x4:
-                Log.Debug("XNB格式版本：XNA Game Studio 3.1");
-                break;
-            case 0x5:
-                Log.Debug("XNB格式版本：XNA Game Studio 4.0");
+            case 3 or 4 or 5:
+                Log.Debug(Helpers.I18N["XNB.16"], FormatVersion % 3);
                 break;
             default:
-                Log.Warn("未知的XNB格式版本 {0}。", FormatVersion);
+                Log.Warn(Helpers.I18N["XNB.19"], FormatVersion);
                 break;
         }
 
@@ -371,7 +353,7 @@ public class XNB : IDisposable
         Lzx = (flags & XnbObject.CompressedMasks.Lzx) != 0;
         Lz4 = (flags & XnbObject.CompressedMasks.Lz4) != 0;
         // 打印压缩状态
-        Log.Debug("压缩：{0}", flags.ToString());
+        Log.Debug(Helpers.I18N["XNB.17"], flags.ToString());
     }
 
     public void Dispose()

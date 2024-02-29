@@ -82,7 +82,7 @@ public class LayerReader : BaseReader
                     result._currTileSheet.Add(stringReader.ReadByInt32());
                     break;
                 default:
-                    throw new Exception("Bad tile data");
+                    throw new Exception(Helpers.I18N["LayerReader.2"]);
             }
         }
 
@@ -124,7 +124,7 @@ public class LayerReader : BaseReader
                     bufferWriter.WriteInt32(size);
                     if (i + size > x)
                     {
-                        throw new TbinError("i 最大为{0},现在为{1}",x,i);
+                        throw new TbinError(Helpers.I18N["LayerReader.1"],x,i);
                     }
 
                     tilesIndex += size;
@@ -147,7 +147,7 @@ public class LayerReader : BaseReader
                     stringReader.WriteByInt32(input._currTileSheet[++currTileSheetIndex]);
                     break;
                 default:
-                    throw new TbinError("Bad tile data");
+                    throw new TbinError(Helpers.I18N["LayerReader.2"]);
             }
         }
         // sb.Append("ans:" + (tilesIndex-ans) + "  w:"+x+"\n");

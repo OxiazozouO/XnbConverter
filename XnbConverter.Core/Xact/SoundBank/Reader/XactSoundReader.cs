@@ -40,8 +40,8 @@ public class XactSoundReader : BaseReader
             result.TrackIndex = bufferReader.ReadUInt16();
             result.WaveBankIndex = bufferReader.ReadByte();
             // wave
-            Log.Debug("轨道索引: {0}", result.TrackIndex);
-            Log.Debug("WaveBank 索引: {0}", result.WaveBankIndex);
+            Log.Debug(Helpers.I18N["XactSoundReader.2"], result.TrackIndex);
+            Log.Debug(Helpers.I18N["XactSoundReader.3"], result.WaveBankIndex);
         }
 
         if ((result.Flags & 14) != 0)
@@ -55,7 +55,7 @@ public class XactSoundReader : BaseReader
             for (var i = 0; i < numPresets; i++)
                 result.AudioEngineFileOffsets[i] = bufferReader.ReadUInt32();
 
-            if (complexSound) Log.Info("额外数据长度: {0}", result.ExtraDataLen);
+            if (complexSound) Log.Info(Helpers.I18N["XactSoundReader.1"], result.ExtraDataLen);
 
             // TODO: 解析 RPC+DSP 相关内容
             bufferReader.BytePosition = current + result.ExtraDataLen;

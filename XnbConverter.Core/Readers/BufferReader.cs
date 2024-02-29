@@ -29,7 +29,7 @@ public class BufferReader : IDisposable
     {
         // 确保文件存在
         if (!File.Exists(filename))
-            throw new XnbError("'{0}'不存在！", filename);
+            throw new XnbError(Helpers.I18N["BufferReader.1"], filename);
         var result = new BufferReader();
         //设置缓冲区流的字节顺序。
         result._byteOrder = LITTLE_ENDIAN;
@@ -82,7 +82,7 @@ public class BufferReader : IDisposable
     {
         BytePosition = Math.Max(BytePosition + index, 0);
         if (BytePosition < 0 || BytePosition > Buffer.Length)
-            throw new XnbError("缓冲区寻找超出范围！ {0} ~ {1}", BytePosition, Buffer.Length);
+            throw new XnbError(Helpers.I18N["BufferReader.2"], BytePosition, Buffer.Length);
     }
 
     /**

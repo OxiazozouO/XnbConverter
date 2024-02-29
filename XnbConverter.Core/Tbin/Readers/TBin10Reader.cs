@@ -21,6 +21,7 @@
 
 #endregion
 
+using XnbConverter.Entity.Mono;
 using XnbConverter.Readers;
 using XnbConverter.Readers.Base;
 using XnbConverter.Readers.Base.ValueReaders;
@@ -37,6 +38,7 @@ public class TBin10Reader : BaseReader
     private int propertieListReader;
     private int layerListReader;
     private bool isRemoveTileSheetsExtension;
+
 
     public override void Init(ReaderResolver readerResolver)
     {
@@ -77,7 +79,7 @@ public class TBin10Reader : BaseReader
         var ordLen = main.bufferReader.BytePosition;
         var size = main.bufferReader.ReadInt32();
         if (size > TBin10.LayerMax)
-            throw new XnbError("Xnb尚未支持超过{0}层的Tbin地图，目前{1}层", TBin10.LayerMax, size);
+            throw new XnbError(Helpers.I18N["TBin10Reader.1"], TBin10.LayerMax, size);
         // Log.BigFileDebug("D:\\1\\input.txt", tmp);
         tbin.RemoveTileSheetsExtension();
 
@@ -99,23 +101,42 @@ public class TBin10Reader : BaseReader
         }
         else
         {
-            throw new XnbError("未知程序错误");
+            throw new XnbError(Helpers.I18N["TBin10Reader.2"]);
         }
         // Log.BigFileDebug("D:\\1\\output.txt", tbin.Data);
     }
 
     public static TBin10Reader Create(byte[] data)
     {
-        var main = new TBin10Reader();
-
+        TBin10Reader main = new TBin10Reader();
         _ = new ReaderResolver(
             new BaseReader[]
             {
-                main, new TileSheetReader(), new ListReader<TileSheetReader, TileSheet>(),
-                new PropertieReader(), new ListReader<PropertieReader, Propertie>(),
-                new LayerReader(), new ListReader<LayerReader, Layer>(),
-                new Vector2Reader(), new IntVector2Reader(), new StaticTileReader(),
+                main,
+                new TileSheetReader(),
+                new ListReader<TileSheetReader, TileSheet>(),
+                new PropertieReader(),
+                new ListReader<PropertieReader, Propertie>(),
+                new LayerReader(),
+                new ListReader<LayerReader, Layer>(),
+                new Vector2Reader(),
+                new IntVector2Reader(),
+                new StaticTileReader(),
                 new AnimatedTilerReader()
+            },
+            new Type[]
+            {
+                typeof(TBin10),
+                typeof(TileSheet),
+                typeof(List<TileSheet>),
+                typeof(Propertie),
+                typeof(List<Propertie>),
+                typeof(Layer),
+                typeof(List<Layer>),
+                typeof(Vector2),
+                typeof(IntVector2),
+                typeof(StaticTile),
+                typeof(AnimatedTile),
             },
             new BufferReader(data),
             new BufferWriter(data)

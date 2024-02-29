@@ -7,26 +7,31 @@ namespace XnbConverter.Utilities;
 
 public static class Helpers
 {
+    static Helpers()
+    {
+        _config ??= SysPath.Config.ToEntity<Configuration>();
+        var filename = "error";
+        if (Config.Locale == "auto")
+        {
+            filename += '.' + CultureInfo.InstalledUICulture.ToString();
+        }
+
+        _textTip ??= string.Format(SysPath.I18N, filename).ToEntity<Dictionary<string, string>>();
+    }
+
     public static class SysPath
     {
-        public const string Config = @".\.config\config.json";
-        public const string I18N = @".\.config\i18n\{0}.json";
-        public const string Dll = @".\.config\custom_dll.json";
-        public static readonly string FFmpeg = Path.GetFullPath(@".config\bin\ffmpeg\ffmpeg.exe");
+        public static string Config = Path.GetFullPath(@".\.config\config.json");
+        public static string I18N = Path.GetFullPath(@".\.config\i18n\{0}.json");
+        public static string Dll = Path.GetFullPath(@".\.config\custom_dll.json");
+        public static string FFmpeg = Path.GetFullPath(@".\.config\ffmpeg\ffmpeg.exe");
     }
 
 
     private static Configuration? _config;
     private static Configuration? _configTmp;
 
-    public static Configuration Config
-    {
-        get
-        {
-            _config ??= GetObject<Configuration>(SysPath.Config) ?? throw new InvalidOperationException();
-            return _config;
-        }
-    }
+    public static Configuration Config => _config;
 
     public static void EnableMultithreading()
     {
@@ -39,34 +44,9 @@ public static class Helpers
         _config = _configTmp;
     }
 
-    private static Dictionary<string, string>? _textTip;
+    private static readonly Dictionary<string, string>? _textTip;
 
-    public static Dictionary<string, string> I18N
-    {
-        get
-        {
-            if (_textTip is not null) return _textTip;
-            var filename = "error";
-            if (Config.Locale == "auto")
-            {
-                filename += '.' + CultureInfo.InstalledUICulture.ToString();
-            }
-
-            _textTip ??= GetObject<Dictionary<string, string>>(string.Format(SysPath.I18N, filename));
-
-            return _textTip;
-        }
-    }
-
-    private static T GetObject<T>(string path)
-    {
-        if (!File.Exists(path))
-            throw new FileLoadException($"配置文件{path}不存在！");
-
-        return JsonConvert.DeserializeObject<T>(File.ReadAllText(path)) ??
-               throw new FileLoadException("读取json失败！");
-    }
-
+    public static Dictionary<string, string> I18N => _textTip;
     public static class NativeMethods
     {
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -156,6 +136,8 @@ public static class Helpers
         [JsonIgnore] public bool SError { get; private set; }
         [JsonIgnore] public bool SDebug { get; private set; }
 
-        [JsonProperty] public string Locale;
+        [JsonProperty]
+        // [field: JsonIgnore]
+        public string Locale { get; private init; }
     }
 }

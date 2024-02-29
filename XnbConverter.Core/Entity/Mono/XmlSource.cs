@@ -1,6 +1,6 @@
 ﻿namespace XnbConverter.Entity.Mono;
 
-public class BmFont
+public class XmlSource
 {
     public string Data { set; get; }
 }

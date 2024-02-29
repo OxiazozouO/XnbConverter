@@ -31,7 +31,7 @@ public class PropertieReader : BaseReader
             1 => bufferReader.ReadInt32(),
             2 => bufferReader.ReadSingle(),
             3 => stringReader.ReadByInt32(),
-            4 => throw new XnbError("错误的地图属性类型：{0}", result.Type),
+            4 => throw new XnbError(Helpers.I18N["PropertieReader.1"], result.Type),
             _ => null
         };
         return result;
@@ -58,7 +58,7 @@ public class PropertieReader : BaseReader
                 stringReader.WriteByInt32((string)input.Value);
                 break;
             case 4:
-                throw new XnbError("错误的地图属性类型：{0}", input.Type);
+                throw new XnbError(Helpers.I18N["PropertieReader.1"], input.Type);
         }
     }
 }

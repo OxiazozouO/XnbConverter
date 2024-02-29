@@ -10,12 +10,12 @@ public class SpriteFont
 
     //用于存储每个字符在纹理中的边界。
     //每个Rectangle表示一个字符的边界框
-    public List<Rect>? Glyphs { get; set; }
+    public List<Rectangle>? Glyphs { get; set; }
 
     //用于存储每个字符在纹理中的裁剪区域。
     //每个Rectangle表示一个字符的裁剪区域
     //裁剪区域是字符实际占据的区域，用于在绘制时进行裁剪。
-    public List<Rect>? Cropping { get; set; }
+    public List<Rectangle>? Cropping { get; set; }
 
     //一个字符列表，存储所有包含在生成的字体中的字符。每个字符都是一个Unicode字符。
     public List<char>? CharacterMap { get; set; }
@@ -52,7 +52,7 @@ public class SpriteFont
 
         var t2d = Texture2D.FromPng(path);
         if (spriteFont is null)
-            throw new XnbError("解析文件失败");
+            throw new XnbError(Helpers.I18N["SpriteFont.1"]);
         spriteFont.Texture.Width = t2d.Width;
         spriteFont.Texture.Height = t2d.Height;
         spriteFont.Texture.Data = t2d.Data;

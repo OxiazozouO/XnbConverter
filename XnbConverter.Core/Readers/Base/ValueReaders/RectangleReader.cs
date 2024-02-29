@@ -1,4 +1,5 @@
 ﻿using XnbConverter.Entity.Mono;
+using Rectangle = XnbConverter.Entity.Mono.Rectangle;
 
 namespace XnbConverter.Readers.Base.ValueReaders;
 
@@ -15,9 +16,9 @@ public class RectangleReader : BaseReader
         bufferWriter = readerResolver.bufferWriter;
     }
 
-    public override Rect Read()
+    public override Rectangle Read()
     {
-        var result = new Rect();
+        var result = new Rectangle();
 
         result.X = bufferReader.ReadInt32();
         result.Y = bufferReader.ReadInt32();
@@ -29,7 +30,7 @@ public class RectangleReader : BaseReader
 
     public override void Write(object content)
     {
-        var input = (Rect)content;
+        var input = (Rectangle)content;
 
         bufferWriter.WriteInt32(input.X);
         bufferWriter.WriteInt32(input.Y);

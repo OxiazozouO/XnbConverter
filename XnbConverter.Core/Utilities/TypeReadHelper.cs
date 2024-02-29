@@ -1,6 +1,10 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using XnbConverter.Readers;
+using XnbConverter.Readers.Mono;
+using XnbConverter.Tbin.Entity;
+using static XnbConverter.Utilities.Helpers.SysPath;
 
 namespace XnbConverter.Utilities;
 
@@ -46,14 +50,13 @@ public static class TypeReadHelper
             if (classFull[n].Contains("Microsoft.Xna.Framework.Content"))
             {
                 str = className[n].Split('@')[1];
-                throw new XnbError("尚未实现的类型：{0}\n{1}", str, e.Message);
+                throw new XnbError(Helpers.I18N["TypeReadHelper.1"], str, e.Message);
             }
 
             string[] strings = classFull[n].Split(',');
             str = strings.Length == 1 ? classFull[n] : classFull[n].Split(',')[1];
-            throw new XnbError(
-                "获取读取器时发生错误！\n请检查程序集: {0}\n对应的dll文件路径是否存在，或者路径是否正确写入到 {1} 文件中。\ndll文件可能为 {2}.dll\n错误信息: {3}",
-                classFull[n], Path.GetFullPath(Helpers.SysPath.Dll), str, e.Message);
+            throw new XnbError(Helpers.I18N["TypeReadHelper.2"],
+                classFull[n], Path.GetFullPath(Dll), str, e.Message);
         }
 
         newInfo.Extension = ExtMap.TryGetValue(className[0].Split('@')[0], out var value) ? value : Ext.JSON;
@@ -64,7 +67,7 @@ public static class TypeReadHelper
     public static BaseReader CreateReader(this Type type)
     {
         return (BaseReader)Activator.CreateInstance(type)
-               ?? throw new XnbError("未实现的类型：{0}", type);
+               ?? throw new XnbError(Helpers.I18N["TypeReadHelper.3"], type);
     }
 
     // private static string ssss =
@@ -74,7 +77,7 @@ public static class TypeReadHelper
     // typeof(Int32).FullName;
     // typeof(TailorItemRecipe).FullName;
 
-    private static readonly Dictionary<string, ReaderInfo> Map = new();
+    private static ConcurrentDictionary<string, ReaderInfo> Map = new();
 
     private static (Type, Type) GetTypeAt(List<string> list, ref int index)
     {
@@ -127,13 +130,12 @@ public static class TypeReadHelper
             return (exx, ex);
         }
 
-        throw new ReaderTypeError("未加载的类：{0}！", full);
+        throw new ReaderTypeError(Helpers.I18N["TypeReadHelper.4"], full);
     }
 
     private static readonly Dictionary<string, Type> ReaderTypes = new();
     private static readonly Dictionary<string, Type> ExtendTypes = new();
     private static readonly Dictionary<string, Type> Entities = new();
-
     static TypeReadHelper()
     {
         string[] reads =
@@ -171,18 +173,25 @@ public static class TypeReadHelper
         }
 
         InitExtendTypes();
+        Map["xTile.Pipeline.TideReader, xTile"] = new ReaderInfo
+        {
+            Reader = typeof(TBinReader),
+            Entity = typeof(TBin10),
+            Extension = ExtMap["Tide"]
+        };
+        // Map[""]
     }
 
     private static void InitExtendTypes()
     {
-        var files = Helpers.SysPath.Dll.ToEntity<List<string>>();
+        var files = Dll.ToEntity<List<string>>(true);
         if (files == null) return;
         foreach (var file in files)
         {
             if (!File.Exists(file))
             {
-                Log.Warn("{0} 不存在，dll加载失败，可能导致解析xnb不成功，\n请把正确的文件路径修改到{1}",
-                    file, Path.GetFullPath(Helpers.SysPath.Dll));
+                Log.Warn(Helpers.I18N["TypeReadHelper.5"],
+                    file, Path.GetFullPath(Dll));
                 continue;
             }
 
@@ -192,7 +201,7 @@ public static class TypeReadHelper
             }
         }
 
-        files.ToJson(Helpers.SysPath.Dll);
+        files.ToJson(Dll);
     }
 
     private static void ParseType(string full, ref List<string> nameList, ref List<string> fullList)

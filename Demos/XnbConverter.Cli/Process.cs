@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using XnbConverter.Utilities;
 
 namespace XnbConverter.Cli;
@@ -43,20 +39,20 @@ public static class Process
             if (xnb.ExportFile(output))
             {
                 // 记录文件已保存
-                Log.Info("输出文件已保存：{0}", output);
+                Log.Info(Helpers.I18N["Process.1"], output);
                 // 增加成功计数
                 _success++;
             }
             else
             {
-                Log.Error("文件｛0｝无法保存！", output);
+                Log.Error(Helpers.I18N["Process.3"], output);
                 _fail++;
             }
         }
         catch (Exception ex)
         {
             // 记录错误日志
-            Log.Error("文件名：{0} {1}", input, ex);
+            Log.Error(Helpers.I18N["Process.4"], input, ex);
             // 增加失败计数
             _fail++;
         }
@@ -75,7 +71,7 @@ public static class Process
     public static void Pack(string input, string output)
     {
         output += ".xnb";
-        Log.Info("正在读取文件“{0}”...", input);
+        Log.Info(Helpers.I18N["Process.2"], input);
         XNB xnb = null;
         FileStream fs = null;
         
@@ -88,7 +84,7 @@ public static class Process
             // 将JSON转换为XNB 并保存
             xnb.Convert(output);
             // 记录文件已保存
-            Log.Info("输出文件已保存：{0}", output);
+            Log.Info(Helpers.I18N["Process.1"], output);
 
             // 增加成功计数
             _success++;
@@ -96,7 +92,7 @@ public static class Process
         catch (Exception ex)
         {
             // 记录错误日志
-            Log.Error("文件名：{0} {1} {2}", input, ex.Message, ex.StackTrace);
+            Log.Error(Helpers.I18N["Process.5"], input, ex.Message, ex.StackTrace);
             // 增加失败计数
             _fail++;
         }finally
@@ -148,6 +144,7 @@ public static class Process
     public static void Get(string? input, string? output,bool isEnableConcurrency, Mode mode = Mode.Pack | Mode.UnPack)
     {
         var files = FileUtils.BuildFiles(input, output);
+        
         if ((mode & Mode.Pack) > 0)
         {
             if (files.TryGetValue(".config", out var xnb))

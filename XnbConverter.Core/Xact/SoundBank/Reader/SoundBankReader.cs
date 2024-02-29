@@ -38,28 +38,28 @@ public class SoundBankReader : BaseReader
         var header = result.Header;
         header.Magic = bufferReader.ReadString(4); // 读取魔术值
         if (header.Magic != "SDBK")
-            throw new XnbError("发现无效的魔术值, {0}", header.Magic);
+            throw new XnbError(Helpers.I18N["SoundBankReader.1"], header.Magic);
 
         // 读取工具版本和格式版本
         header.ToolVersion = bufferReader.ReadUInt16();
         header.FormatVersion = bufferReader.ReadUInt16();
 
-        Log.Debug("格式版本: {0}", header.FormatVersion);
-        Log.Debug("工具版本: {0}", header.ToolVersion);
+        Log.Debug(Helpers.I18N["SoundBankReader.2"], header.FormatVersion);
+        Log.Debug(Helpers.I18N["SoundBankReader.3"], header.ToolVersion);
         if (header.FormatVersion != SDBK_FORMAT_VERSION)
-            Log.Warn("不支持的SoundBank格式 {0}.", header.FormatVersion);
+            Log.Warn(Helpers.I18N["SoundBankReader.28"], header.FormatVersion);
 
         // 读取CRC校验值
         header.Crc = bufferReader.ReadUInt16();
-        Log.Debug("CRC: {0}", header.Crc);
+        Log.Debug(Helpers.I18N["SoundBankReader.4"], header.Crc);
 
         // 读取最后修改时间和平台
         header.LastModifiedLow = bufferReader.ReadUInt32();
         header.LastModifiedHigh = bufferReader.ReadUInt32();
         header.Platform = bufferReader.ReadByte();
 
-        Log.Debug("最后修改时间低位: {0}, 最后修改时间高位: {1}", header.LastModifiedLow, header.LastModifiedHigh);
-        Log.Debug("平台: {0}", header.Platform);
+        Log.Debug(Helpers.I18N["SoundBankReader.5"], header.LastModifiedLow, header.LastModifiedHigh);
+        Log.Debug(Helpers.I18N["SoundBankReader.6"], header.Platform);
 
         // 读取简单提示、复杂提示、总提示数、波形库数和声音数
         header.NumSimpleCues = bufferReader.ReadUInt16(); //353
@@ -73,12 +73,12 @@ public class SoundBankReader : BaseReader
         header.CueNameTableLen = bufferReader.ReadUInt16(); //4423
         header.Unknowns.Add(bufferReader.Read(2)); //0
 
-        Log.Debug("简单提示数:    {0}", header.NumSimpleCues);
-        Log.Debug("复杂提示数:    {0}", header.NumComplexCues);
-        Log.Debug("总提示数:      {0}", header.NumTotalCues);
-        Log.Debug("波形库数:      {0}", header.NumWaveBanks);
-        Log.Debug("声音数:        {0}", header.NumSounds);
-        Log.Debug("Cue名称表长度: {0}", header.CueNameTableLen);
+        Log.Debug(Helpers.I18N["SoundBankReader.7"], header.NumSimpleCues);
+        Log.Debug(Helpers.I18N["SoundBankReader.8"], header.NumComplexCues);
+        Log.Debug(Helpers.I18N["SoundBankReader.9"], header.NumTotalCues);
+        Log.Debug(Helpers.I18N["SoundBankReader.10"], header.NumWaveBanks);
+        Log.Debug(Helpers.I18N["SoundBankReader.11"], header.NumSounds);
+        Log.Debug(Helpers.I18N["SoundBankReader.12"], header.CueNameTableLen);
 
         header.SimpleCuesOffset = bufferReader.ReadUInt32(); //18651
         header.ComplexCuesOffset = bufferReader.ReadUInt32(); //20416
@@ -92,15 +92,15 @@ public class SoundBankReader : BaseReader
         header.SoundsOffset = bufferReader.ReadUInt32(); //266
         header.Name = bufferReader.ReadString(64);
 
-        Log.Debug("简单提示音偏移量:      {0}", header.SimpleCuesOffset); // 简单提示音偏移量
-        Log.Debug("复杂提示音偏移量:      {0}", header.ComplexCuesOffset); // 复杂提示音偏移量
-        Log.Debug("提示音名称偏移量:      {0}", header.CueNamesOffset); // 提示音名称偏移量
-        Log.Debug("变化表偏移量:         {0}", header.VariationTablesOffset); // 变化表偏移量
-        Log.Debug("波形库名称表偏移量:    {0}", header.WaveBankNameTableOffset); // 波形库名称表偏移量
-        Log.Debug("提示音名称哈希表偏移量: {0}", header.CueNameHashTableOffset); // 提示音名称哈希表偏移量
-        Log.Debug("提示音名称哈希值偏移量: {0}", header.CueNameHashValsOffset); // 提示音名称哈希值偏移量
-        Log.Debug("声音偏移量:           {0}", header.SoundsOffset); // 声音偏移量
-        Log.Debug("名字: {0}", header.Name); // 名称
+        Log.Debug(Helpers.I18N["SoundBankReader.13"], header.SimpleCuesOffset); // 简单提示音偏移量
+        Log.Debug(Helpers.I18N["SoundBankReader.14"], header.ComplexCuesOffset); // 复杂提示音偏移量
+        Log.Debug(Helpers.I18N["SoundBankReader.15"], header.CueNamesOffset); // 提示音名称偏移量
+        Log.Debug(Helpers.I18N["SoundBankReader.16"], header.VariationTablesOffset); // 变化表偏移量
+        Log.Debug(Helpers.I18N["SoundBankReader.17"], header.WaveBankNameTableOffset); // 波形库名称表偏移量
+        Log.Debug(Helpers.I18N["SoundBankReader.18"], header.CueNameHashTableOffset); // 提示音名称哈希表偏移量
+        Log.Debug(Helpers.I18N["SoundBankReader.19"], header.CueNameHashValsOffset); // 提示音名称哈希值偏移量
+        Log.Debug(Helpers.I18N["SoundBankReader.20"], header.SoundsOffset); // 声音偏移量
+        Log.Debug(Helpers.I18N["SoundBankReader.21"], header.Name); // 名称
 
         // 解析wave bank name table 138
         bufferReader.BytePosition = (int)header.WaveBankNameTableOffset;
@@ -108,7 +108,7 @@ public class SoundBankReader : BaseReader
         for (var i = 0; i < header.NumWaveBanks; i++)
             result.WaveBankNames.Add(bufferReader.ReadString(64));
 
-        Log.Debug("Wave Banks: {0}", result.WaveBankNames.ToJoinStr()); // 波形库名称
+        Log.Debug(Helpers.I18N["SoundBankReader.22"], result.WaveBankNames.ToJoinStr()); // 波形库名称
 
         // 解析cue name table
         bufferReader.BytePosition = (int)header.CueNamesOffset; //266
@@ -140,7 +140,7 @@ public class SoundBankReader : BaseReader
         }
 
 
-        Log.Debug("Cues: {0}",CueNames.ToJoinStr()); // 提示音
+        Log.Debug(Helpers.I18N["SoundBankReader.23"],CueNames.ToJoinStr()); // 提示音
         var totalCueCount = 0;
 
         if (header.NumComplexCues > 0)
@@ -156,7 +156,7 @@ public class SoundBankReader : BaseReader
                     // 不确定 :/
                     soundCue.SoundOffset = bufferReader.ReadUInt32();
                     soundCue.Unknowns.Add(bufferReader.Read(4));
-                    Log.Debug("发现 {0}", CueNames[header.NumSimpleCues + i]);
+                    Log.Debug(Helpers.I18N["SoundBankReader.24"], CueNames[header.NumSimpleCues + i]);
                     {
                         var ord = bufferReader.BytePosition;
                         bufferReader.BytePosition = (int)soundCue.SoundOffset;
@@ -186,7 +186,7 @@ public class SoundBankReader : BaseReader
 
                     XactSound[] cueSounds = new XactSound[soundCue.NumEntries];
                     // float[] probs = new float[soundCue.NumEntries];
-                    Log.Debug("为 {0} 发现 {1} 个提示音", CueNames[header.NumSimpleCues + i], soundCue.NumEntries);
+                    Log.Debug(Helpers.I18N["SoundBankReader.25"], CueNames[header.NumSimpleCues + i], soundCue.NumEntries);
 
                     var tableType = (soundCue.VariationFlags >> 3) & 0x7;
                     for (var j = 0; j < soundCue.NumEntries; j++)
@@ -200,7 +200,7 @@ public class SoundBankReader : BaseReader
                                 c.WaveBankIndex = bufferReader.ReadByte();
                                 c.BWeightMin = bufferReader.ReadByte();
                                 c.BWeightMax = bufferReader.ReadByte();
-                                Log.Debug("WaveBank Index: {0}", c.WaveBankIndex);
+                                Log.Debug(Helpers.I18N["SoundBankReader.26"], c.WaveBankIndex);
                                 cueSounds[j] = new XactSound() { CueVariation = c };
                                 break;
                             }
@@ -239,7 +239,7 @@ public class SoundBankReader : BaseReader
                             {
                                 c.TrackIndex = bufferReader.ReadUInt16();
                                 c.WaveBankIndex = bufferReader.ReadByte();
-                                Log.Debug("WaveBank Index: {0}", c.WaveBankIndex);
+                                Log.Debug(Helpers.I18N["SoundBankReader.26"], c.WaveBankIndex);
 
                                 cueSounds[j] = new XactSound() { CueVariation = c };
                                 break;
@@ -267,7 +267,7 @@ public class SoundBankReader : BaseReader
             }
         }
 
-        Log.Debug("发现 {0} 个提示音!", totalCueCount);
+        Log.Debug(Helpers.I18N["SoundBankReader.27"], totalCueCount);
         return result;
     }
 

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace I18nUtil;
 
@@ -16,7 +17,7 @@ public static class Program
 
     public static void BackEdit()
     {
-        JsonToTips(".zh-CN");
+        JsonToTips(".zh-CN", true);
     }
 
     private static readonly string[] LocaleNames = new[]
@@ -46,7 +47,6 @@ public static class Program
         "TbinError"
     };
 
-
     private static void CodeToJson(string codeLocaleName, bool isReplaceCodeFile = false)
     {
         if (!LocaleNames.Contains(codeLocaleName))
@@ -54,9 +54,11 @@ public static class Program
             throw new ArgumentException();
         }
 
-        Dictionary<string, List<I18NInfo>> map = new();
-        List<I18NInfo> infos = new List<I18NInfo>();
-        Dictionary<string, I18NInfo> set = new();
+        Dictionary<string, List<EditInfo>> map = new(); //<file, (EditInfo, int)>
+        var infoSet = new InfoSet();
+        //<tipId, <Locale, Tip>>
+        var ordLocale = PathStr.ALL.ToEntity<Dictionary<string, Dictionary<string, string>>>();
+
         foreach (var file in Directory.GetFiles(PathStr.CD, "*.cs", SearchOption.AllDirectories))
         {
             if (file.Contains("Helpers.cs")) continue;
@@ -99,13 +101,8 @@ public static class Program
 
                     if (content.IndexOf('\"') == -1)
                     {
-                        Console.WriteLine("\n\n坏数据：" + content.ToString() + "\n\n");
+                        Console.WriteLine("\n\n坏数据：" + content.ToString() + " 在" + file + "文件\n\n");
                         continue;
-                    }
-
-                    if (!map.ContainsKey(file))
-                    {
-                        map[file] = new List<I18NInfo>();
                     }
 
                     string str = content.ToString();
@@ -114,78 +111,66 @@ public static class Program
                         continue;
                     }
 
-                    I18NInfo info = new I18NInfo(str);
-                    Console.WriteLine(str);
-                    if (set.TryGetValue(info.CutStr, out var value))
+                    if (!map.ContainsKey(file))
                     {
-                        info = value;
-                        info.Flag = 1;
+                        map[file] = new List<EditInfo>();
+                    }
+
+                    EditInfo info = new EditInfo(str);
+                    if (info.RepStr.Contains('\"'))
+                    {
+                        Console.WriteLine("\n\n坏数据：" + info.RepStr + " 在" + file + "文件\n\n");
+                        throw new ArgumentException();
+                    }
+
+                    Console.WriteLine(str);
+                    if (content.IndexOf("Helpers.I18N[\"") == -1)
+                    {
+                        infoSet.Add(info);
                     }
                     else
                     {
-                        if (content.IndexOf("Helpers.I18N[\"") != -1)
-                        {
-                            info.Id = info.CutStr;
-                        }
-                        set.Add(info.CutStr, info);
+                        info.EditFlag = EditFlags.UPDATE;
+                        var dictionary = ordLocale[info.RepStr];
+                        infoSet.Add(info, dictionary, dictionary[codeLocaleName]);
                     }
+
                     map[file].Add(info);
-                    infos.Add(info);
                 }
             }
         }
 
-        //<tipId, <Locale, Tip>>
-        var ordLocale = PathStr.ALL.ToEntity<Dictionary<string, Dictionary<string, string>>>();
-        var newLocale = new Dictionary<string, Dictionary<string, string>>();
         foreach (var (key, value) in map)
         {
-            string name = Path.GetFileNameWithoutExtension(key) + ".";
             int index = 0;
+            string name = Path.GetFileNameWithoutExtension(key) + ".";
             foreach (var info in value)
             {
-                Dictionary<string, string> dictionary;
-                if (info.Id == "") //Text
+                int ind = infoSet.InfoList[info];
+                if (infoSet.IdSet[ind] == "")
                 {
-                    dictionary = new Dictionary<string, string>
-                    {
-                        [codeLocaleName] = info.CutStr
-                    };
-                    foreach (var s in LocaleNames)
-                    {
-                        dictionary.TryAdd(s, "");
-                    }
-
-                    info.Id = name + ++index;
-                    info.UpdateStr =
-                        info.OrdStr.Replace($"\"{info.CutStr}\"", $"Helpers.I18N[\"{info.Id}\"]");
-                    if (info.Flag == 1)
-                    {
-                        info.Flag = 2;
-                    }
-                }
-                else //Helpers.I18N[] or 重复赋值
-                {
-                    if (info.Flag == 1)
-                    {
-                        info.Flag = 2;
-                    }
-                    else if (info.Flag > 1)
-                    {
-                        continue;
-                    }
-
-                    string id = info.Id; //旧id
-                    dictionary = ordLocale[id];
-                    info.CutStr = dictionary[codeLocaleName]; //<tipId, <Locale, Tip>>
-                    info.Id = name + ++index;
-                    info.UpdateStr = info.OrdStr.Replace(id, info.Id);
+                    infoSet.IdSet[ind] = name + ++index;
                 }
 
-                info.UpdateStr = info.UpdateStr.Replace("\\\"", "\"").Replace(@"\n", "\n");
-                newLocale.Add(info.Id, dictionary);
+                string id = infoSet.IdSet[ind];
+                string repStr = info.RepStr;
+                switch (info.EditFlag)
+                {
+                    case EditFlags.UPDATE:
+                        info.CutStr = id;
+                        break;
+                    case EditFlags.ADD:
+                        info.CutStr = $"Helpers.I18N[\"{id}\"]";
+                        repStr = "\"" + repStr + "\"";
+                        break;
+                }
+
+                info.UpdateStr = info.OrdStr.Replace(repStr, info.CutStr)
+                    .Replace(@"\"+"\"", "\"").Replace(@"\n", "\n");
             }
         }
+
+        infoSet.GetLocaleMap(codeLocaleName, out var newLocale);
 
         newLocale.ToJson(PathStr.ALL);
 
@@ -195,7 +180,7 @@ public static class Program
         }
     }
 
-    private static void ReplaceCodeFile(Dictionary<string, List<I18NInfo>> map)
+    private static void ReplaceCodeFile(Dictionary<string, List<EditInfo>> map)
     {
         foreach (var (key, value) in map)
         {
@@ -216,8 +201,13 @@ public static class Program
         public const string ALL = FILES + "error_all.json";
     }
 
-    private static void JsonToTips(string localeName)
+    private static void JsonToTips(string localeName, bool isReplaceCodeFile = false)
     {
+        if (!isReplaceCodeFile)
+        {
+            return;
+        }
+
         if (!LocaleNames.Contains(localeName))
         {
             throw new ArgumentException();
@@ -232,7 +222,7 @@ public static class Program
             }
         }
 
-        Dictionary<string, List<I18NInfo>> map = new();
+        Dictionary<string, List<EditInfo>> map = new();
         foreach (var file in Directory.GetFiles(PathStr.CD, "*.cs", SearchOption.AllDirectories))
         {
             if (file.Contains("Helpers.cs")) continue;
@@ -256,14 +246,14 @@ public static class Program
 
                 if (!map.ContainsKey(file))
                 {
-                    map[file] = new List<I18NInfo>();
+                    map[file] = new List<EditInfo>();
                 }
 
-                I18NInfo info = new I18NInfo();
+                string str = content.ToString();
+                EditInfo info = new EditInfo("Helpers.I18N[\"" + str + "\"]");
                 Console.WriteLine(content.ToString());
-                info.OrdStr = $"Helpers.I18N[\"{content.ToString()}\"]";
-                info.UpdateStr = $"\"{ordLocale[content.ToString()][localeName]}\"".Replace("\\\"", "\"")
-                    .Replace(@"\n", "\n");
+                info.UpdateStr = ("\"" + ordLocale[str][localeName] + "\"")
+                    .Replace("\n",@"\n");
                 map[file].Add(info);
             }
         }
@@ -296,25 +286,102 @@ public static class Program
         }
     }
 
-    private class I18NInfo
+    private class EditInfo
     {
-        public string OrdStr;
+        public readonly string OrdStr;
         public string UpdateStr;
+        public readonly string RepStr;
         public string CutStr;
-        public string Id = "";
-        public int Flag = 0; //可以忽略
+        public int EditFlag = EditFlags.ADD;
 
-        public I18NInfo()
-        {
-        }
-
-        public I18NInfo(string ordStr)
+        public EditInfo(string ordStr)
         {
             OrdStr = ordStr;
             int l = OrdStr.IndexOf('\"') + 1;
             int r = OrdStr.LastIndexOf('\"');
+            RepStr = OrdStr[l..r];
+        }
+    }
 
-            CutStr = OrdStr[l..r];
+    private static class EditFlags
+    {
+        public const int ADD = 1; //新增
+        public const int UPDATE = 2; //修改
+    }
+
+    private class InfoSet
+    {
+        public readonly List<string> IdSet = new();
+        public readonly List<Dictionary<string, string>> LocaleList = new();
+        public readonly List<string> CutSet = new();
+        public readonly Dictionary<string, int> CutStrMap = new();
+
+        public readonly Dictionary<EditInfo, int> InfoList = new(); //<EditInfo, CutStrIndex>
+
+        public void Add(EditInfo info)
+        {
+            if (InfoList.ContainsKey(info))
+            {
+                return;
+            }
+            if (CutStrMap.TryGetValue(info.RepStr, out var ind))
+            {
+                InfoList.Add(info, ind);
+                return;
+            }
+
+            int index = CutSet.Count;
+            CutSet.Add(info.RepStr);
+            IdSet.Add("");
+            CutStrMap.Add(info.RepStr, index);
+            InfoList.Add(info, index);
+            LocaleList.Add(new Dictionary<string, string>());
+        }
+
+        public void Add(EditInfo info, Dictionary<string, string> dictionary, string cut)
+        {
+            if (InfoList.ContainsKey(info))
+            {
+                return;
+            }
+            if (CutStrMap.TryGetValue(cut, out var ind))
+            {
+                InfoList.Add(info, ind);
+                return;
+            }
+
+            int index = CutSet.Count;
+            CutSet.Add(cut);
+            IdSet.Add("");
+            CutStrMap.Add(cut, index);
+            InfoList.Add(info, index);
+            LocaleList.Add(dictionary);
+        }
+
+        public void GetLocaleMap(string localeName, out Dictionary<string, Dictionary<string, string>> newLocale)
+        {
+            newLocale = new Dictionary<string, Dictionary<string, string>>();
+            int n = IdSet.Count;
+            for (int i = 0; i < n; i++)
+            {
+                Dictionary<string, string> dictionary = LocaleList[i];
+                if (dictionary.Count == 0)
+                {
+                    dictionary.Add(localeName, CutSet[i]);
+                }
+
+                foreach (var (key, value) in dictionary)
+                {
+                    dictionary[key] = value.Replace("\\\"", "\"").Replace(@"\n", "\n");
+                }
+
+                foreach (var name in LocaleNames)
+                {
+                    dictionary.TryAdd(name, "");
+                }
+
+                newLocale.Add(IdSet[i], dictionary);
+            }
         }
     }
 

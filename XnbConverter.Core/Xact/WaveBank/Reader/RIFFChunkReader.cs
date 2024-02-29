@@ -44,9 +44,9 @@ public class RIFFChunkReader : BaseReader, IReaderFileUtil<RIFFChunk>
         result.Format = bufferReader.ReadString(4);
 
         if (result.ChunkID != WaveMarks.RIFF)
-            throw new XnbError("无效的wav格式：{0}，应为RIFF", result.ChunkID);
+            throw new XnbError(Helpers.I18N["RIFFChunkReader.1"], result.ChunkID);
         if (result.Format != WaveMarks.WAVE)
-            throw new XnbError("无效的wav格式：{0}，应为WAVE", result.Format);
+            throw new XnbError(Helpers.I18N["RIFFChunkReader.2"], result.Format);
         return result;
     }
 }

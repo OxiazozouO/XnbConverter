@@ -28,7 +28,7 @@
     ".tr-TR": ""
   },
   "XNB.3": {
-    ".zh-CN": "无效的JSON文件格式: ",
+    ".zh-CN": "无效的JSON文件格式: {0}",
     ".default": "",
     ".de-DE": "",
     ".es-ES": "",
@@ -196,7 +196,7 @@
     ".tr-TR": ""
   },
   "XNB.15": {
-    ".zh-CN": "目标平台：Microsoft Windows",
+    ".zh-CN": "目标平台：{0}",
     ".default": "",
     ".de-DE": "",
     ".es-ES": "",
@@ -210,7 +210,7 @@
     ".tr-TR": ""
   },
   "XNB.16": {
-    ".zh-CN": "目标平台：Windows Phone 7",
+    ".zh-CN": "XNB格式版本：XNA Game Studio 3.{0}",
     ".default": "",
     ".de-DE": "",
     ".es-ES": "",
@@ -224,90 +224,6 @@
     ".tr-TR": ""
   },
   "XNB.17": {
-    ".zh-CN": "目标平台：Xbox 360",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "XNB.18": {
-    ".zh-CN": "目标平台：Android",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "XNB.19": {
-    ".zh-CN": "目标平台：iOS",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "XNB.20": {
-    ".zh-CN": "XNB格式版本：XNA Game Studio 3.0",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "XNB.21": {
-    ".zh-CN": "XNB格式版本：XNA Game Studio 3.1",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "XNB.22": {
-    ".zh-CN": "XNB格式版本：XNA Game Studio 4.0",
-    ".default": "",
-    ".de-DE": "",
-    ".es-ES": "",
-    ".fr-FR": "",
-    ".hu-HU": "",
-    ".it-IT": "",
-    ".ja-JP": "",
-    ".ko-KR": "",
-    ".pt-BR": "",
-    ".ru-RU": "",
-    ".tr-TR": ""
-  },
-  "XNB.23": {
     ".zh-CN": "压缩：{0}",
     ".default": "",
     ".de-DE": "",
@@ -321,7 +237,7 @@
     ".ru-RU": "",
     ".tr-TR": ""
   },
-  "XNB.24": {
+  "XNB.18": {
     ".zh-CN": "找到无效的目标平台{0}。",
     ".default": "",
     ".de-DE": "",
@@ -335,7 +251,7 @@
     ".ru-RU": "",
     ".tr-TR": ""
   },
-  "XNB.25": {
+  "XNB.19": {
     ".zh-CN": "未知的XNB格式版本 {0}。",
     ".default": "",
     ".de-DE": "",
@@ -490,7 +406,7 @@
     ".tr-TR": ""
   },
   "FileUtils.1": {
-    ".zh-CN": "无效的输出路径",
+    ".zh-CN": "无效的输出路径{0}\n{1}",
     ".default": "",
     ".de-DE": "",
     ".es-ES": "",
@@ -518,7 +434,7 @@
     ".tr-TR": ""
   },
   "TypeReadHelper.1": {
-    ".zh-CN": "获取读取器时发生错误！请检查程序集:{0}是否在{1}文件夹里， 或者尚未实现{2}",
+    ".zh-CN": "尚未实现的类型：{0}\n{1}",
     ".default": "",
     ".de-DE": "",
     ".es-ES": "",
@@ -532,7 +448,7 @@
     ".tr-TR": ""
   },
   "TypeReadHelper.2": {
-    ".zh-CN": "未实现的类型：{0}",
+    ".zh-CN": "获取读取器时发生错误！\n 请检查程序集: {0} \n 对应的dll文件路径是否存在，或者路径是否正确写入到 {1} 文件中。\n dll文件可能为 {2}.dll \n 错误信息: {3}",
     ".default": "",
     ".de-DE": "",
     ".es-ES": "",
@@ -546,7 +462,7 @@
     ".tr-TR": ""
   },
   "TypeReadHelper.3": {
-    ".zh-CN": "未加载的类：{0}！",
+    ".zh-CN": "未实现的类型：{0}",
     ".default": "",
     ".de-DE": "",
     ".es-ES": "",
@@ -560,7 +476,21 @@
     ".tr-TR": ""
   },
   "TypeReadHelper.4": {
-    ".zh-CN": "{0} 不存在，dll加载失败，可能导致解析xnb不成功",
+    ".zh-CN": "未加载的类：{0}！",
+    ".default": "",
+    ".de-DE": "",
+    ".es-ES": "",
+    ".fr-FR": "",
+    ".hu-HU": "",
+    ".it-IT": "",
+    ".ja-JP": "",
+    ".ko-KR": "",
+    ".pt-BR": "",
+    ".ru-RU": "",
+    ".tr-TR": ""
+  },
+  "TypeReadHelper.5": {
+    ".zh-CN": "{0} 不存在，dll加载失败，可能导致解析xnb不成功，\n 请把正确的文件路径修改到{1}",
     ".default": "",
     ".de-DE": "",
     ".es-ES": "",

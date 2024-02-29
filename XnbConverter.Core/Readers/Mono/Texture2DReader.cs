@@ -32,15 +32,15 @@ public class Texture2DReader : BaseReader
         result.DataSize = bufferReader.ReadUInt32();
 
         if (result.MipCount > 1)
-            Log.Warn("找到｛0｝的mipcount，将只使用第一个。", result.MipCount);
+            Log.Warn(Helpers.I18N["Texture2DReader.4"], result.MipCount);
         Flag flag = result.Format switch
         {
             4 => Flag.kDxt1,
             5 => Flag.kDxt3,
             6 => Flag.kDxt5,
-            2 => throw new XnbError("Texture2D格式类型ECT1未实现！"),
+            2 => throw new XnbError(Helpers.I18N["Texture2DReader.1"]),
             0 => 0,
-            _ => throw new XnbError("找到未实现的Texture2D格式类型（{0}）。", result.Format)
+            _ => throw new XnbError(Helpers.I18N["Texture2DReader.2"], result.Format)
         };
 
         if (flag is not 0)
@@ -78,7 +78,7 @@ public class Texture2DReader : BaseReader
         var height = input.Height;
         var data = input.Data;
 
-        Log.Debug("图片 宽: {0}, 高: {1}, 格式:  {2}", width, height, format);
+        Log.Debug(Helpers.I18N["Texture2DReader.3"], width, height, format);
         bufferWriter.WriteInt32(format);
         bufferWriter.WriteInt32(width);
         bufferWriter.WriteInt32(height);

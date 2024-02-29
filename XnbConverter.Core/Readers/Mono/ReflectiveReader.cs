@@ -23,14 +23,23 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
 
         // 设置属性的值
         _allPro.AddRange(properties);
-        foreach (var p in properties) _types.Add(p.PropertyType);
+        foreach (var p in properties)
+        {
+            _types.Add(p.PropertyType);
+        }
 
         // 设置字段的值
         _allPro.AddRange(fields);
-        foreach (var f in fields) _types.Add(f.FieldType);
+        foreach (var f in fields)
+        {
+            _types.Add(f.FieldType);
+        }
 
         _readIndex = new int[_types.Count];
-        for (var i = 0; i < _types.Count; i++) _readIndex[i] = readerResolver.GetIndex(_types[i]);
+        for (var i = 0; i < _types.Count; i++)
+        {
+            _readIndex[i] = readerResolver.GetIndex(_types[i]);
+        }
     }
 
     public override object Read()
@@ -39,11 +48,12 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
 
         for (var i = 0; i < _types.Count; i++)
         {
-            var v = _types[i].IsValueType switch
-            {
-                true => readerResolver.ReadValue(_readIndex[i]),
-                _ => readerResolver.Read_Null(_readIndex[i])
-            };
+            object? v;
+            if (_types[i].IsValueType)
+                v = readerResolver.ReadValue(_readIndex[i]);
+            else
+                v = readerResolver.Read_Null(_readIndex[i]);
+
             switch (_allPro[i])
             {
                 case PropertyInfo p:

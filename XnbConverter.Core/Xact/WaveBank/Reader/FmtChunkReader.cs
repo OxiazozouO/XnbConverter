@@ -81,7 +81,7 @@ public class FmtChunkReader : BaseReader, IReaderFileUtil<FmtChunk>
         fmtChunk.BitsPerSample = bufferReader.ReadUInt16();
 
         if (fmtChunk.FmtID != WaveMarks.fmt)
-            throw new XnbError("无效的wav格式：{0}，应为fmt", fmtChunk.FmtID);
+            throw new XnbError(Helpers.I18N["FmtChunkReader.1"], fmtChunk.FmtID);
         if (fmtChunk.FmtSize < FmtChunk.defSize)
             throw new Exception("fmt chunk size is too small");
 

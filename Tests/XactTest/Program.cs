@@ -52,7 +52,7 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Log.Error("捕获异常:");
+            Log.Error(Helpers.I18N["Program.1"]);
             Log.Error(ex.ToString());
         }
     }

@@ -44,18 +44,18 @@ public class AudioEngineReader : BaseReader
         result.Magic = bufferReader.ReadString(4);
         // 确保魔术值匹配
         if (result.Magic != "XGSF")
-            throw new XnbError("发现无效的魔术值，{0}", result.Magic);
+            throw new XnbError(Helpers.I18N["AudioEngineReader.1"], result.Magic);
 
         // 读取工具版本和格式版本
         result.ToolVersion = bufferReader.ReadUInt16();
         result.FormatVersion = bufferReader.ReadUInt16();
 
         // 记录版本信息
-        Log.Debug("工具版本：{0}", result.ToolVersion);
-        Log.Debug("格式版本：{0}", result.FormatVersion);
+        Log.Debug(Helpers.I18N["AudioEngineReader.2"], result.ToolVersion);
+        Log.Debug(Helpers.I18N["AudioEngineReader.3"], result.FormatVersion);
         // 检查是否为已知格式
         if (result.FormatVersion != Entity.AudioEngine.XGSF_FORMAT)
-            Log.Warn("不支持的XGS格式！");
+            Log.Warn(Helpers.I18N["AudioEngineReader.19"]);
 
         // 获取无用的CRC值，我们不关心它
         result.Crc = bufferReader.ReadUInt16();
@@ -69,7 +69,7 @@ public class AudioEngineReader : BaseReader
         result.numCats = bufferReader.ReadUInt16();
         result.numVars = bufferReader.ReadUInt16();
 
-        Log.Debug("类别：{0}, 变量：{1}", result.numCats, result.numVars);
+        Log.Debug(Helpers.I18N["AudioEngineReader.4"], result.numCats, result.numVars);
 
         // 跳过两个未知的16位整数
         result.Unkns.Add(bufferReader.Read(4));
@@ -83,11 +83,11 @@ public class AudioEngineReader : BaseReader
         result.varsOffset = bufferReader.ReadUInt32();
 
 
-        Log.Debug("RPC: {0}", result.numRpc);
-        Log.Debug("DSP预设: {0}", result.numDspPresets);
-        Log.Debug("DSP参数: {0}", result.numDspParams);
-        Log.Debug("类别偏移量: {0}", result.catsOffset);
-        Log.Debug("变量偏移量: {0}", result.varsOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.5"], result.numRpc);
+        Log.Debug(Helpers.I18N["AudioEngineReader.6"], result.numDspPresets);
+        Log.Debug(Helpers.I18N["AudioEngineReader.7"], result.numDspParams);
+        Log.Debug(Helpers.I18N["AudioEngineReader.8"], result.catsOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.9"], result.varsOffset);
 
         // 未知的32位无符号整数
         result.Unkns.Add(bufferReader.Read(4));
@@ -105,13 +105,13 @@ public class AudioEngineReader : BaseReader
         result.dspPresetOffset = bufferReader.ReadUInt32();
         result.dspParamsOffset = bufferReader.ReadUInt32();
 
-        Log.Debug("类别名称索引偏移量: {0}", result.catNameIndexOffset);
-        Log.Debug("变量名称索引偏移量: {0}", result.varNameIndexOffset);
-        Log.Debug("类别名称偏移量: {0}", result.catNamesOffset);
-        Log.Debug("变量名称偏移量: {0}", result.varNamesOffset);
-        Log.Debug("RPC偏移量:    {0}", result.rpcOffset);
-        Log.Debug("DSP预设偏移量: {0}", result.dspPresetOffset);
-        Log.Debug("DSP参数偏移量: {0}", result.dspParamsOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.10"], result.catNameIndexOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.11"], result.varNameIndexOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.12"], result.catNamesOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.13"], result.varNamesOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.14"], result.rpcOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.15"], result.dspPresetOffset);
+        Log.Debug(Helpers.I18N["AudioEngineReader.16"], result.dspParamsOffset);
 
         // 定位到类别名称偏移量以读取类别
         bufferReader.BytePosition = (int)result.catNamesOffset;
@@ -120,7 +120,7 @@ public class AudioEngineReader : BaseReader
         for (var i = 0; i < result.numCats; i++)
             categoryNames[i] = bufferReader.ReadString();
 
-        Log.Debug("类别: {0}", categoryNames.ToJoinStr());
+        Log.Debug(Helpers.I18N["AudioEngineReader.17"], categoryNames.ToJoinStr());
 
         // 获取实际的类别数据
         result._categories = new AudioCategory[result.numCats];
@@ -140,7 +140,7 @@ public class AudioEngineReader : BaseReader
         string[] varNames = new string[result.numVars];
         for (var i = 0; i < result.numVars; i++)
             varNames[i] = bufferReader.ReadString();
-        Log.Debug("变量: {0}", varNames.ToJoinStr());
+        Log.Debug(Helpers.I18N["AudioEngineReader.18"], varNames.ToJoinStr());
 
         // 读取变量本身
         var variables = new List<Entity.AudioEngine.RpcVariable>();

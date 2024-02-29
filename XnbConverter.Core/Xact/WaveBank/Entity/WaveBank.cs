@@ -312,11 +312,11 @@ public class WaveBank
             if (0 != (Flag & Flags.SyncDisabled)) flagsText.Append("disabled_bank, ");
 
             Log.Info(
-                "- flags   {0}- file_num    {1}- bank name    {2}- entry meta size  {3}- entry name size  {4}- alignment    {5}",
+                Helpers.I18N["WaveBank.1"],
                 flagsText.ToString(), EntryCount, BankName, EntryMetaDataElementSize, EntryNameElementSize, Alignment
             );
             if (EntryMetaDataElementSize < 24)
-                Log.Info("- EntryMetaDataElementSize is small");
+                Log.Info(Helpers.I18N["WaveBank.2"]);
         }
     }
 }

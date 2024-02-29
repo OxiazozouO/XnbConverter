@@ -20,7 +20,7 @@ public class XactClipReader : BaseReader
         result.ClipOffset = bufferReader.ReadUInt32();
         result.FilterQAndFlags = bufferReader.ReadUInt16();
         result.FilterFrequency = bufferReader.ReadUInt16();
-        Log.Debug("偏移量: {0}", result.ClipOffset);
+        Log.Debug(Helpers.I18N["XactClipReader.1"], result.ClipOffset);
 
 
         var oldPosition = bufferReader.BytePosition;
@@ -51,7 +51,7 @@ public class XactClipReader : BaseReader
 
                     // bufferReader.Skip(5);
 
-                    Log.Debug("Track: {0}", w.TrackIndex);
+                    Log.Debug(Helpers.I18N["XactClipReader.2"], w.TrackIndex);
                     break;
                 case 3:
                     w.unkn.Add(bufferReader.Read(1));
@@ -120,7 +120,7 @@ public class XactClipReader : BaseReader
 
                     w.VariationFlags = bufferReader.ReadByte();
 
-                    Log.Debug("EventPlayWavePitchVolumeFilterVariation");
+                    Log.Debug(Helpers.I18N["XactClipReader.3"]);
                     break;
 
                 case 6:

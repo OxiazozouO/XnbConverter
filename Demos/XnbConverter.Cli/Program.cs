@@ -12,7 +12,7 @@ public class Program
     public static void Main(string[] args)
     {
         Helpers.NativeMethods.Init();
-        if (1 == 0)
+        if (1 == 1)
         {
             if (args.Length > 0)
             {
@@ -31,22 +31,14 @@ public class Program
         {
             string[] unpack = @"auto -c -i .\packed -o .\unpacked".Split(' ');
             string[] pack   = @"auto -c -i .\unpacked -o .\packed".Split(' ');
-            // string[] auto   = @"auto -c -i .\packed -o .\packed".Split(' ');
             var runUnpack = Parser.Default.ParseArguments<Version, Auto, Pack, Unpack>(unpack);
             var runPack   = Parser.Default.ParseArguments<Version, Auto, Pack, Unpack>(pack  );
-            // var runAuto   = Parser.Default.ParseArguments<Version, Auto, Pack, Unpack>(auto  );
-            ReckonByTime( runUnpack );
-            // ReckonByTime( runPack   );
-            // ReckonByTime( runUnpack );
-            // ReckonByTime( runPack   );
-            // ReckonByTime( runUnpack );
-            // ReckonByTime( runPack   );
-            // ReckonByTime( runUnpack );
-            // ReckonByTime( runPack   );
-            // ReckonByTime( runUnpack );
-            // ReckonByTime( runPack   );
-            // ReckonByTime( runUnpack );
-            // ReckonByTime( runPack   );
+            int n = 100;
+            while (n-- > 0)
+            {
+                ReckonByTime(runUnpack);
+                // ReckonByTime(runPack);
+            }
         }
     }
     

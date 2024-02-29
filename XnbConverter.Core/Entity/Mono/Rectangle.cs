@@ -1,6 +1,6 @@
 ﻿namespace XnbConverter.Entity.Mono;
 
-public class Rect
+public class Rectangle
 {
     public int X { get; set; }
     public int Y { get; set; }

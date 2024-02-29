@@ -40,19 +40,19 @@ public class WaveBankReader : BaseReader
         switch (waveBank.Header.Signature)
         {
             case XwbSignI:
-                Log.Info("- signature : {0}  little/intel endian values", waveBank.Header.Signature);
+                Log.Info(Helpers.I18N["WaveBankReader.1"], waveBank.Header.Signature);
                 break;
             case XwbSignB:
-                Log.Info("- signature : {0}  big/network endian values", waveBank.Header.Signature);
+                Log.Info(Helpers.I18N["WaveBankReader.2"], waveBank.Header.Signature);
                 break;
             default:
                 throw new NotImplementedException();
-                Log.Info("alert: the sign is invalid, now I scan the file for the needed signature");
+                Log.Info(Helpers.I18N["WaveBankReader.3"]);
                 break;
         }
 
         waveBank.Header.Version = bufferReader.ReadUInt32();
-        Log.Info("- version : {0}", waveBank.Header.Version);
+        Log.Info(Helpers.I18N["WaveBankReader.4"], waveBank.Header.Version);
         var last_segment = 4;
         if (waveBank.Header.Version != 1)
         {
@@ -212,7 +212,7 @@ public class WaveBankReader : BaseReader
                 if (un > 0)
                 {
                     unknown.Add(bufferReader.Read((int)un));
-                    // Log.Warn("未知Wave Bank Entry数据：{0}",BitConverter.ToString(unknown[^1]));
+                    // Log.Warn(Helpers.I18N["WaveBankReader.7"],BitConverter.ToString(unknown[^1]));
                     list.Append("未知Entry数据：").Append(BitConverter.ToString(unknown[^1])).Append('\n');
                 }
             }
@@ -236,7 +236,7 @@ public class WaveBankReader : BaseReader
         if (Helpers.Config.PInfo)
         {
             
-            Log.Info("index   length    fmt     freq  c  b     filename");
+            Log.Info(Helpers.I18N["WaveBankReader.5"]);
             string s = "=========================================================================";
             Log.Info(s);
         }
@@ -256,7 +256,7 @@ public class WaveBankReader : BaseReader
                 //log
                 string s = $"{i,5}{entry.PlayRegion.Length,9}{codecStr,9}{rate,7}{channels,3}{(bits > 0 ? 16 : 8),3}     {entry.GetPath()}";
                 Log.Info(s);
-                Log.Debug("offset : {0},format : {1},flags : {2},region_offset : {3},region_length : {4}",
+                Log.Debug(Helpers.I18N["WaveBankReader.6"],
                     entry.PlayRegion.Offset, entry.Format, entry.FlagsAndDuration, entry.LoopRegion.Offset,
                     entry.LoopRegion.Length
                 );

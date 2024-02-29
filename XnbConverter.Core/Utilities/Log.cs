@@ -81,7 +81,7 @@ public static class Log
     public static void Save()
     {
         string info = "info.txt";
-        string err = "info.txt";
+        string err = "error.txt";
         string now = DateTime.Now.ToString(".yyyy-MM-dd.");
         if (File.Exists(info) && new FileInfo(info).LastWriteTime.Day != DateTime.Now.Day)
         {

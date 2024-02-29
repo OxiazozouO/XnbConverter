@@ -1,12 +1,13 @@
 ﻿using XnbConverter.Entity.Mono;
 using XnbConverter.Readers.Base;
 using XnbConverter.Readers.Base.ValueReaders;
+using Rectangle = XnbConverter.Entity.Mono.Rectangle;
 
 namespace XnbConverter.Readers.Mono;
 
 public class SpriteFontReader : BaseReader
 {
-    private readonly NullableReader<CharReader, char?> nullableReader = new();
+    private readonly NullableReader<CharReader, char> nullableReader = new();
     private int texture2DReader;
     private int rectangleListReader;
     private int charListReader;
@@ -16,9 +17,8 @@ public class SpriteFontReader : BaseReader
     {
         base.Init(readerResolver);
         nullableReader.Init(readerResolver);
-        if (readerResolver.bufferWriter == null) return;
         texture2DReader = readerResolver.GetIndex(typeof(Texture2D));
-        rectangleListReader = readerResolver.GetIndex(typeof(List<Rect>));
+        rectangleListReader = readerResolver.GetIndex(typeof(List<Rectangle>));
         charListReader = readerResolver.GetIndex(typeof(List<char>));
         vector3ListReader = readerResolver.GetIndex(typeof(List<Vector3>));
     }
@@ -28,8 +28,8 @@ public class SpriteFontReader : BaseReader
         var result = new SpriteFont();
 
         result.Texture = (Texture2D)readerResolver.Read(texture2DReader);
-        result.Glyphs = (List<Rect>)readerResolver.Read(rectangleListReader);
-        result.Cropping = (List<Rect>)readerResolver.Read(rectangleListReader);
+        result.Glyphs = (List<Rectangle>)readerResolver.Read(rectangleListReader);
+        result.Cropping = (List<Rectangle>)readerResolver.Read(rectangleListReader);
         result.CharacterMap = (List<char>)readerResolver.Read(charListReader);
         result.VerticalLineSpacing = bufferReader.ReadInt32();
         result.HorizontalSpacing = bufferReader.ReadSingle();

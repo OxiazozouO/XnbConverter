@@ -35,13 +35,16 @@ public class ReaderResolver
     }
 
 
-    public ReaderResolver(BaseReader[] readerArr, BufferReader bufferReader, BufferWriter bufferWriter)
+    public ReaderResolver(BaseReader[] readerArr, Type[] names, BufferReader bufferReader, BufferWriter bufferWriter)
     {
         this.readerArr = readerArr;
         this.bufferReader = bufferReader;
         this.bufferWriter = bufferWriter;
         var sb = new StringBuilder();
-        for (var i = 0; i < readerArr.Length; i++) sb.Append(i).Append('@').Append(readerArr[i]).Append('@');
+        for (var i = 0; i < readerArr.Length; i++)
+        {
+            sb.Append(i).Append('@').Append(names[i]).Append('@');
+        }
 
         _typeIndex = sb.ToString();
         Init();
@@ -59,7 +62,10 @@ public class ReaderResolver
 
     private void Init()
     {
-        foreach (var t in readerArr) t.Init(this);
+        foreach (var t in readerArr)
+        {
+            t.Init(this);
+        }
     }
 
     /**
@@ -74,10 +80,9 @@ public class ReaderResolver
         // 读取要使用的读取器的索引
         var index = bufferReader.Read7BitNumber() - 1;
         if (index != i)
-            throw new XnbError("无效的读取器索引 {0}", index);
-        var a = readerArr[index];
+            throw new XnbError(Helpers.I18N["ReaderResolver.1"], index);
         // 使用选定的读取器读取缓冲区
-        return a.Read();
+        return readerArr[index].Read();
     }
 
     public T ReadValue<T>(int i)
@@ -92,10 +97,9 @@ public class ReaderResolver
         if (index < 0)
             return default;
         if (index != i)
-            throw new XnbError("无效的读取器索引 {0}", index);
-        var a = readerArr[index];
+            throw new XnbError(Helpers.I18N["ReaderResolver.1"], index);
         // 使用选定的读取器读取缓冲区
-        return a.Read();
+        return readerArr[index].Read();
     }
 
     public object ReadValue(int i)
@@ -107,8 +111,22 @@ public class ReaderResolver
     {
         var readerStr = '@' + t.ToString() + '@';
         var i = _typeIndex.AsSpan().IndexOf(readerStr);
-        if (i == -1 || i > _typeIndex.Length) throw new AggregateException();
-        return _typeIndex[i - 1] - '0';
+        if (i == -1 || i > _typeIndex.Length)
+        {
+            throw new ArgumentException();
+        }
+
+        if (i == 1 || _typeIndex[i - 2] == '@')
+        {
+            return _typeIndex[i - 1] - '0';
+        }
+
+        if (_typeIndex[i - 3] == '@')
+        {
+            return (_typeIndex[i - 2] - '0') * 10 + (_typeIndex[i - 1] - '0');
+        }
+
+        throw new NotImplementedException();
     }
 
     /**
@@ -119,7 +137,7 @@ public class ReaderResolver
     public void Write(int i, object item)
     {
         if (i < 0 || i > readerArr.Length)
-            throw new XnbError("找不到读取器, 索引：{0}", i);
+            throw new XnbError(Helpers.I18N["ReaderResolver.2"], i);
         //写入读取器的索引
         bufferWriter.Write7BitNumber(i + 1);
         readerArr[i].Write(item);
@@ -128,7 +146,7 @@ public class ReaderResolver
     public void Write_Null(int i, object? item)
     {
         if (i > readerArr.Length)
-            throw new XnbError("找不到读取器, 索引：{0}", i);
+            throw new XnbError(Helpers.I18N["ReaderResolver.2"], i);
         if (i == -1 || item is null)
         {
             bufferWriter.Write7BitNumber(0);

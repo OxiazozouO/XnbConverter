@@ -25,7 +25,7 @@ public static class FileUtils
         }
         catch (Exception ex)
         {
-            throw new XnbError("无效的输出路径{0}\n{1}",output,ex.Message);
+            throw new XnbError(Helpers.I18N["FileUtils.1"], output, ex.Message);
         }
 
         //文件+文件夹 获取文件数组  保证输出文件夹存在，构建输出的文件路径数组
@@ -38,8 +38,7 @@ public static class FileUtils
         else if (File.Exists(input))
             files = new[] { input };
         else //无效路径
-            throw new XnbError("无效的输入路径: {0}", Path.GetFullPath(input));
-
+            throw new XnbError(Helpers.I18N["FileUtils.2"], Path.GetFullPath(input));
         //构建输出路径
         Dictionary<string, List<(string, string)>> map = new();
         string fileName;
@@ -77,8 +76,16 @@ public static class FileUtils
         WriteAllText(path, JsonConvert.SerializeObject(data, Formatting.Indented));
     }
 
-    public static T? ToEntity<T>(this string path)
+    public static T ToEntity<T>(this string path,bool isFileOrd=false)
     {
-        return JsonConvert.DeserializeObject<T>(ReadAllText(path));
+        if (!File.Exists(path))
+            throw new FileLoadException($"文件{path}不存在！");
+        string json = ReadAllText(path);
+        if (isFileOrd)
+        {
+            json = json.Replace(@"\", @"\\").Replace(@"\n", @"\\n");
+        }
+        return JsonConvert.DeserializeObject<T>(json) ??
+               throw new FileLoadException("读取json失败！");
     }
 }

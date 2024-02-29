@@ -87,7 +87,7 @@ public static class XnbFileHelpers
                 // BmFont Xml
                 case /*  4  */Ext.BM_FONT:
                     // 保存文件数据
-                    File.WriteAllText(paths[0], ((BmFont)data).Data);
+                    File.WriteAllText(paths[0], ((XmlSource)data).Data);
                     break;
                 case Ext.SOUND_EFFECT:
                     var sound = (SoundEffect)data;
@@ -151,7 +151,7 @@ public static class XnbFileHelpers
                 break;
             // BmFont Xml
             case Ext.BM_FONT:
-                data = new BmFont
+                data = new XmlSource
                 {
                     Data = File.ReadAllText(paths[0])
                 };

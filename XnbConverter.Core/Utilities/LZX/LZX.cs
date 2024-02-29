@@ -196,8 +196,8 @@ public class LZX : IDisposable
             j += 1 << extra_bits[i];
         }
 
-        Log.Debug("额外位数：{0}", extra_bits.ToJoinStr());
-        Log.Debug("位置基址：{0}", JsonConvert.SerializeObject(position_base));
+        Log.Debug(Helpers.I18N["LZX.13"], extra_bits.ToJoinStr());
+        Log.Debug(Helpers.I18N["LZX.14"], JsonConvert.SerializeObject(position_base));
     }
 
     /**
@@ -209,7 +209,7 @@ public class LZX : IDisposable
     {
         // LZX支持2^15（32 KB）到2^21（2 MB）的窗口大小
         if (window < 15 || window > 21)
-            throw new XnbError("窗口大小超出范围！");
+            throw new XnbError(Helpers.I18N["LZX.1"]);
         m_state.window_size = (uint)(1 << window);
 
         /*
@@ -267,11 +267,11 @@ public class LZX : IDisposable
 
             var intel = bufferReader.ReadLzxBits(1);
 
-            Log.Debug("Intel: {0} = {1}", intel.B(), intel);
+            Log.Debug(Helpers.I18N["LZX.15"], intel.B(), intel);
 
             // 不关心Intel E8调用
             if (intel != 0)
-                throw new XnbError("发现Intel E8调用，对于XNB文件无效。");
+                throw new XnbError(Helpers.I18N["LZX.2"]);
 
             // 头部已读取
             m_state.header_read = true;
@@ -299,7 +299,7 @@ public class LZX : IDisposable
             {
                 // 读取块类型
                 m_state.block_type = bufferReader.ReadLzxBits(3);
-                Log.Debug("块类型: {0} = {1}", m_state.block_type.B(), m_state.block_type);
+                Log.Debug(Helpers.I18N["LZX.16"], m_state.block_type.B(), m_state.block_type);
 
                 // 读取24位无压缩字节数
                 var hi = bufferReader.ReadLzxBits(16);
@@ -307,7 +307,7 @@ public class LZX : IDisposable
 
                 m_state.block_remaining = (hi << 8) | lo;
 
-                Log.Debug("剩余块字节数: {0}", m_state.block_remaining);
+                Log.Debug(Helpers.I18N["LZX.17"], m_state.block_remaining);
                 // 根据有效的块类型进行切换
                 switch (m_state.block_type)
                 {
@@ -359,7 +359,7 @@ public class LZX : IDisposable
                         m_state.R2 = bufferReader.ReadUInt32();
                         break;
                     default:
-                        throw new XnbError("发现无效的块类型: {0}", m_state.block_type);
+                        throw new XnbError(Helpers.I18N["LZX.3"], m_state.block_type);
                 }
             }
 
@@ -379,7 +379,7 @@ public class LZX : IDisposable
                 m_state.window_posn &= m_state.window_size - 1;
                 // 运行长度不能超过窗口大小
                 if (m_state.window_posn + this_run > m_state.window_size)
-                    throw new XnbError("无法在窗框外运行。");
+                    throw new XnbError(Helpers.I18N["LZX.4"]);
 
                 switch (m_state.block_type)
                 {
@@ -623,7 +623,7 @@ public class LZX : IDisposable
                         break;
                     case UNCOMPRESSED:
                         if (bufferReader.BytePosition + this_run > block_size)
-                            throw new XnbError("Overrun!{0} {1} {2}", block_size, bufferReader.BytePosition, this_run);
+                            throw new XnbError(Helpers.I18N["LZX.5"], block_size, bufferReader.BytePosition, this_run);
                         bufferReader.Buffer.AsSpan(bufferReader.BytePosition, this_run).CopyTo(
                             m_state.window.AsSpan((int)m_state.window_posn, this_run)
                         );
@@ -631,14 +631,14 @@ public class LZX : IDisposable
                         m_state.window_posn += (uint)this_run;
                         break;
                     default:
-                        throw new XnbError("指定的块类型无效！");
+                        throw new XnbError(Helpers.I18N["LZX.6"]);
                 }
             }
         }
 
         // there is still more left
         if (togo != 0)
-            throw new XnbError("EOF已到达，数据还有剩余。");
+            throw new XnbError(Helpers.I18N["LZX.7"]);
 
         // ensure the buffer is aligned
         bufferReader.Align();
@@ -777,10 +777,10 @@ public class LZX : IDisposable
                 if (pos > table_mask)
                 {
                     Log.Debug(length[s].ToString());
-                    Log.Debug("pos: {0}, bit_mask: {1}, table_mask: {2}", pos, bit_mask, table_mask);
-                    Log.Debug("bit_num: {0}, bits: {1}", bit_num, bits);
-                    Log.Debug("symbol: {0}, symbols: {1}", s, symbols);
-                    throw new XnbError("表溢出！");
+                    Log.Debug(Helpers.I18N["LZX.18"], pos, bit_mask, table_mask);
+                    Log.Debug(Helpers.I18N["LZX.19"], bit_num, bits);
+                    Log.Debug(Helpers.I18N["LZX.20"], s, symbols);
+                    throw new XnbError(Helpers.I18N["LZX.8"]);
                 }
 
                 // 将此符号的所有可能查找填充为该符号本身
@@ -854,14 +854,14 @@ public class LZX : IDisposable
 
                 // 位位置超过了表格掩码
                 if ((pos += bit_mask) > table_mask)
-                    throw new XnbError("解码过程中表格溢出。");
+                    throw new XnbError(Helpers.I18N["LZX.9"]);
             }
 
             bit_mask >>= 1;
         }
 
         if (pos != table_mask)
-            throw new XnbError("解码表未达到表掩码。");
+            throw new XnbError(Helpers.I18N["LZX.10"]);
         var _result = table[..table_index];
         Pool.Return(table);
         return _result;
@@ -958,9 +958,9 @@ public class LZX : IDisposable
                 break;
             // 确保块大小和帧大小不超过整数的大小
             if (block_size > 0x10000 || frame_size > 0x10000)
-                throw new XnbError("压缩内容中读取的大小无效。");
+                throw new XnbError(Helpers.I18N["LZX.11"]);
 
-            Log.Debug("--------块大小：{0}，框架大小：{1}", block_size, frame_size);
+            Log.Debug(Helpers.I18N["LZX.21"], block_size, frame_size);
             // 根据帧大小和块大小解压缩文件
             lzx.Decompress(bufferReader, frame_size, block_size, decompressed, decompressed_index);
             decompressed_index += frame_size;
@@ -969,7 +969,7 @@ public class LZX : IDisposable
         }
 
         // 完成文件解压缩
-        Log.Info("文件已成功解压缩！");
+        Log.Info(Helpers.I18N["LZX.12"]);
         // 解压缩后的缓冲区复制到主缓冲区
         decompressed.AsSpan(0, decompressedTodo).CopyTo(
             bufferReader.Buffer.AsSpan(XNB.XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE, decompressedTodo));

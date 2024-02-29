@@ -24,7 +24,7 @@ public class Texture2D
      */
     public void SaveAsPng(string path)
     {
-        tasks.Add(Task.Run(async () =>
+        Task? task = Task.Run(async () =>
         {
             using var image = new Image<Rgba32>(Width, Height);
             var index = -1;
@@ -40,7 +40,11 @@ public class Texture2D
             }
 
             await image.SaveAsPngAsync(path);
-        }));
+        });
+        if (task is not null)
+        {
+            tasks.Add(task);
+        }
     }
 
     /**
