@@ -41,7 +41,7 @@ public class XactSoundReader : BaseReader
             result.WaveBankIndex = bufferReader.ReadByte();
             // wave
             Log.Debug(Helpers.I18N["XactSoundReader.2"], result.TrackIndex);
-            Log.Debug(Helpers.I18N["XactSoundReader.3"], result.WaveBankIndex);
+            Log.Debug(Helpers.I18N["SoundBankReader.23"], result.WaveBankIndex);
         }
 
         if ((result.Flags & 14) != 0)

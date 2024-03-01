@@ -9,22 +9,22 @@ public static class Helpers
 {
     static Helpers()
     {
-        _config ??= SysPath.Config.ToEntity<Configuration>();
+        _config ??= SysPath.Cfg.ToEntity<Configuration>();
         var filename = "error";
         if (Config.Locale == "auto")
         {
             filename += '.' + CultureInfo.InstalledUICulture.ToString();
         }
 
-        _textTip ??= string.Format(SysPath.I18N, filename).ToEntity<Dictionary<string, string>>();
+        _textTip ??= string.Format(SysPath.I18NPath, filename).ToEntity<Dictionary<string, string>>();
     }
 
     public static class SysPath
     {
-        public static string Config = Path.GetFullPath(@".\.config\config.json");
-        public static string I18N = Path.GetFullPath(@".\.config\i18n\{0}.json");
-        public static string Dll = Path.GetFullPath(@".\.config\custom_dll.json");
-        public static string FFmpeg = Path.GetFullPath(@".\.config\ffmpeg\ffmpeg.exe");
+        public static readonly string Cfg = Path.GetFullPath(@".\.config\config.json");
+        public static readonly string I18NPath = Path.GetFullPath(@".\.config\i18n\{0}.json");
+        public static readonly string Dll = Path.GetFullPath(@".\.config\custom_dll.json");
+        public static readonly string FFmpeg = Path.GetFullPath(@".\.config\ffmpeg\ffmpeg.exe");
     }
 
 

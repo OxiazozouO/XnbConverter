@@ -45,14 +45,14 @@ public static class Process
             }
             else
             {
-                Log.Error(Helpers.I18N["Process.3"], output);
+                Log.Error(Helpers.I18N["Process.2"], output);
                 _fail++;
             }
         }
         catch (Exception ex)
         {
             // 记录错误日志
-            Log.Error(Helpers.I18N["Process.4"], input, ex);
+            Log.Error(Helpers.I18N["Process.3"], input, ex);
             // 增加失败计数
             _fail++;
         }
@@ -71,7 +71,7 @@ public static class Process
     public static void Pack(string input, string output)
     {
         output += ".xnb";
-        Log.Info(Helpers.I18N["Process.2"], input);
+        Log.Info(Helpers.I18N["XNB.6"], input);
         XNB xnb = null;
         FileStream fs = null;
         
@@ -92,7 +92,7 @@ public static class Process
         catch (Exception ex)
         {
             // 记录错误日志
-            Log.Error(Helpers.I18N["Process.5"], input, ex.Message, ex.StackTrace);
+            Log.Error(Helpers.I18N["Process.4"], input, ex.Message, ex.StackTrace);
             // 增加失败计数
             _fail++;
         }finally

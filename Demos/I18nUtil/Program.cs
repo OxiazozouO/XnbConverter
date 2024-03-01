@@ -22,6 +22,7 @@ public static class Program
 
     private static readonly string[] LocaleNames = new[]
     {
+        ".zh-CN",
         ".default",
         ".de-DE",
         ".es-ES",
@@ -33,7 +34,6 @@ public static class Program
         ".pt-BR",
         ".ru-RU",
         ".tr-TR",
-        ".zh-CN"
     };
 
     private static readonly string[] GetArr = new[]
@@ -47,9 +47,9 @@ public static class Program
         "TbinError"
     };
 
-    private static void CodeToJson(string codeLocaleName, bool isReplaceCodeFile = false)
+    private static void CodeToJson(string loadLocale, bool isReplaceCodeFile = false)
     {
-        if (!LocaleNames.Contains(codeLocaleName))
+        if (!LocaleNames.Contains(loadLocale))
         {
             throw new ArgumentException();
         }
@@ -58,6 +58,11 @@ public static class Program
         var infoSet = new InfoSet();
         //<tipId, <Locale, Tip>>
         var ordLocale = PathStr.ALL.ToEntity<Dictionary<string, Dictionary<string, string>>>();
+        Dictionary<string, KeyValuePair<string, Dictionary<string, string>>> ordLocale2 = new();
+        foreach (var pair in ordLocale)
+        {
+            ordLocale2[pair.Value[loadLocale]] = pair;
+        }
 
         foreach (var file in Directory.GetFiles(PathStr.CD, "*.cs", SearchOption.AllDirectories))
         {
@@ -126,13 +131,26 @@ public static class Program
                     Console.WriteLine(str);
                     if (content.IndexOf("Helpers.I18N[\"") == -1)
                     {
-                        infoSet.Add(info);
+                        if (ordLocale2.TryGetValue(info.RepStr.Replace(@"\n", "\n"), out var dictionary))
+                        {
+                            infoSet.Add(info, dictionary.Value, dictionary.Value[loadLocale]);
+                        }
+                        else
+                        {
+                            infoSet.Add(info);
+                        }
                     }
                     else
                     {
                         info.EditFlag = EditFlags.UPDATE;
-                        var dictionary = ordLocale[info.RepStr];
-                        infoSet.Add(info, dictionary, dictionary[codeLocaleName]);
+                        if (ordLocale.TryGetValue(info.RepStr, out var dictionary))
+                        {
+                            infoSet.Add(info, dictionary, dictionary[loadLocale]);
+                        }
+                        else
+                        {
+                            throw new ArgumentException();//原来的索引丢失了
+                        }
                     }
 
                     map[file].Add(info);
@@ -166,11 +184,11 @@ public static class Program
                 }
 
                 info.UpdateStr = info.OrdStr.Replace(repStr, info.CutStr)
-                    .Replace(@"\"+"\"", "\"").Replace(@"\n", "\n");
+                    .Replace(@"\n", "\n");
             }
         }
 
-        infoSet.GetLocaleMap(codeLocaleName, out var newLocale);
+        infoSet.GetLocaleMap(loadLocale, out var newLocale);
 
         newLocale.ToJson(PathStr.ALL);
 
@@ -216,7 +234,8 @@ public static class Program
         var ordLocale = PathStr.ALL.ToEntity<Dictionary<string, Dictionary<string, string>>>();
         foreach (var dictionary in ordLocale.Values)
         {
-            if (dictionary[localeName] == "")
+            string s = dictionary[localeName];
+            if (s == ""||s.Contains('"'))
             {
                 throw new ArgumentException();
             }
@@ -253,7 +272,7 @@ public static class Program
                 EditInfo info = new EditInfo("Helpers.I18N[\"" + str + "\"]");
                 Console.WriteLine(content.ToString());
                 info.UpdateStr = ("\"" + ordLocale[str][localeName] + "\"")
-                    .Replace("\n",@"\n");
+                    .Replace("\n", @"\n");
                 map[file].Add(info);
             }
         }
@@ -324,6 +343,7 @@ public static class Program
             {
                 return;
             }
+
             if (CutStrMap.TryGetValue(info.RepStr, out var ind))
             {
                 InfoList.Add(info, ind);
@@ -344,6 +364,7 @@ public static class Program
             {
                 return;
             }
+
             if (CutStrMap.TryGetValue(cut, out var ind))
             {
                 InfoList.Add(info, ind);

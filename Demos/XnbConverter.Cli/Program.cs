@@ -1,18 +1,16 @@
-﻿using System;
-using System.Threading.Tasks;
-using CommandLine;
+﻿using CommandLine;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 using static XnbConverter.Cli.Process;
 
 namespace XnbConverter.Cli;
 
-public class Program
+public static class Program
 {
     public static void Main(string[] args)
     {
         Helpers.NativeMethods.Init();
-        if (1 == 1)
+        if (1 == 0)
         {
             if (args.Length > 0)
             {
