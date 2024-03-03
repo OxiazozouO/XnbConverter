@@ -30,6 +30,7 @@ artifacts/
 .packages/
 .tools/
 .vs/
+.idea/
 node_modules/
 BenchmarkDotNet.Artifacts/
 .gradle/
