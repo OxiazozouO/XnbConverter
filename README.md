@@ -1,19 +1,19 @@
 # XnbConverter
 
 一个高效率的xnb转化工具，你可以在10秒内完成解包任务(Xact相关文件需要久一点)
-本项目为js项目xnbcli的c#移植扩展版本，并且对其功能不足之处进行补充，其中主要参考了monogame的源代码的解析的大部分，但是现在对于自定义数据结构的xnb解析支持主要还是用硬编码，希望以后能更灵活的处理这种xnb。
+本项目为js项目xnbcli的c#移植扩展版本，并且对其功能不足之处进行补充，其中主要参考了monogame的源代码的解析的大部分。
 
 ## 性能对比
 
-| 工具   | XnbConverter | [StardewXnbHack](https://github.com/Pathoschild/StardewXnbHack) | [xnbcli](https://github.com/LeonBlade/xnbcli/) | [XNBExtract](https://community.playstarbound.com/threads/110976) |
-|------|--------------|-----------------------------------------------------------------|------------------------------------------------|------------------------------------------------------------------|
-| 拆包时间 | 0m7s         | ≈0m 43s                                                         | ≈6m 5s                                         | ≈2m 20s                                                          |
+| 工具     | XnbConverter | [StardewXnbHack](https://github.com/Pathoschild/StardewXnbHack) | [xnbcli](https://github.com/LeonBlade/xnbcli/) | [XNBExtract](https://community.playstarbound.com/threads/110976) |
+| -------- | ------------ | ------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------ |
+| 拆包时间 | 0m 10s       | ≈0m 43s                                                      | ≈6m 5s                                         | ≈2m 20s                                                      |
 
 ## 关于
 
 创建者：oxiaozouo by [1714050472@qq.com](1714050472@qq.com)
-版本：0.1.0-alpha
-语言：C# .NET 6
+版本：1.1.0-alpha
+语言：C# .NET 7
 
 ## 支持的转码内容
 
