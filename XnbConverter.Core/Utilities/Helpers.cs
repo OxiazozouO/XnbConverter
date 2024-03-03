@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -7,31 +10,50 @@ namespace XnbConverter.Utilities;
 
 public static class Helpers
 {
+    private static Configuration? _config;
+    private static Configuration? _configTmp;
+
+    private static readonly string[] LocaleNames =
+    {
+        "zh-CN",
+        "default",
+        "de-DE",
+        "es-ES",
+        "fr-FR",
+        "hu-HU",
+        "it-IT",
+        "ja-JP",
+        "ko-KR",
+        "pt-BR",
+        "ru-RU",
+        "tr-TR"
+    };
+
+    private static readonly Dictionary<string, string>? _textTip;
+
     static Helpers()
     {
         _config ??= SysPath.Cfg.ToEntity<Configuration>();
-        var filename = "error";
+        string filename = "error";
         if (Config.Locale == "auto")
         {
-            filename += '.' + CultureInfo.InstalledUICulture.ToString();
+            string s = CultureInfo.InstalledUICulture.ToString();
+            if (LocaleNames.Contains(s))
+            {
+                filename += '.' + s;
+            }
+        }
+        else if (LocaleNames.Contains(Config.Locale))
+        {
+            filename += '.' + Config.Locale;
         }
 
         _textTip ??= string.Format(SysPath.I18NPath, filename).ToEntity<Dictionary<string, string>>();
     }
 
-    public static class SysPath
-    {
-        public static readonly string Cfg = Path.GetFullPath(@".\.config\config.json");
-        public static readonly string I18NPath = Path.GetFullPath(@".\.config\i18n\{0}.json");
-        public static readonly string Dll = Path.GetFullPath(@".\.config\custom_dll.json");
-        public static readonly string FFmpeg = Path.GetFullPath(@".\.config\ffmpeg\ffmpeg.exe");
-    }
-
-
-    private static Configuration? _config;
-    private static Configuration? _configTmp;
-
     public static Configuration Config => _config;
+
+    public static Dictionary<string, string> I18N => _textTip;
 
     public static void EnableMultithreading()
     {
@@ -44,9 +66,14 @@ public static class Helpers
         _config = _configTmp;
     }
 
-    private static readonly Dictionary<string, string>? _textTip;
+    public static class SysPath
+    {
+        public static readonly string Cfg = Path.GetFullPath(@".\.config\config.json");
+        public static readonly string I18NPath = Path.GetFullPath(@".\.config\i18n\{0}.json");
+        public static readonly string Dll = Path.GetFullPath(@".\.config\custom_dll.json");
+        public static readonly string FFmpeg = Path.GetFullPath(@".\.config\ffmpeg\ffmpeg.exe");
+    }
 
-    public static Dictionary<string, string> I18N => _textTip;
     public static class NativeMethods
     {
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -68,31 +95,10 @@ public static class Helpers
 
     public class Configuration
     {
-        [Flags]
-        [JsonConverter(typeof(StringEnumConverter))]
-        private enum LogLevels
-        {
-            Info = 1,
-            Warn = 2,
-            Error = 4,
-            Debug = 8
-        }
-
-        public Configuration Copy(int printMod, int saveMod, int concurrency)
-        {
-            var result = new Configuration()
-            {
-                LogTime = LogTime,
-                TimeFormat = TimeFormat,
-                Concurrency = concurrency,
-                LogPrintingOptions = (LogLevels)printMod,
-                LogSaveOptions = (LogLevels)saveMod
-            };
-            return result;
-        }
+        [JsonIgnore] private readonly int _concurrency;
 
         public bool LogTime { get; private init; }
-        public string TimeFormat { get; private init; }
+        public string? TimeFormat { get; private init; }
 
         [JsonProperty]
         private LogLevels LogPrintingOptions
@@ -118,8 +124,6 @@ public static class Helpers
             }
         }
 
-        [JsonIgnore] private readonly int _concurrency;
-
         [JsonProperty]
         public int Concurrency
         {
@@ -138,6 +142,29 @@ public static class Helpers
 
         [JsonProperty]
         // [field: JsonIgnore]
-        public string Locale { get; private init; }
+        public string? Locale { get; private init; }
+
+        public Configuration Copy(int printMod, int saveMod, int concurrency)
+        {
+            var result = new Configuration
+            {
+                LogTime = LogTime,
+                TimeFormat = TimeFormat,
+                Concurrency = concurrency,
+                LogPrintingOptions = (LogLevels)printMod,
+                LogSaveOptions = (LogLevels)saveMod
+            };
+            return result;
+        }
+
+        [Flags]
+        [JsonConverter(typeof(StringEnumConverter))]
+        private enum LogLevels
+        {
+            Info = 1,
+            Warn = 2,
+            Error = 4,
+            Debug = 8
+        }
     }
 }

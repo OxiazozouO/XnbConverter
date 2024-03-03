@@ -21,6 +21,9 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Readers;
 using XnbConverter.Readers.Base;
@@ -33,11 +36,11 @@ namespace XnbConverter.Tbin.Readers;
 
 public class TBin10Reader : BaseReader
 {
-    private StringReader stringReader = new();
-    private int tileSheetListReader;
-    private int propertieListReader;
-    private int layerListReader;
+    private readonly StringReader stringReader = new();
     private bool isRemoveTileSheetsExtension;
+    private int layerListReader;
+    private int propertieListReader;
+    private int tileSheetListReader;
 
 
     public override void Init(ReaderResolver readerResolver)
@@ -108,7 +111,7 @@ public class TBin10Reader : BaseReader
 
     public static TBin10Reader Create(byte[] data)
     {
-        TBin10Reader main = new TBin10Reader();
+        var main = new TBin10Reader();
         _ = new ReaderResolver(
             new BaseReader[]
             {
@@ -124,7 +127,7 @@ public class TBin10Reader : BaseReader
                 new StaticTileReader(),
                 new AnimatedTilerReader()
             },
-            new Type[]
+            new[]
             {
                 typeof(TBin10),
                 typeof(TileSheet),
@@ -136,7 +139,7 @@ public class TBin10Reader : BaseReader
                 typeof(Vector2),
                 typeof(IntVector2),
                 typeof(StaticTile),
-                typeof(AnimatedTile),
+                typeof(AnimatedTile)
             },
             new BufferReader(data),
             new BufferWriter(data)

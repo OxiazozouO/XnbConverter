@@ -1,4 +1,7 @@
-﻿using XnbConverter.Xact.AudioEngine.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using XnbConverter.Xact.AudioEngine.Entity;
 using XnbConverter.Xact.AudioEngine.Reader;
 using XnbConverter.Xact.SoundBank.Entity;
 using XnbConverter.Xact.SoundBank.Reader;
@@ -49,7 +52,7 @@ public static class XACT
         }
 
         var size = soundBank.WaveBankNames.Count;
-        WaveBank?[] arr = new WaveBank?[size];
+        var arr = new WaveBank?[size];
         for (var index = 0; index < size; index++)
         {
             var name = soundBank.WaveBankNames[index];
@@ -59,7 +62,11 @@ public static class XACT
         }
 
         var trackSet = new HashSet<(int, int, string)>();
-        string[] categoryName = audioEngine._categories.Select(t => t.name).ToArray();
+        // List<string> list = new List<string>();
+        var cs = audioEngine._categories;
+        var categoryName = new string[cs.Length];
+        for (var i = 0; i < categoryName.Length; i++) categoryName[i] = cs[i].name;
+
         foreach (var (key, value) in soundBank._sounds)
         {
             trackSet.Clear();

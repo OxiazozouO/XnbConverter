@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Newtonsoft.Json;
 using static System.IO.Directory;
 using static System.IO.File;
@@ -60,7 +63,6 @@ public static class FileUtils
 
     /**
      * 如果不存在就创建文件夹
-     *
      */
     public static void CreateDirectory(this List<(string, string)> list)
     {
@@ -71,16 +73,22 @@ public static class FileUtils
         }
     }
 
-    public static void ToJson(this object data, string path)
+    public static void ToJson(this object data, string path, bool isFileOrd = false)
     {
-        WriteAllText(path, JsonConvert.SerializeObject(data, Formatting.Indented));
+        string text = JsonConvert.SerializeObject(data, Formatting.Indented);
+        if (isFileOrd)
+        {
+            text = text.Replace(@"\\", @"\").Replace(@"\n", "\n");
+        }
+
+        WriteAllText(path, text);
     }
 
-    public static T ToEntity<T>(this string path,bool isFileOrd=false)
+    public static T ToEntity<T>(this string path, bool isFileOrd = false)
     {
         if (!File.Exists(path))
             throw new FileLoadException($"文件{path}不存在！");
-        string json = ReadAllText(path);
+        var json = ReadAllText(path);
         if (isFileOrd)
         {
             json = json.Replace(@"\", @"\\").Replace(@"\n", @"\\n");

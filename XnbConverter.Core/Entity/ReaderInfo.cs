@@ -1,8 +1,10 @@
-﻿namespace XnbConverter.Utilities;
+﻿using System;
+
+namespace XnbConverter.Entity;
 
 public class ReaderInfo
 {
-    public Type Reader;
     public Type Entity;
     public string Extension;
+    public Type Reader;
 }

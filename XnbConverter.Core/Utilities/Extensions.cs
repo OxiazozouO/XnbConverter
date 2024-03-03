@@ -1,4 +1,6 @@
-﻿namespace XnbConverter.Utilities;
+﻿using System;
+
+namespace XnbConverter.Utilities;
 
 public class XnbError : Exception
 {

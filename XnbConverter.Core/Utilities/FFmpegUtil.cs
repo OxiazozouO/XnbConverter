@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using static XnbConverter.Xact.WaveBank.Entity.FmtChunk;
 
 namespace XnbConverter.Utilities;
@@ -37,8 +39,7 @@ public static class FFmpegUtil
             AudioFormats.Ima4 => "ima_adpcm",
             AudioFormats.AdpcmMs => "adpcm_ms",
             AudioFormats.Pcm => "pcm_s16le",
-            // case AudioFormats.Ieee:
-            //     return "";
+            // AudioFormats.Ieee => "",
             null => "copy",
             _ => "copy"
         };

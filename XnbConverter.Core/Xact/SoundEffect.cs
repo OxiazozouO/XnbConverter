@@ -1,31 +1,30 @@
-﻿using Newtonsoft.Json;
+﻿using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Entity;
 
 namespace XnbConverter.Xact;
 
 public class SoundEffect
 {
-    public WaveForm WaveForm = new();
-
     public ExData exData = new();
-
-    public class ExData
-    {
-        public uint LoopStart;
-        public uint LoopLength;
-        public uint DurationMs;
-    }
+    public WaveForm WaveForm = new();
 
     public void Save(string json, string wavPath)
     {
-        File.WriteAllText(json, JsonConvert.SerializeObject(exData, Formatting.Indented));
+        exData.ToJson(json);
         SoundEffectReader.Save(this, wavPath);
     }
 
     public static SoundEffect FormWave(string json, string path)
     {
         var soundEffect = SoundEffectReader.FormFile(path);
-        soundEffect.exData = JsonConvert.DeserializeObject<ExData>(File.ReadAllText(json));
+        soundEffect.exData = json.ToEntity<ExData>();
         return soundEffect;
+    }
+
+    public class ExData
+    {
+        public uint DurationMs;
+        public uint LoopLength;
+        public uint LoopStart;
     }
 }

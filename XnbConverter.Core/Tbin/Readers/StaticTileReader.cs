@@ -1,5 +1,5 @@
-﻿using XnbConverter.Readers;
-using XnbConverter.Readers.Base;
+﻿using System.Collections.Generic;
+using XnbConverter.Readers;
 using XnbConverter.Tbin.Entity;
 
 namespace XnbConverter.Tbin.Readers;

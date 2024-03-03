@@ -1,14 +1,15 @@
-﻿using XnbConverter.Entity.Mono;
+﻿using System;
+using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
 namespace Squish;
 
 public class RangeFit : ColourFit
 {
-    private Vector3 m_metric = new();
-    private Vector3 m_start;
-    private Vector3 m_end;
+    private readonly Vector3 m_metric = new();
     private float m_besterror;
+    private Vector3 m_end;
+    private Vector3 m_start;
 
     public RangeFit(ColourSet colours, bool isDxt1) : base(colours, isDxt1)
     {
@@ -27,7 +28,7 @@ public class RangeFit : ColourFit
 
         // cache some values
         var count = Colours.Count;
-        Vector3[] values = Colours.Points;
+        var values = Colours.Points;
 
         // get the covariance matrix, compute the principle component
         var principle = Sym3x3.ExtractIndicesFromPackedBytes(count, values, Colours.Weights);
@@ -66,10 +67,10 @@ public class RangeFit : ColourFit
     {
         // cache some values
         var count = Colours.Count;
-        Vector3[] values = Colours.Points;
+        var values = Colours.Points;
 
         // create a codebook
-        Vector3[] codes = new Vector3[3];
+        var codes = new Vector3[3];
         codes[0] = m_start;
         codes[1] = m_end;
         codes[2] = 0.5f * (m_start + m_end);

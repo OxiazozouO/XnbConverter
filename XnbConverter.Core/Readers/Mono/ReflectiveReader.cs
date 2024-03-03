@@ -1,13 +1,18 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Xna.Framework.Content;
 
 namespace XnbConverter.Readers.Mono;
 
 public class ReflectiveReader<TV> : BaseReader where TV : new()
 {
+    private const BindingFlags attrs = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance |
+                                       BindingFlags.DeclaredOnly;
+
+    private readonly List<object> _allPro = new();
+    private readonly List<Type> _types = new();
     private int[] _readIndex;
-    private List<Type> _types = new();
-    private List<object> _allPro = new();
 
     public override bool IsValueType()
     {
@@ -18,28 +23,19 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
     {
         base.Init(readerResolver);
         var type = typeof(TV);
-        List<PropertyInfo> properties = GetAllProperties(type); // 获取所有属性
-        List<FieldInfo> fields = GetAllFields(type); // 获取所有字段
+        var properties = GetAllProperties(type); // 获取所有属性
+        var fields = GetAllFields(type); // 获取所有字段
 
         // 设置属性的值
         _allPro.AddRange(properties);
-        foreach (var p in properties)
-        {
-            _types.Add(p.PropertyType);
-        }
+        foreach (var p in properties) _types.Add(p.PropertyType);
 
         // 设置字段的值
         _allPro.AddRange(fields);
-        foreach (var f in fields)
-        {
-            _types.Add(f.FieldType);
-        }
+        foreach (var f in fields) _types.Add(f.FieldType);
 
         _readIndex = new int[_types.Count];
-        for (var i = 0; i < _types.Count; i++)
-        {
-            _readIndex[i] = readerResolver.GetIndex(_types[i]);
-        }
+        for (var i = 0; i < _types.Count; i++) _readIndex[i] = readerResolver.GetIndex(_types[i]);
     }
 
     public override object Read()
@@ -102,7 +98,7 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
         var b = p.GetGetMethod(true);
         if (b == null || b != b.GetBaseDefinition()) return false;
         if (!p.CanRead) return false;
-        if (p.GetIndexParameters().Any()) return false;
+        foreach (var parameter in p.GetIndexParameters()) return false;
         // 如果成员被标记为忽略，则返回 null
         if (Attribute.GetCustomAttribute(p, typeof(ContentSerializerIgnoreAttribute)) is
             ContentSerializerIgnoreAttribute)
@@ -118,9 +114,6 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
 
         return true;
     }
-
-    private const BindingFlags attrs = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance |
-                                       BindingFlags.DeclaredOnly;
 
     public static List<FieldInfo> GetAllFields(Type type)
     {

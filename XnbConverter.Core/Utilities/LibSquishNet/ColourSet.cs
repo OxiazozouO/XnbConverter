@@ -1,22 +1,35 @@
-﻿using XnbConverter.Entity.Mono;
+﻿using System;
+using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
 namespace Squish;
 
 public class ColourSet : IDisposable
 {
-    public int Count = 0;
+    private readonly bool IsDxt1;
+
+    private readonly int[] Remap = Pool.RentNewInt(16);
+    private readonly bool WeightByAlpha;
+    public int Count;
+
+    public bool IsTransparent;
 
     public Vector3[] Points = Pool.RentVector3(16);
 
     public float[] Weights = Pool.RentFloat(16);
 
-    private int[] Remap = Pool.RentNewInt(16);
+    public ColourSet(bool isDxt1, bool weightByAlpha)
+    {
+        IsDxt1 = isDxt1;
+        WeightByAlpha = weightByAlpha;
+    }
 
-    public bool IsTransparent = false;
-
-    private readonly bool IsDxt1;
-    private readonly bool WeightByAlpha;
+    public void Dispose()
+    {
+        Pool.Return(Weights);
+        Pool.Return(Remap);
+        Pool.Return(Points);
+    }
 
     public void Init(ReadOnlySpan<byte> rgba, int mask)
     {
@@ -95,12 +108,6 @@ public class ColourSet : IDisposable
         for (var i = Count; i < 16; i++) Points[i].Clear();
     }
 
-    public ColourSet(bool isDxt1, bool weightByAlpha)
-    {
-        IsDxt1 = isDxt1;
-        WeightByAlpha = weightByAlpha;
-    }
-
     public byte[] RemapIndices(byte[] source)
     {
         var target = Pool.RentByte(16);
@@ -120,12 +127,5 @@ public class ColourSet : IDisposable
             target[i] = Remap[i] == -1 ? (byte)3 : source;
 
         return target;
-    }
-
-    public void Dispose()
-    {
-        Pool.Return(Weights);
-        Pool.Return(Remap);
-        Pool.Return(Points);
     }
 }

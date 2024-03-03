@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
@@ -25,7 +27,7 @@ public class AudioEngineReader : BaseReader
     public new static Entity.AudioEngine Read(string path)
     {
         var waveBankReader = new AudioEngineReader();
-        waveBankReader.Init(new ReaderResolver()
+        waveBankReader.Init(new ReaderResolver
         {
             bufferReader = BufferReader.FormFile(path)
         });
@@ -116,7 +118,7 @@ public class AudioEngineReader : BaseReader
         // 定位到类别名称偏移量以读取类别
         bufferReader.BytePosition = (int)result.catNamesOffset;
 
-        string[] categoryNames = new string[result.numCats];
+        var categoryNames = new string[result.numCats];
         for (var i = 0; i < result.numCats; i++)
             categoryNames[i] = bufferReader.ReadString();
 
@@ -137,7 +139,7 @@ public class AudioEngineReader : BaseReader
         // 定位到变量名称偏移量
         bufferReader.BytePosition = (int)result.varNamesOffset;
         // 读取变量名称
-        string[] varNames = new string[result.numVars];
+        var varNames = new string[result.numVars];
         for (var i = 0; i < result.numVars; i++)
             varNames[i] = bufferReader.ReadString();
         Log.Debug(Helpers.I18N["AudioEngineReader.18"], varNames.ToJoinStr());

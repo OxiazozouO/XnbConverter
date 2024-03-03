@@ -1,4 +1,6 @@
-﻿namespace XnbConverter.Tbin.Entity;
+﻿using System.Collections.Generic;
+
+namespace XnbConverter.Tbin.Entity;
 
 public class TBin10
 {

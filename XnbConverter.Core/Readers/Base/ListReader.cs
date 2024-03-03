@@ -1,4 +1,7 @@
-﻿namespace XnbConverter.Readers.Base;
+﻿using System;
+using System.Collections.Generic;
+
+namespace XnbConverter.Readers.Base;
 
 /**
  * List Reader
@@ -7,8 +10,8 @@
  */
 public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
 {
-    private int _reader;
     private bool _bK;
+    private int _reader;
 
     /**
      * 从缓冲区读取List。
@@ -51,7 +54,7 @@ public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
     }
 
     /// <summary>
-    /// 将List写入缓冲区。
+    ///     将List写入缓冲区。
     /// </summary>
     /// <param name="bufferWriter">缓冲区写入器</param>
     /// <param name="input">包含List的对象</param>

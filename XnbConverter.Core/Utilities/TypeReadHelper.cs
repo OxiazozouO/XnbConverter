@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using XnbConverter.Entity;
 using XnbConverter.Readers;
 using XnbConverter.Readers.Mono;
 using XnbConverter.Tbin.Entity;
@@ -10,18 +14,6 @@ namespace XnbConverter.Utilities;
 
 public static class TypeReadHelper
 {
-    public static class Ext
-    {
-        public const string DEF = ".bin";
-        public const string JSON = ".json";
-        public const string TEXTURE_2D = ".png";
-        public const string EFFECT = ".cso";
-        public const string TBIN = ".tbin";
-        public const string BM_FONT = ".xml";
-        public const string SPRITE_FONT = ".json .png";
-        public const string SOUND_EFFECT = ".json .wav";
-    }
-
     private static readonly Dictionary<string, string> ExtMap = new()
     {
         ["Texture2D"] = Ext.TEXTURE_2D,
@@ -32,14 +24,70 @@ public static class TypeReadHelper
         ["Effect"] = Ext.EFFECT
     };
 
+    // private static string ssss =
+    //     typeof(Dictionary<List<int>, Dictionary<List<string>, Dictionary<List<float>, Dictionary<List<int>, Dictionary<
+    //         List<char>, Dictionary<
+    //             List<int>, Dictionary<int, List<string>>>>>>>>).FullName;
+    // typeof(Int32).FullName;
+    // typeof(TailorItemRecipe).FullName;
+
+    private static readonly ConcurrentDictionary<string, ReaderInfo> Map = new();
+
+    private static readonly Dictionary<string, Type> ReaderTypes = new();
+    private static readonly Dictionary<string, Type> ExtendTypes = new();
+    private static readonly Dictionary<string, Type> Entities = new();
+
+    static TypeReadHelper()
+    {
+        string[] reads =
+            { "XnbConverter.Readers.Base", "XnbConverter.Readers.Base.ValueReaders", "XnbConverter.Readers.Mono" };
+        string[] ents =
+            { "XnbConverter.Entity.Mono" };
+        var types = Assembly.GetExecutingAssembly().GetTypes();
+        // 获取指定命名空间下的所有类型
+        foreach (var t in types)
+        {
+            foreach (var name in reads)
+                if (string.Equals(t.Namespace, name, StringComparison.Ordinal))
+                {
+                    ReaderTypes.Add(Regex.Replace(t.Name, @"`\d+$", "").Replace("Reader", ""), t);
+                    break;
+                }
+
+            foreach (var name in ents)
+                if (string.Equals(t.Namespace, name, StringComparison.Ordinal))
+                {
+                    Entities.Add(t.Name, t);
+                    break;
+                }
+        }
+
+        Type[] tt =
+        {
+            typeof(bool), typeof(char), typeof(double), typeof(int), typeof(float),
+            typeof(uint), typeof(Array), typeof(Nullable), typeof(string),
+            Type.GetType("System.Collections.Generic.List`1"), Type.GetType("System.Collections.Generic.Dictionary`2")
+        };
+        foreach (var type in tt) Entities.Add(Regex.Replace(type.Name, @"`\d+$", ""), type);
+
+        InitExtendTypes();
+        Map["xTile.Pipeline.TideReader, xTile"] = new ReaderInfo
+        {
+            Reader = typeof(TBinReader),
+            Entity = typeof(TBin10),
+            Extension = ExtMap["Tide"]
+        };
+        // Map[""]
+    }
+
     public static ReaderInfo GetReaderInfo(string full)
     {
         if (Map.TryGetValue(full, out var info)) return info;
-        ReaderInfo newInfo = new ReaderInfo();
-        List<string> className = new List<string>();
-        List<string> classFull = new List<string>();
+        var newInfo = new ReaderInfo();
+        List<string> className = new();
+        List<string> classFull = new();
         ParseType(full, ref className, ref classFull);
-        int n = 0;
+        var n = 0;
         try
         {
             (newInfo.Reader, newInfo.Entity) = GetTypeAt(className, ref n);
@@ -47,13 +95,13 @@ public static class TypeReadHelper
         catch (Exception e)
         {
             string str;
-            if (classFull[n].Contains("Microsoft.Xna.Framework.Content"))
+            if (classFull[n].Contains("Microsoft.Xna.Framework.Content.Content"))
             {
                 str = className[n].Split('@')[1];
                 throw new XnbError(Helpers.I18N["TypeReadHelper.1"], str, e.Message);
             }
 
-            string[] strings = classFull[n].Split(',');
+            var strings = classFull[n].Split(',');
             str = strings.Length == 1 ? classFull[n] : classFull[n].Split(',')[1];
             throw new XnbError(Helpers.I18N["TypeReadHelper.2"],
                 classFull[n], Path.GetFullPath(Dll), str, e.Message);
@@ -70,18 +118,9 @@ public static class TypeReadHelper
                ?? throw new XnbError(Helpers.I18N["TypeReadHelper.3"], type);
     }
 
-    // private static string ssss =
-    //     typeof(Dictionary<List<int>, Dictionary<List<string>, Dictionary<List<float>, Dictionary<List<int>, Dictionary<
-    //         List<char>, Dictionary<
-    //             List<int>, Dictionary<int, List<string>>>>>>>>).FullName;
-    // typeof(Int32).FullName;
-    // typeof(TailorItemRecipe).FullName;
-
-    private static ConcurrentDictionary<string, ReaderInfo> Map = new();
-
     private static (Type, Type) GetTypeAt(List<string> list, ref int index)
     {
-        string[] a0 = list[index].Split('@')[0].Split('`');
+        var a0 = list[index].Split('@')[0].Split('`');
         var full = list[index].Split('@')[1];
         var name = a0[0];
 
@@ -90,7 +129,7 @@ public static class TypeReadHelper
             if (a0.Length > 1)
             {
                 var j = int.Parse(a0[1]);
-                Type[] readers = new Type[j * 2];
+                var readers = new Type[j * 2];
                 for (var k = 0; k < j; k++)
                 {
                     ++index;
@@ -112,7 +151,7 @@ public static class TypeReadHelper
 
                 return (ga.MakeGenericType(readers), main);
             }
-            else
+
             {
                 var vv = Type.GetType(full);
                 if (vv == null && Entities.TryGetValue(name, out var ent)) vv = ent;
@@ -124,62 +163,14 @@ public static class TypeReadHelper
                 return (ga, vv);
             }
         }
-        else if (ExtendTypes.TryGetValue(name, out var ex))
+
+        if (ExtendTypes.TryGetValue(name, out var ex))
         {
             var exx = ReaderTypes["Reflective"].MakeGenericType(ex);
             return (exx, ex);
         }
 
         throw new ReaderTypeError(Helpers.I18N["TypeReadHelper.4"], full);
-    }
-
-    private static readonly Dictionary<string, Type> ReaderTypes = new();
-    private static readonly Dictionary<string, Type> ExtendTypes = new();
-    private static readonly Dictionary<string, Type> Entities = new();
-    static TypeReadHelper()
-    {
-        string[] reads =
-            { "XnbConverter.Readers.Base", "XnbConverter.Readers.Base.ValueReaders", "XnbConverter.Readers.Mono" };
-        string[] ents =
-            { "XnbConverter.Entity.Mono" };
-        Type[] types = Assembly.GetExecutingAssembly().GetTypes();
-        // 获取指定命名空间下的所有类型
-        foreach (var t in types)
-        {
-            foreach (var name in reads)
-                if (string.Equals(t.Namespace, name, StringComparison.Ordinal))
-                {
-                    ReaderTypes.Add(Regex.Replace(t.Name, @"`\d+$", "").Replace("Reader", ""), t);
-                    break;
-                }
-
-            foreach (var name in ents)
-                if (string.Equals(t.Namespace, name, StringComparison.Ordinal))
-                {
-                    Entities.Add(t.Name, t);
-                    break;
-                }
-        }
-
-        Type[] tt = new[]
-        {
-            typeof(bool), typeof(char), typeof(double), typeof(int), typeof(float),
-            typeof(uint), typeof(Array), typeof(Nullable), typeof(string),
-            Type.GetType("System.Collections.Generic.List`1"), Type.GetType("System.Collections.Generic.Dictionary`2")
-        };
-        foreach (var type in tt)
-        {
-            Entities.Add(Regex.Replace(type.Name, @"`\d+$", ""), type);
-        }
-
-        InitExtendTypes();
-        Map["xTile.Pipeline.TideReader, xTile"] = new ReaderInfo
-        {
-            Reader = typeof(TBinReader),
-            Entity = typeof(TBin10),
-            Extension = ExtMap["Tide"]
-        };
-        // Map[""]
     }
 
     private static void InitExtendTypes()
@@ -196,29 +187,23 @@ public static class TypeReadHelper
             }
 
             foreach (var type in Assembly.LoadFile(Path.GetFullPath(file)).GetExportedTypes())
-            {
                 ExtendTypes.Add(type.Name, type);
-            }
         }
-
-        files.ToJson(Dll);
+        files.ToJson(Dll,true);
     }
 
     private static void ParseType(string full, ref List<string> nameList, ref List<string> fullList)
     {
-        string fullCopy = full;
-        List<string> tNames = new List<string>();
-        List<string> tFulls = new List<string>();
+        var fullCopy = full;
+        List<string> tNames = new();
+        List<string> tFulls = new();
         var i = full.IndexOf('`');
         ReadOnlySpan<char> l;
         var tag = -1;
         if (i == -1)
         {
             var strings = full.Split(',');
-            if (strings.Length > 1)
-            {
-                full = strings[0].Trim('[');
-            }
+            if (strings.Length > 1) full = strings[0].Trim('[');
         }
         else
         {
@@ -233,10 +218,7 @@ public static class TypeReadHelper
         {
             var n = full[i + 1] - '0';
 
-            foreach (var tf in GetFulls(full, n))
-            {
-                ParseType(tf, ref tNames, ref tFulls);
-            }
+            foreach (var tf in GetFulls(full, n)) ParseType(tf, ref tNames, ref tFulls);
 
             l = full[..i] + "`" + n;
         }
@@ -287,5 +269,17 @@ public static class TypeReadHelper
         }
 
         return list;
+    }
+
+    public static class Ext
+    {
+        public const string DEF = ".bin";
+        public const string JSON = ".json";
+        public const string TEXTURE_2D = ".png";
+        public const string EFFECT = ".cso";
+        public const string TBIN = ".tbin";
+        public const string BM_FONT = ".xml";
+        public const string SPRITE_FONT = ".json .png";
+        public const string SOUND_EFFECT = ".json .wav";
     }
 }

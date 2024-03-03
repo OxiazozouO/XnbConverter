@@ -1,4 +1,7 @@
-﻿namespace XnbConverter.Readers.Base;
+﻿using System;
+using System.Collections.Generic;
+
+namespace XnbConverter.Readers.Base;
 
 /**
  * Dictionary Reader
@@ -7,10 +10,10 @@
  */
 public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, new() where TV : BaseReader, new()
 {
-    private int _keyReader;
-    private int _valueReader;
     private bool _bK;
     private bool _bV;
+    private int _keyReader;
+    private int _valueReader;
 
     public override Type GetResultType()
     {
@@ -38,9 +41,9 @@ public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, 
         while (size-- > 0)
         {
             // 获取键
-            object key = _bK ? readerResolver.ReadValue<K>(_keyReader) : readerResolver.Read(_keyReader);
+            var key = _bK ? readerResolver.ReadValue<K>(_keyReader) : readerResolver.Read(_keyReader);
             // 获取值
-            object value = _bV ? readerResolver.ReadValue<V>(_valueReader) : readerResolver.Read(_valueReader);
+            var value = _bV ? readerResolver.ReadValue<V>(_valueReader) : readerResolver.Read(_valueReader);
 
             // 将键值对添加到字典中
             dictionary.Add((K)key, (V)value);

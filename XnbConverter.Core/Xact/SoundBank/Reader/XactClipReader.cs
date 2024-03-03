@@ -1,3 +1,4 @@
+using System;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.SoundBank.Entity;
@@ -81,7 +82,7 @@ public class XactClipReader : BaseReader
                         w.WaveBanks[j] = bufferReader.ReadByte();
                         var minWeight = bufferReader.ReadByte();
                         var maxWeight = bufferReader.ReadByte();
-                        w.Weights[j] = new byte[]
+                        w.Weights[j] = new[]
                         {
                             minWeight,
                             maxWeight
@@ -170,7 +171,7 @@ public class XactClipReader : BaseReader
                         w.WaveBanks[j] = bufferReader.ReadByte();
                         var minWeight = bufferReader.ReadByte();
                         var maxWeight = bufferReader.ReadByte();
-                        w.Weights[j] = new byte[]
+                        w.Weights[j] = new[]
                         {
                             minWeight,
                             maxWeight

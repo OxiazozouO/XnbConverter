@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="win-x64" type="DotNetFolderPublish" factoryName="Publish to folder">
+    <riderPublish configuration="Release" delete_existing_files="true" include_native_libs_for_self_extract="true" platform="Any CPU" produce_single_file="true" runtime="win-x64" self_contained="true" target_folder="$PROJECT_DIR$/Demos/XnbConverter.Cli/bin/Release/net7.0/win-x64/publish" target_framework="net7.0" uuid_high="-6958112735374786409" uuid_low="-7448269696287703539" />
+    <method v="2" />
+  </configuration>
+</component>

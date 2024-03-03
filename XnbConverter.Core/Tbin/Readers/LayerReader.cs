@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Text;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Readers;
-using XnbConverter.Readers.Base;
-using XnbConverter.Readers.Base.ValueReaders;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Utilities;
 using StringReader = XnbConverter.Readers.Base.StringReader;
@@ -12,10 +12,10 @@ namespace XnbConverter.Tbin.Readers;
 public class LayerReader : BaseReader
 {
     private readonly StringReader stringReader = new();
+    private int animatedTilerReader;
     private int intVector2Reader;
     private int propertieListReader;
     private int staticTileReader;
-    private int animatedTilerReader;
 
     public override void Init(ReaderResolver readerResolver)
     {
@@ -122,10 +122,7 @@ public class LayerReader : BaseReader
                 {
                     var size = input._sizeArr[++sizeIndex];
                     bufferWriter.WriteInt32(size);
-                    if (i + size > x)
-                    {
-                        throw new TbinError(Helpers.I18N["LayerReader.1"],x,i);
-                    }
+                    if (i + size > x) throw new TbinError(Helpers.I18N["LayerReader.1"], x, i);
 
                     tilesIndex += size;
                     i += size;

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace XnbConverter.Tbin.Entity;
 
 public class Propertie
@@ -9,7 +11,7 @@ public class Propertie
     public void Parse(out List<object> parsedData)
     {
         parsedData = new List<object>();
-        string[] elements = ((string)Value).Split(' ');
+        var elements = ((string)Value).Split(' ');
         foreach (var element in elements)
             if (int.TryParse(element, out var intValue))
                 parsedData.Add(intValue);

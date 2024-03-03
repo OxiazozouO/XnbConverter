@@ -2,11 +2,6 @@
 
 public static class SingleColourLookup
 {
-    private static SourceBlock[] CreatSourceBlockArr(byte s1, byte e1, byte err1, byte s2, byte e2, byte err2)
-    {
-        return new[] { new SourceBlock(s1, e1, err1), new SourceBlock(s2, e2, err2) };
-    }
-
     public static readonly SourceBlock[][][] Lookups_53_63_53;
     public static readonly SourceBlock[][][] Lookups_54_64_54;
 
@@ -1051,7 +1046,12 @@ public static class SingleColourLookup
             CreatSourceBlockArr(63, 0, 1, 63, 63, 1),
             CreatSourceBlockArr(63, 0, 0, 63, 63, 0)
         };
-        Lookups_53_63_53 = new SourceBlock[][][] { lookup53, lookup63, lookup53 };
-        Lookups_54_64_54 = new SourceBlock[][][] { lookup54, lookup64, lookup54 };
+        Lookups_53_63_53 = new[] { lookup53, lookup63, lookup53 };
+        Lookups_54_64_54 = new[] { lookup54, lookup64, lookup54 };
+    }
+
+    private static SourceBlock[] CreatSourceBlockArr(byte s1, byte e1, byte err1, byte s2, byte e2, byte err2)
+    {
+        return new[] { new SourceBlock(s1, e1, err1), new SourceBlock(s2, e2, err2) };
     }
 }

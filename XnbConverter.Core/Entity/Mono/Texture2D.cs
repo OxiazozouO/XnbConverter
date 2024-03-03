@@ -1,12 +1,15 @@
-﻿using Newtonsoft.Json;
-using SixLabors.ImageSharp.Metadata;
-using Image = SixLabors.ImageSharp.Image;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace XnbConverter.Entity.Mono;
 
 public class Texture2D
 {
-    private static List<Task> tasks = new();
+    private static readonly List<Task> tasks = new();
 
     [JsonIgnore] public byte[] Data { set; get; }
     public int Format { get; set; }

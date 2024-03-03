@@ -58,6 +58,7 @@
 
 #endregion
 
+using System;
 using Newtonsoft.Json;
 using XnbConverter.Readers;
 
@@ -104,76 +105,6 @@ public class LZX : IDisposable
     private const ushort ALIGNED_MAXSYMBOLS = ALIGNED_NUM_ELEMENTS;
     private const ushort ALIGNED_TABLEBITS = 7;
     private const ushort LENTABLE_SAFETY = 64; // 允许表解码超出的安全范围
-
-    private struct LzxState
-    {
-        // 用于最近最少使用（LRU）偏移系统
-        public uint R0, R1, R2;
-
-        // 主树元素的数量
-        public ushort main_elements;
-
-        // 是否已经开始解码
-        public bool header_read;
-
-        // 块的类型
-        public uint block_type;
-
-        // 块的未压缩长度
-        public uint block_length;
-
-        // 块中剩余待解码的未压缩字节数
-        public uint block_remaining;
-
-        // 处理的CFDATA块数量
-        public uint frames_read;
-
-        // 用于转换的魔术头值
-        public int intel_filesize;
-
-        // 转换空间中的当前偏移量
-        public int intel_curpos;
-
-        // 是否已经看到可转换的数据
-        public int intel_started;
-
-        // PRETREE表
-        public ushort[] pretree_table;
-
-        // PRETREE长度
-        public byte[] pretree_len;
-
-        // MAINTREE表
-        public ushort[] maintree_table;
-
-        // MAINTREE长度
-        public byte[] maintree_len;
-
-        // LENGTH表
-        public ushort[] length_table;
-
-        // LENGTH长度
-        public byte[] length_len;
-
-        // ALIGNED表
-        public ushort[] aligned_table;
-
-        // ALIGNED长度
-        public byte[] aligned_len;
-
-        /* 需要的成员 */
-        // CAB实际大小
-        public uint actual_size;
-
-        // CAB窗口
-        public byte[] window;
-
-        // CAB窗口大小
-        public uint window_size;
-
-        // CAB窗口位置
-        public uint window_posn;
-    }
 
     private static readonly uint[] position_base;
     private static readonly byte[] extra_bits;
@@ -248,6 +179,11 @@ public class LZX : IDisposable
         m_state.maintree_len = new byte[MAINTREE_MAXSYMBOLS];
 
         m_state.window = Pool.RentByte((int)m_state.window_size);
+    }
+
+    public void Dispose()
+    {
+        Pool.Return(m_state.window);
     }
 
     /*
@@ -747,7 +683,13 @@ public class LZX : IDisposable
      * @param {Number} symbols 树中的总符号数。
      * @param {Number} bits 任何小于此值的符号可以在查找表中进行一次解码。
      * @param {Number[]} length 给定表的长度表以进行解码。
-     * @returns {Number[]} 解码表, 长度应为 ((1<<nbits) + (nsyms*2))
+     * @returns {Number[]} 解码表, 长度应为 ((1
+     * <
+     * <nbits) + ( nsyms
+     * *
+     * 2
+     * )
+     * )
      */
     private ushort[] DecodeTable(uint symbols, uint bits, byte[] length, int tableMaxLen)
     {
@@ -977,8 +919,73 @@ public class LZX : IDisposable
         lzx.Dispose();
     }
 
-    public void Dispose()
+    private struct LzxState
     {
-        Pool.Return(m_state.window);
+        // 用于最近最少使用（LRU）偏移系统
+        public uint R0, R1, R2;
+
+        // 主树元素的数量
+        public ushort main_elements;
+
+        // 是否已经开始解码
+        public bool header_read;
+
+        // 块的类型
+        public uint block_type;
+
+        // 块的未压缩长度
+        public uint block_length;
+
+        // 块中剩余待解码的未压缩字节数
+        public uint block_remaining;
+
+        // 处理的CFDATA块数量
+        public uint frames_read;
+
+        // 用于转换的魔术头值
+        public int intel_filesize;
+
+        // 转换空间中的当前偏移量
+        public int intel_curpos;
+
+        // 是否已经看到可转换的数据
+        public int intel_started;
+
+        // PRETREE表
+        public ushort[] pretree_table;
+
+        // PRETREE长度
+        public byte[] pretree_len;
+
+        // MAINTREE表
+        public ushort[] maintree_table;
+
+        // MAINTREE长度
+        public byte[] maintree_len;
+
+        // LENGTH表
+        public ushort[] length_table;
+
+        // LENGTH长度
+        public byte[] length_len;
+
+        // ALIGNED表
+        public ushort[] aligned_table;
+
+        // ALIGNED长度
+        public byte[] aligned_len;
+
+        /* 需要的成员 */
+        // CAB实际大小
+        public uint actual_size;
+
+        // CAB窗口
+        public byte[] window;
+
+        // CAB窗口大小
+        public uint window_size;
+
+        // CAB窗口位置
+        public uint window_posn;
     }
 }

@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using XnbConverter.Utilities;
 using static Squish.SquishFlags;
 
@@ -53,12 +54,12 @@ public enum SquishFlags
 
 public class BoolFlag
 {
+    public bool isColourClusterFit;
+    public bool isColourIterativeClusterFit;
+    public bool isColourRangeFit;
     public bool isDxt1;
     public bool isDxt3;
     public bool isDxt5;
-    public bool isColourIterativeClusterFit;
-    public bool isColourClusterFit;
-    public bool isColourRangeFit;
     public bool isWeightColourByAlpha;
 
     public BoolFlag(SquishFlags flags)
@@ -75,13 +76,13 @@ public class BoolFlag
 
 public class Squish : IDisposable
 {
-    private BoolFlag boolFlag;
-    private int Width;
-    private int Height;
-    private ColourSet Colours;
-    private SingleColourFit singleColourFit;
-    private RangeFit rangeFit;
-    private ClusterFit clusterFit;
+    private readonly BoolFlag boolFlag;
+    private readonly ClusterFit clusterFit;
+    private readonly ColourSet Colours;
+    private readonly int Height;
+    private readonly RangeFit rangeFit;
+    private readonly SingleColourFit singleColourFit;
+    private readonly int Width;
 
     public Squish(SquishFlags flags, int width, int height)
     {
@@ -99,6 +100,14 @@ public class Squish : IDisposable
 
         Width = width;
         Height = height;
+    }
+
+    public void Dispose()
+    {
+        Colours.Dispose();
+        singleColourFit.Dispose();
+        clusterFit.Dispose();
+        rangeFit.Dispose();
     }
 
     private static void FixRange(int min, int max, int steps)
@@ -510,13 +519,5 @@ public class Squish : IDisposable
 
         // write the block
         WriteAlphaBlock(alpha0, alpha1, indices, block);
-    }
-
-    public void Dispose()
-    {
-        Colours.Dispose();
-        singleColourFit.Dispose();
-        clusterFit.Dispose();
-        rangeFit.Dispose();
     }
 }

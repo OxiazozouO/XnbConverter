@@ -1,10 +1,10 @@
-﻿using XnbConverter.Entity;
+﻿using System.IO;
+using XnbConverter.Entity;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Tbin.Readers;
 using XnbConverter.Xact;
 using static XnbConverter.Utilities.TypeReadHelper;
-using Texture2D = XnbConverter.Entity.Mono.Texture2D;
 
 namespace XnbConverter.Utilities;
 
@@ -45,7 +45,7 @@ public static class XnbFileHelpers
             // 获取文件的基本名称
             var basename = Path.GetFileNameWithoutExtension(filename);
             var ext = content.Extension.Split(' ');
-            string[] paths = new string[ext.Length];
+            var paths = new string[ext.Length];
             for (var i = 0; i < ext.Length; i++) paths[i] = Path.Combine(dirname, basename + ext[i]);
 
             // 根据导出类型进行切换
@@ -111,7 +111,7 @@ public static class XnbFileHelpers
     {
         // 读取XNB配置文件
         var json = filename.ToEntity<XnbObject>();
-        if(json is null)
+        if (json is null)
             throw new XnbError("{0} 文件为空。", filename);
         if (json.Content is null)
             throw new XnbError("{0} 缺少 'content' 字段。", filename);
@@ -143,7 +143,7 @@ public static class XnbFileHelpers
             case Ext.TBIN:
                 var bytes = File.ReadAllBytes(paths[0]);
                 TBin10Reader.RemoveTileSheetsExtension(ref bytes);
-                var tbin = new TBin10()
+                var tbin = new TBin10
                 {
                     Data = bytes
                 };

@@ -2,9 +2,9 @@
 
 public class DspParameter
 {
-    public byte unkn1;
-    public float Value;
-    public float MinValue;
     public float MaxValue;
+    public float MinValue;
+    public byte unkn1;
     public ushort unkn2;
+    public float Value;
 }

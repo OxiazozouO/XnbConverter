@@ -1,4 +1,4 @@
-using System.Text;
+using System;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Entity;
@@ -7,27 +7,6 @@ namespace XnbConverter.Xact.WaveBank.Reader;
 
 public class RIFFChunkReader : BaseReader, IReaderFileUtil<RIFFChunk>
 {
-    public override bool IsValueType()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override RIFFChunk Read()
-    {
-        var result = new RIFFChunk();
-
-        result.ChunkSize = bufferReader.ReadUInt32();
-
-        return result;
-    }
-
-    public override void Write(object input)
-    {
-        var chunk = (RIFFChunk)input;
-
-        bufferWriter.WriteUInt32(chunk.ChunkSize);
-    }
-
     public void Save(RIFFChunk riffChunk)
     {
         bufferWriter.WriteAsciiString(riffChunk.ChunkID);
@@ -48,5 +27,26 @@ public class RIFFChunkReader : BaseReader, IReaderFileUtil<RIFFChunk>
         if (result.Format != WaveMarks.WAVE)
             throw new XnbError(Helpers.I18N["RIFFChunkReader.2"], result.Format);
         return result;
+    }
+
+    public override bool IsValueType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override RIFFChunk Read()
+    {
+        var result = new RIFFChunk();
+
+        result.ChunkSize = bufferReader.ReadUInt32();
+
+        return result;
+    }
+
+    public override void Write(object input)
+    {
+        var chunk = (RIFFChunk)input;
+
+        bufferWriter.WriteUInt32(chunk.ChunkSize);
     }
 }

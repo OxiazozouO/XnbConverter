@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using XnbConverter.Entity;
@@ -8,21 +10,69 @@ using static XnbConverter.XNB;
 namespace XnbConverter.Readers;
 
 /**
-* 创建Reader类的实例。
-* @constructor
-* @param {String} filename 要读取的文件名。
-*/
+ * 创建Reader类的实例。
+ * @constructor
+ * @param {String} filename 要读取的文件名。
+ */
 public class BufferReader : IDisposable
 {
     private const int LITTLE_ENDIAN = 0;
     private const int BIG_ENDIAN = 1;
-    private int _byteOrder = LITTLE_ENDIAN;
-    private int _bitOffset = 0;
-    private int _lastDebugLoc = 0;
     private readonly bool _isPool = true;
+    private int _bitOffset;
+    private int _byteOrder = LITTLE_ENDIAN;
+    private int _lastDebugLoc = 0;
+
+    //返回缓冲区。
+    public byte[] Buffer;
+
+    /**
+     * 获取缓冲区的查找索引。
+     * @public
+     * @property bytePosition 字节位置
+     * @return {Number} Reurns 重新获得缓冲区查找索引。
+     */
+    public int BytePosition;
 
     private BufferReader()
     {
+    }
+
+    public BufferReader(byte[] buffer)
+    {
+        Buffer = buffer;
+        Size = Buffer.Length;
+        _isPool = false;
+    }
+
+    public int BitPosition
+    {
+        //获取当前的位读取位置。
+        get => _bitOffset;
+        //设置位位置，限制在16位帧内。
+        set
+        {
+            // 当倒回时，将其重置为
+            if (value < 0)
+                value = 16 - value;
+            // 设置偏移量，并将其限制在16位帧内
+            _bitOffset = value % 16;
+            // 获取超过16位帧的位范围的字节寻找
+            var byteSeek = (value - Math.Abs(value) % 16) / 16 * 2;
+            // 寻找溢出的16位帧
+            Skip(byteSeek);
+        }
+    }
+
+    //缓冲区的大小。
+    public int Size { get; private set; }
+
+    /**
+     * 关闭和归还相关资源
+     */
+    public void Dispose()
+    {
+        if (_isPool) Pool.Return(Buffer);
     }
 
     public static BufferReader FormXnbFile(string filename)
@@ -59,13 +109,6 @@ public class BufferReader : IDisposable
         return result;
     }
 
-    public BufferReader(byte[] buffer)
-    {
-        Buffer = buffer;
-        Size = Buffer.Length;
-        _isPool = false;
-    }
-
     public static BufferReader FormFile(string filename)
     {
         return new BufferReader(File.ReadAllBytes(filename));
@@ -84,39 +127,6 @@ public class BufferReader : IDisposable
         if (BytePosition < 0 || BytePosition > Buffer.Length)
             throw new XnbError(Helpers.I18N["BufferReader.2"], BytePosition, Buffer.Length);
     }
-
-    /**
-     * 获取缓冲区的查找索引。
-     * @public
-     * @property bytePosition 字节位置
-     * @return {Number} Reurns 重新获得缓冲区查找索引。
-     */
-    public int BytePosition = 0;
-
-    public int BitPosition
-    {
-        //获取当前的位读取位置。
-        get => _bitOffset;
-        //设置位位置，限制在16位帧内。
-        set
-        {
-            // 当倒回时，将其重置为
-            if (value < 0)
-                value = 16 - value;
-            // 设置偏移量，并将其限制在16位帧内
-            _bitOffset = value % 16;
-            // 获取超过16位帧的位范围的字节寻找
-            var byteSeek = (value - Math.Abs(value) % 16) / 16 * 2;
-            // 寻找溢出的16位帧
-            Skip(byteSeek);
-        }
-    }
-
-    //缓冲区的大小。
-    public int Size { get; private set; }
-
-    //返回缓冲区。
-    public byte[] Buffer;
 
     public byte[] GetBuffer()
     {
@@ -368,10 +378,10 @@ public class BufferReader : IDisposable
     }
 
     /**
-    * 预览一个float。
-    * @public
-    * @returns {Number}
-    */
+     * 预览一个float。
+     * @public
+     * @returns {Number}
+     */
     public float PeekSingle()
     {
         var buffer = Peek(sizeof(float)); //4
@@ -476,12 +486,12 @@ public class BufferReader : IDisposable
     }
 
     /**
-    * 用于预览位。
-    * @public
-    * @method peekLZXBits
-    * @param {Number} bits
-    * @returns {Number}
-    */
+     * 用于预览位。
+     * @public
+     * @method peekLZXBits
+     * @param {Number} bits
+     * @returns {Number}
+     */
     public uint PeekLzxBits(int bits)
     {
         // 存储当前位位置
@@ -503,11 +513,11 @@ public class BufferReader : IDisposable
 
     /**
      * 从LZX位流中读取一个16位整数
-     *
+     * 
      * 字节顺序与位流相反，16位整数存储为LSB -> MSB (字节)的顺序
      * abc[...]xyzABCDEF 的位表示为：
      * [ijklmnop][abcdefgh][yzABCDEF][qrstuvwx]
-     *
+     * 
      * @public
      * @method readLZXInt16
      * @param {Boolean} seek
@@ -535,13 +545,5 @@ public class BufferReader : IDisposable
     {
         if (BitPosition > 0)
             BitPosition += 16 - BitPosition;
-    }
-
-    /**
-     * 关闭和归还相关资源
-     */
-    public void Dispose()
-    {
-        if (_isPool) Pool.Return(Buffer);
     }
 }

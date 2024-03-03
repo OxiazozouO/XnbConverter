@@ -1,11 +1,12 @@
-﻿using XnbConverter.Readers;
+﻿using System;
+using XnbConverter.Readers;
 using XnbConverter.Xact.AudioEngine.Entity;
 
 namespace XnbConverter.Xact.AudioEngine.Reader;
 
 public class ReverbSettingsReader : BaseReader
 {
-    private DspParameterReader dspParameterReader = new();
+    private readonly DspParameterReader dspParameterReader = new();
 
     public override void Init(ReaderResolver readerResolver)
     {

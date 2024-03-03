@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace XnbConverter.Utilities;
 
@@ -9,15 +12,14 @@ namespace XnbConverter.Utilities;
  */
 public static class Log
 {
-    private static readonly object MessageLock = new();
-    private static readonly StringBuilder InfoLog = new();
-    private static readonly StringBuilder ErrorLog = new();
-
     private const string INFO = "[INFO]  ";
     private const string DEBUG = "[DEBUG] ";
     private const string WARN = "[WARN]  ";
 
     private const string ERROR = "[ERROR] ";
+    private static readonly object MessageLock = new();
+    private static readonly StringBuilder InfoLog = new();
+    private static readonly StringBuilder ErrorLog = new();
 
     //只是简单的控制信息，在于方便查找相关用法
     public static void Message(string message = "", params object?[] format)
@@ -80,38 +82,34 @@ public static class Log
 
     public static void Save()
     {
-        string info = "info.txt";
-        string err = "error.txt";
-        string now = DateTime.Now.ToString(".yyyy-MM-dd.");
-        if (File.Exists(info) && new FileInfo(info).LastWriteTime.Day != DateTime.Now.Day)
+        var info = "info.txt";
+        var err = "error.txt";
+        var now = DateTime.Now;
+        var last = new FileInfo(info).LastWriteTime;
+        if (File.Exists(info) && last.Day != now.Day)
         {
             var p1 = Path.GetFullPath(info);
-            var p2 = Path.GetFullPath(info.Replace(".", now));
-            File.Move(p1,p2);
+            var p2 = Path.GetFullPath(info.Replace(".", last.ToString(".yyyy-MM-dd.")));
+            File.Move(p1, p2,true);
         }
-        if (File.Exists(err) && new FileInfo(info).LastWriteTime.Day != DateTime.Now.Day)
+
+        if (File.Exists(err) && last.Day != now.Day)
         {
             var p1 = Path.GetFullPath(err);
-            var p2 = Path.GetFullPath(err.Replace(".", now));
-            File.Move(p1,p2);
+            var p2 = Path.GetFullPath(err.Replace(".", last.ToString(".yyyy-MM-dd.")));
+            File.Move(p1, p2,true);
         }
 
         if (Helpers.Config.SInfo)
         {
             var str = InfoLog.ToString();
-            if (str != "")
-            {
-                File.AppendAllText(info, str);
-            }
+            if (str != "") File.AppendAllText(info, str);
         }
 
         if (Helpers.Config.SError)
         {
             var str = ErrorLog.ToString();
-            if (str != "")
-            {
-                File.AppendAllText(err, str);
-            }
+            if (str != "") File.AppendAllText(err, str);
         }
     }
 
@@ -130,7 +128,7 @@ public static class Log
     {
         return string.Join(",", strings);
     }
-    
+
     public static string ToJoinStr<T>(this IEnumerable<T> strings)
     {
         return string.Join(",", strings);

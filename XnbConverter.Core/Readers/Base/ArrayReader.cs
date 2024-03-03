@@ -1,4 +1,7 @@
-﻿namespace XnbConverter.Readers.Base;
+﻿using System;
+using System.Collections.Generic;
+
+namespace XnbConverter.Readers.Base;
 
 /**
  * Array Reader
@@ -7,8 +10,8 @@
  */
 public class ArrayReader<T> : BaseReader where T : BaseReader, new()
 {
-    private int reader;
     private bool flag;
+    private int reader;
 
     public override void Init(ReaderResolver readerResolver)
     {
@@ -26,7 +29,6 @@ public class ArrayReader<T> : BaseReader where T : BaseReader, new()
 
         // 循环size次读取数组元素
         if (flag)
-        {
             for (var i = 0; i < size; i++)
             {
                 // 从缓冲区获取值
@@ -34,9 +36,7 @@ public class ArrayReader<T> : BaseReader where T : BaseReader, new()
                 // 将值添加到本地数组
                 array.Add((T)value);
             }
-        }
         else
-        {
             for (var i = 0; i < size; i++)
             {
                 // 从缓冲区获取值
@@ -44,7 +44,6 @@ public class ArrayReader<T> : BaseReader where T : BaseReader, new()
                 // 将值添加到本地数组
                 array.Add((T)value);
             }
-        }
 
         // 返回数组
         return array;

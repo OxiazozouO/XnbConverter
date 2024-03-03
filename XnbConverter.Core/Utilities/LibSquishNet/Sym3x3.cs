@@ -1,4 +1,5 @@
-﻿using XnbConverter.Entity.Mono;
+﻿using System;
+using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
 namespace Squish;

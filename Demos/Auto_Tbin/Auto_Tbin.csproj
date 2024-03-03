@@ -9,13 +9,69 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <None Include="..\..\.config\config.json">
+          <Link>.config\config.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\custom_dll.json">
+          <Link>.config\custom_dll.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.de-DE.json">
+          <Link>.config\i18n\error.de-DE.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.es-ES.json">
+          <Link>.config\i18n\error.es-ES.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.fr-FR.json">
+          <Link>.config\i18n\error.fr-FR.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.hu-HU.json">
+          <Link>.config\i18n\error.hu-HU.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.it-IT.json">
+          <Link>.config\i18n\error.it-IT.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.ja-JP.json">
+          <Link>.config\i18n\error.ja-JP.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.json">
+          <Link>.config\i18n\error.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.ko-KR.json">
+          <Link>.config\i18n\error.ko-KR.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.pt-BR.json">
+          <Link>.config\i18n\error.pt-BR.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.ru-RU.json">
+          <Link>.config\i18n\error.ru-RU.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.tr-TR.json">
+          <Link>.config\i18n\error.tr-TR.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.config\i18n\error.zh-CN.json">
+          <Link>.config\i18n\error.zh-CN.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
         <Content Include="..\..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
-        <Content Include="..\..\.resources\1.json">
-            <Link>1.json</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
+        <None Include="..\..\.resources\1.json">
+          <Link>1.json</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>

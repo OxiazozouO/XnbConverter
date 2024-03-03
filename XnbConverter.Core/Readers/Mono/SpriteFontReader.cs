@@ -1,4 +1,6 @@
-﻿using XnbConverter.Entity.Mono;
+﻿using System;
+using System.Collections.Generic;
+using XnbConverter.Entity.Mono;
 using XnbConverter.Readers.Base;
 using XnbConverter.Readers.Base.ValueReaders;
 using Rectangle = XnbConverter.Entity.Mono.Rectangle;
@@ -8,9 +10,9 @@ namespace XnbConverter.Readers.Mono;
 public class SpriteFontReader : BaseReader
 {
     private readonly NullableReader<CharReader, char> nullableReader = new();
-    private int texture2DReader;
-    private int rectangleListReader;
     private int charListReader;
+    private int rectangleListReader;
+    private int texture2DReader;
     private int vector3ListReader;
 
     public override void Init(ReaderResolver readerResolver)

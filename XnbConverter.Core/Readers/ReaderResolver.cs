@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using XnbConverter.Utilities;
 
@@ -5,20 +6,22 @@ namespace XnbConverter.Readers;
 
 public class ReaderResolver
 {
+    private readonly string _typeIndex;
+
     /**
      * 用于使用读取器读取XNB类型的类
      * @class
      */
-    private BaseReader[] readerArr;
+    private readonly BaseReader[] readerArr;
 
-    private readonly string _typeIndex;
-    public BufferWriter bufferWriter;
     public BufferReader bufferReader;
+    public BufferWriter bufferWriter;
 
     /**
      * 创建ReaderResolver的新实例
      * @constructor
-     * @param {List<BaseReader>} readers BaseReader的数组
+     * @param {List
+     * <BaseReader>} readers BaseReader的数组
      */
     public ReaderResolver()
     {
@@ -41,10 +44,7 @@ public class ReaderResolver
         this.bufferReader = bufferReader;
         this.bufferWriter = bufferWriter;
         var sb = new StringBuilder();
-        for (var i = 0; i < readerArr.Length; i++)
-        {
-            sb.Append(i).Append('@').Append(names[i]).Append('@');
-        }
+        for (var i = 0; i < readerArr.Length; i++) sb.Append((char)i).Append('@').Append(names[i]).Append('@');
 
         _typeIndex = sb.ToString();
         Init();
@@ -62,10 +62,7 @@ public class ReaderResolver
 
     private void Init()
     {
-        foreach (var t in readerArr)
-        {
-            t.Init(this);
-        }
+        foreach (var t in readerArr) t.Init(this);
     }
 
     /**
@@ -111,22 +108,8 @@ public class ReaderResolver
     {
         var readerStr = '@' + t.ToString() + '@';
         var i = _typeIndex.AsSpan().IndexOf(readerStr);
-        if (i == -1 || i > _typeIndex.Length)
-        {
-            throw new ArgumentException();
-        }
-
-        if (i == 1 || _typeIndex[i - 2] == '@')
-        {
-            return _typeIndex[i - 1] - '0';
-        }
-
-        if (_typeIndex[i - 3] == '@')
-        {
-            return (_typeIndex[i - 2] - '0') * 10 + (_typeIndex[i - 1] - '0');
-        }
-
-        throw new NotImplementedException();
+        if (i == -1 || i > _typeIndex.Length) throw new ArgumentException();
+        return _typeIndex[i - 1];
     }
 
     /**

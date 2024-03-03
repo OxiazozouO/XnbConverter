@@ -1,22 +1,23 @@
-﻿using XnbConverter.Entity.Mono;
+﻿using System;
+using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
 namespace Squish;
 
 public class SingleColourFit : ColourFit
 {
-    private byte[] m_colour = Pool.RentByte(3);
-    private Vector3 m_start;
-    private Vector3 m_end;
+    private readonly SourceBlock[] _sources;
+    private readonly byte[] m_colour = Pool.RentByte(3);
+    private readonly Vector3 m_end;
+    private readonly Vector3 m_start;
 
-    private byte m_index;
+    // initialise the best error
+    private int m_besterror;
 
     // check each index combination (endpoint or intermediate)
     private int m_error;
 
-    // initialise the best error
-    private int m_besterror;
-    private SourceBlock[] _sources;
+    private byte m_index;
 
     public SingleColourFit(ColourSet colours, bool isDxt1) : base(colours, isDxt1)
     {

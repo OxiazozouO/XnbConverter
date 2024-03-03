@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Entity;
@@ -10,11 +10,77 @@ namespace XnbConverter.Xact.WaveBank.Reader;
 public class WaveFormReader : BaseReader, IReaderFileUtil<WaveForm>, IDisposable
 {
     private const int AdpcmMiniWaveFormatBlockAlignConversionOffset = 22;
-    private ChunkReader chunkReader = new();
-    private RIFFChunkReader riffChunkReader = new();
-    private FmtChunkReader fmtChunkReader = new();
-    private DATAChunkReader dataChunkReader = new();
-    private FactChunkReader factChunkReader = new();
+    private readonly ChunkReader chunkReader = new();
+    private readonly DATAChunkReader dataChunkReader = new();
+    private readonly FactChunkReader factChunkReader = new();
+    private readonly FmtChunkReader fmtChunkReader = new();
+    private readonly RIFFChunkReader riffChunkReader = new();
+
+    public void Dispose()
+    {
+        bufferWriter?.Dispose();
+        bufferReader?.Dispose();
+    }
+
+    public void Save(WaveForm input)
+    {
+        riffChunkReader.Save(input.riffChunk);
+        fmtChunkReader.Save(input.fmtChunk); //16
+
+        if (input.fmtChunk.CbSize is not null and not 0 && input.factChunk is not null)
+            factChunkReader.Save(input.factChunk);
+
+        dataChunkReader.Save(input.dataChunk); //8
+        //44
+    }
+
+    public WaveForm Load()
+    {
+        var result = new WaveForm();
+        result.riffChunk = riffChunkReader.Load();
+        result.fmtChunk = fmtChunkReader.Load();
+        result.fmtChunk.CheckFmtID("All");
+
+        while (true)
+        {
+            var chunkId = bufferReader.ReadString(4);
+            switch (chunkId)
+            {
+                case WaveMarks.data:
+                    goto data;
+                case WaveMarks.LIST:
+                    if (1 == 2)
+                    {
+                        var str = chunkId + " ";
+                        var s = bufferReader.ReadInt32();
+                        var bites = new char[s];
+                        if (s == 26)
+                        {
+                            str += bufferReader.ReadString(4) + " ";
+                            str += bufferReader.ReadString(4) + " ";
+                            var s2 = bufferReader.ReadUInt32(); //14
+                            if (s2 != 14)
+                                throw new Exception("LIST chunk size is too small");
+                            str += bufferReader.ReadString((int)s2);
+                            Log.Debug(str);
+                            Console.WriteLine(str);
+                        }
+                    }
+
+                    goto default;
+                case WaveMarks.fact:
+                    result.factChunk = factChunkReader.Load();
+                    break;
+                default:
+                    bufferReader.Skip(bufferReader.ReadInt32());
+                    break;
+            }
+        }
+
+        data:
+        result.dataChunk = dataChunkReader.Load();
+        return result;
+    }
 
 
     public override void Init(ReaderResolver readerResolver)
@@ -38,7 +104,7 @@ public class WaveFormReader : BaseReader, IReaderFileUtil<WaveForm>, IDisposable
         wave.riffChunk.ChunkSize = 36u + wave.dataChunk.DataSize;
 
         var waveFormReader = new WaveFormReader();
-        waveFormReader.Init(new ReaderResolver()
+        waveFormReader.Init(new ReaderResolver
         {
             bufferWriter = new BufferWriter(8300 + (int)size)
         });
@@ -88,7 +154,7 @@ public class WaveFormReader : BaseReader, IReaderFileUtil<WaveForm>, IDisposable
                     dataFactSize /= fmtChunk.NumChannels;
                 }
 
-                wave.factChunk = new FactChunk()
+                wave.factChunk = new FactChunk
                 {
                     DataFactSize = dataFactSize
                 };
@@ -155,7 +221,7 @@ public class WaveFormReader : BaseReader, IReaderFileUtil<WaveForm>, IDisposable
         fmt.EncoderVersion = 3; // or 4
         fmt.BlockCount = 1;
 
-        var riffChunk = new RIFFChunk()
+        var riffChunk = new RIFFChunk
         {
             // Size = 4 + sizeof(mywav_chunk) // RIFF
             //       + sizeof(fmt) // fmt
@@ -167,9 +233,9 @@ public class WaveFormReader : BaseReader, IReaderFileUtil<WaveForm>, IDisposable
 
         List<Chunk> chunks = new()
         {
-            new() { Id = WaveMarks.fmt, Size = riffChunk.ChunkSize },
-            new() { Id = WaveMarks.seek, Size = (uint)seeklen },
-            new() { Id = WaveMarks.data, Size = (uint)rawlen }
+            new Chunk { Id = WaveMarks.fmt, Size = riffChunk.ChunkSize },
+            new Chunk { Id = WaveMarks.seek, Size = (uint)seeklen },
+            new Chunk { Id = WaveMarks.data, Size = (uint)rawlen }
         };
 
 
@@ -202,73 +268,5 @@ public class WaveFormReader : BaseReader, IReaderFileUtil<WaveForm>, IDisposable
     public override void Write(object input)
     {
         throw new NotImplementedException();
-    }
-
-    public void Dispose()
-    {
-        bufferWriter?.Dispose();
-        bufferReader?.Dispose();
-    }
-
-    public void Save(WaveForm input)
-    {
-        riffChunkReader.Save(input.riffChunk);
-        fmtChunkReader.Save(input.fmtChunk); //16
-
-        if (input.fmtChunk.CbSize is not null and not 0 && input.factChunk is not null)
-            factChunkReader.Save(input.factChunk);
-
-        dataChunkReader.Save(input.dataChunk); //8
-        //44
-    }
-
-    public WaveForm Load()
-    {
-        var result = new WaveForm();
-        result.riffChunk = riffChunkReader.Load();
-        result.fmtChunk = fmtChunkReader.Load();
-        result.fmtChunk.CheckFmtID("All");
-
-        while (true)
-        {
-            var chunkId = bufferReader.ReadString(4);
-            switch (chunkId)
-            {
-                case WaveMarks.data:
-                    goto data;
-                case WaveMarks.LIST:
-                    if (1 == 2)
-                    {
-                        var str = chunkId + " ";
-                        var s = bufferReader.ReadInt32();
-                        var bites = new char[s];
-                        if (s == 26)
-                        {
-                            str += bufferReader.ReadString(4) + " ";
-                            str += bufferReader.ReadString(4) + " ";
-                            var s2 = bufferReader.ReadUInt32(); //14
-                            if (s2 != 14)
-                                throw new Exception("LIST chunk size is too small");
-                            str += bufferReader.ReadString((int)s2);
-                            Log.Debug(str);
-                            Console.WriteLine(str);
-                        }
-                    }
-                    else
-                    {
-                        goto default;
-                    }
-                case WaveMarks.fact:
-                    result.factChunk = factChunkReader.Load();
-                    break;
-                default:
-                    bufferReader.Skip(bufferReader.ReadInt32());
-                    break;
-            }
-        }
-
-        data:
-        result.dataChunk = dataChunkReader.Load();
-        return result;
     }
 }

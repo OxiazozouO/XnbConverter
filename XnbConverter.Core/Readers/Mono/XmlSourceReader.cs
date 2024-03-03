@@ -1,4 +1,6 @@
-﻿using XnbConverter.Entity.Mono;
+﻿using System;
+using XnbConverter.Entity.Mono;
+using XnbConverter.Readers.Base;
 using StringReader = XnbConverter.Readers.Base.StringReader;
 
 namespace XnbConverter.Readers.Mono;
@@ -14,7 +16,7 @@ public class XmlSourceReader : BaseReader
     public override XmlSource Read()
     {
         var xml = StringReader.ReadValueBy7Bit(bufferReader);
-        return new XmlSource() { Data = xml };
+        return new XmlSource { Data = xml };
     }
 
     public override void Write(object input)

@@ -1,7 +1,8 @@
+using System;
+using System.Collections.Generic;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.SoundBank.Entity;
-using XnbConverter.Xact.WaveBank;
 using static XnbConverter.Xact.SoundBank.Entity.SoundBank;
 using static XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue;
 
@@ -17,10 +18,10 @@ public class SoundBankReader : BaseReader
         xactSoundReader.Init(readerResolver);
     }
 
-    public new static SoundBank.Entity.SoundBank Read(string path)
+    public new static Entity.SoundBank Read(string path)
     {
         var waveBankReader = new SoundBankReader();
-        waveBankReader.Init(new ReaderResolver()
+        waveBankReader.Init(new ReaderResolver
         {
             bufferReader = BufferReader.FormFile(path)
         });
@@ -32,9 +33,9 @@ public class SoundBankReader : BaseReader
         throw new NotImplementedException();
     }
 
-    public override SoundBank.Entity.SoundBank Read()
+    public override Entity.SoundBank Read()
     {
-        var result = new SoundBank.Entity.SoundBank();
+        var result = new Entity.SoundBank();
         var header = result.Header;
         header.Magic = bufferReader.ReadString(4); // 读取魔术值
         if (header.Magic != "SDBK")
@@ -112,7 +113,7 @@ public class SoundBankReader : BaseReader
 
         // 解析cue name table
         bufferReader.BytePosition = (int)header.CueNamesOffset; //266
-        string[] CueNames = bufferReader.ReadString(header.CueNameTableLen).Split('\0');
+        var CueNames = bufferReader.ReadString(header.CueNameTableLen).Split('\0');
 
 
         if (header.NumSimpleCues > 0)
@@ -120,7 +121,7 @@ public class SoundBankReader : BaseReader
             bufferReader.BytePosition = (int)header.SimpleCuesOffset;
             for (var i = 0; i < header.NumSimpleCues; i++)
             {
-                var se = new SoundEntry()
+                var se = new SoundEntry
                 {
                     Flags = bufferReader.ReadByte(),
                     SoundOffset = bufferReader.ReadUInt32() //266 
@@ -134,13 +135,13 @@ public class SoundBankReader : BaseReader
                 result.SoundEntrys.Add(se);
                 // if (result._sounds.ContainsKey(CueNames[i]))
                 //     Console.WriteLine();
-                result._sounds.Add(CueNames[i], new XactSound[] { sound });
+                result._sounds.Add(CueNames[i], new[] { sound });
                 // result._probabilities.Add(CueNames[i], result.dedefaultProbability);
             }
         }
 
 
-        Log.Debug(Helpers.I18N["SoundBankReader.20"],CueNames.ToJoinStr()); // 提示音
+        Log.Debug(Helpers.I18N["SoundBankReader.20"], CueNames.ToJoinStr()); // 提示音
         var totalCueCount = 0;
 
         if (header.NumComplexCues > 0)
@@ -164,7 +165,7 @@ public class SoundBankReader : BaseReader
                         bufferReader.BytePosition = ord;
                         // if (result._sounds.ContainsKey(CueNames[header.NumSimpleCues + i]))
                         //     Console.WriteLine();
-                        result._sounds.Add(CueNames[header.NumSimpleCues + i], new XactSound[] { sound });
+                        result._sounds.Add(CueNames[header.NumSimpleCues + i], new[] { sound });
                         // result._probabilities.Add(CueNames[header.NumSimpleCues + i], result.dedefaultProbability);
                     }
 
@@ -184,9 +185,10 @@ public class SoundBankReader : BaseReader
                     soundCue.VariationFlags = bufferReader.ReadUInt16();
                     soundCue.Unknowns.Add(bufferReader.Read(4));
 
-                    XactSound[] cueSounds = new XactSound[soundCue.NumEntries];
+                    var cueSounds = new XactSound[soundCue.NumEntries];
                     // float[] probs = new float[soundCue.NumEntries];
-                    Log.Debug(Helpers.I18N["SoundBankReader.22"], CueNames[header.NumSimpleCues + i], soundCue.NumEntries);
+                    Log.Debug(Helpers.I18N["SoundBankReader.22"], CueNames[header.NumSimpleCues + i],
+                        soundCue.NumEntries);
 
                     var tableType = (soundCue.VariationFlags >> 3) & 0x7;
                     for (var j = 0; j < soundCue.NumEntries; j++)
@@ -201,7 +203,7 @@ public class SoundBankReader : BaseReader
                                 c.BWeightMin = bufferReader.ReadByte();
                                 c.BWeightMax = bufferReader.ReadByte();
                                 Log.Debug(Helpers.I18N["SoundBankReader.23"], c.WaveBankIndex);
-                                cueSounds[j] = new XactSound() { CueVariation = c };
+                                cueSounds[j] = new XactSound { CueVariation = c };
                                 break;
                             }
                             case 1:
@@ -241,7 +243,7 @@ public class SoundBankReader : BaseReader
                                 c.WaveBankIndex = bufferReader.ReadByte();
                                 Log.Debug(Helpers.I18N["SoundBankReader.23"], c.WaveBankIndex);
 
-                                cueSounds[j] = new XactSound() { CueVariation = c };
+                                cueSounds[j] = new XactSound { CueVariation = c };
                                 break;
                             }
                             default:

@@ -1,6 +1,4 @@
-﻿using static System.Text.Encoding;
-
-namespace XnbConverter.Xact.WaveBank.Entity;
+﻿namespace XnbConverter.Xact.WaveBank.Entity;
 
 public static class WaveMarks
 {

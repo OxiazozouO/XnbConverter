@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Newtonsoft.Json;
 using XnbConverter.Entity;
@@ -5,30 +6,20 @@ using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Utilities.LZX;
 using static XnbConverter.Entity.XnbObject.TargetTags;
-using StringReader = XnbConverter.Readers.Base.StringReader;
 using LZ4 = LZ4PCL.LZ4Codec;
+using StringReader = XnbConverter.Readers.Base.StringReader;
 
 namespace XnbConverter;
 
 /// <summary>
-/// 用于读取和写入XNB文件的XNB文件类
+///     用于读取和写入XNB文件的XNB文件类
 /// </summary>
 public class XNB : IDisposable
 {
-    // 用于掩码的常量
-    public record struct XnbConstants
-    {
-        // public const int HIDEF_MASK = 1;
-        // public const int COMPRESSED_LZ4_MASK = 64;
-        // public const int COMPRESSED_LZX_MASK = 128;
-        public const int XNB_COMPRESSED_PROLOGUE_SIZE = 14;
-
-        public const int FILE_SIZE_INDEX = 6;
-        public const int CONTENT_ORIGINAL_SIZE_INDEX = 10;
-    }
-
-    // 目标平台
-    private XnbObject.TargetTags Target;
+    // 由XNB文件使用的读取器数组。
+    private BufferReader bufferReader;
+    private BufferWriter bufferWriter;
+    public object? Data;
 
     // 格式版本
     private byte FormatVersion;
@@ -36,19 +27,23 @@ public class XNB : IDisposable
     // HiDef标志
     private bool Hidef;
 
+    private bool Lz4;
+
     // 压缩标志
     // 压缩类型
     private bool Lzx;
 
-    private bool Lz4;
+    // 目标平台
+    private XnbObject.TargetTags Target;
 
     //Xnb配置文件
     public XnbObject? XnbConfig;
-    public object? Data;
 
-    // 由XNB文件使用的读取器数组。
-    private BufferReader bufferReader;
-    private BufferWriter bufferWriter;
+    public void Dispose()
+    {
+        bufferReader?.Dispose();
+        bufferWriter?.Dispose();
+    }
 
     /**
      * 将文件加载到XNB类中。
@@ -126,7 +121,7 @@ public class XNB : IDisposable
         // 创建StringReader的实例
         // 循环读取读取器的数量
         var sb = new StringBuilder();
-        BaseReader[] readerArr = new BaseReader[count];
+        var readerArr = new BaseReader[count];
         var typeIndex = new StringBuilder();
         for (var i = 0; i < count; i++)
         {
@@ -144,8 +139,8 @@ public class XNB : IDisposable
                 };
 
             readerArr[i] = info.Reader.CreateReader();
-            typeIndex.Append(i).Append('@').Append(info.Reader).Append('@')
-                .Append(i).Append('@').Append(info.Entity).Append('@');
+            typeIndex.Append((char)i).Append('@').Append(info.Reader).Append('@')
+                .Append((char)i).Append('@').Append(info.Entity).Append('@');
             // 添加本地读取器
             json.Readers.Add(new XnbObject.ReadersDTO { Type = type, Version = version });
         }
@@ -220,14 +215,14 @@ public class XNB : IDisposable
             // 写入读取器的数量
             outBuffer.Write7BitNumber(json.Readers.Count);
             var typeIndex = new StringBuilder();
-            BaseReader[] ReaderArr = new BaseReader[json.Readers.Count];
+            var ReaderArr = new BaseReader[json.Readers.Count];
             for (var i = 0; i < json.Readers.Count; i++)
             {
                 var reader = json.Readers[i];
                 var info = TypeReadHelper.GetReaderInfo(reader.Type);
                 ReaderArr[i] = info.Reader.CreateReader();
-                typeIndex.Append(i).Append('@').Append(info.Reader).Append('@')
-                    .Append(i).Append('@').Append(info.Entity).Append('@');
+                typeIndex.Append((char)i).Append('@').Append(info.Reader).Append('@')
+                    .Append((char)i).Append('@').Append(info.Entity).Append('@');
                 StringReader.WriteValueBy7Bit(outBuffer, reader.Type);
                 outBuffer.WriteUInt32(reader.Version);
             }
@@ -318,13 +313,9 @@ public class XNB : IDisposable
 
         // 读取目标平台
         if (Enum.IsDefined(typeof(XnbObject.TargetTags), Target))
-        {
             Log.Debug(Helpers.I18N["XNB.15"], Target.ToString());
-        }
         else
-        {
             Log.Warn(Helpers.I18N["XNB.18"], (char)Target);
-        }
 
         // 读取格式版本
         FormatVersion = bufferReader.ReadByte();
@@ -356,9 +347,15 @@ public class XNB : IDisposable
         Log.Debug(Helpers.I18N["XNB.17"], flags.ToString());
     }
 
-    public void Dispose()
+    // 用于掩码的常量
+    public record struct XnbConstants
     {
-        bufferReader?.Dispose();
-        bufferWriter?.Dispose();
+        // public const int HIDEF_MASK = 1;
+        // public const int COMPRESSED_LZ4_MASK = 64;
+        // public const int COMPRESSED_LZX_MASK = 128;
+        public const int XNB_COMPRESSED_PROLOGUE_SIZE = 14;
+
+        public const int FILE_SIZE_INDEX = 6;
+        public const int CONTENT_ORIGINAL_SIZE_INDEX = 10;
     }
 }

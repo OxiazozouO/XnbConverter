@@ -1,4 +1,5 @@
-﻿using XnbConverter.Tbin.Entity;
+﻿using System;
+using XnbConverter.Tbin.Entity;
 
 namespace XnbConverter.Readers.Mono;
 

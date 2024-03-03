@@ -322,6 +322,132 @@
     ".tr-TR": "Dosya adı: {0} {1} {2}"
   },
   "Program.1": {
+    ".zh-CN": "[可选]是否开启并发",
+    ".default": "Optional: Enable concurrency",
+    ".de-DE": "[Optional] Parallele Ausführung aktivieren",
+    ".es-ES": "[Opcional] Activar concurrencia",
+    ".fr-FR": "[Optionnel] Activer la concurrence",
+    ".hu-HU": "[Opcionális] Párhuzamos végrehajtás engedélyezése",
+    ".it-IT": "[Opzionale] Abilita la concorrenza",
+    ".ja-JP": "[オプション] 並行実行を有効にする",
+    ".ko-KR": "[선택 사항] 병렬 실행 활성화",
+    ".pt-BR": "[Opcional] Habilitar concorrência",
+    ".ru-RU": "[Опционально] Включить параллельное выполнение",
+    ".tr-TR": "[İsteğe Bağlı] Paralel Yürütmeyi Etkinleştir"
+  },
+  "Program.2": {
+    ".zh-CN": "[必填]输入的文件或文件夹",
+    ".default": "[Required] Input file or folder",
+    ".de-DE": "[Erforderlich] Eingabedatei oder -ordner",
+    ".es-ES": "[Requerido] Archivo o carpeta de entrada",
+    ".fr-FR": "[Requis] Fichier ou dossier d'entrée",
+    ".hu-HU": "[Kötelező] Bemeneti fájl vagy mappa",
+    ".it-IT": "[Obbligatorio] File o cartella di input",
+    ".ja-JP": "[必須] 入力ファイルまたはフォルダ",
+    ".ko-KR": "[필수] 입력 파일 또는 폴더",
+    ".pt-BR": "[Obrigatório] Arquivo ou pasta de entrada",
+    ".ru-RU": "[Обязательно] Входной файл или папка",
+    ".tr-TR": "[Gerekli] Giriş dosyası veya klasörü"
+  },
+  "Program.3": {
+    ".zh-CN": "[必填]输出的文件夹",
+    ".default": "[Required] Output folder",
+    ".de-DE": "[Erforderlich] Ausgabeordner",
+    ".es-ES": "[Requerido] Carpeta de salida",
+    ".fr-FR": "[Requis] Dossier de sortie",
+    ".hu-HU": "[Kötelező] Kimeneti mappa",
+    ".it-IT": "[Obbligatorio] Cartella di output",
+    ".ja-JP": "[必須] 出力フォルダ",
+    ".ko-KR": "[필수] 출력 폴더",
+    ".pt-BR": "[Obrigatório] Pasta de saída",
+    ".ru-RU": "[Обязательно] Папка для вывода",
+    ".tr-TR": "[Gerekli] Çıkış klasörü"
+  },
+  "Program.4": {
+    ".zh-CN": "根据输入的文件自动拆装xnb",
+    ".default": "Automatically pack and unpack XNB files based on input",
+    ".de-DE": "XNB-Dateien automatisch basierend auf der Eingabe verpacken und entpacken",
+    ".es-ES": "Empaquetar y desempaquetar automáticamente archivos XNB según la entrada",
+    ".fr-FR": "Emballer et déballer automatiquement les fichiers XNB en fonction de l'entrée",
+    ".hu-HU": "XNB fájlok automatikus csomagolása és kicsomagolása a bemenet alapján",
+    ".it-IT": "Imballare e sballare automaticamente i file XNB in base all'input",
+    ".ja-JP": "入力に基づいてXNBファイルを自動的にパックおよびアンパック",
+    ".ko-KR": "입력에 따라 XNB 파일을 자동으로 패킹 및 언패킹",
+    ".pt-BR": "Empacotar e desempacotar automaticamente arquivos XNB com base na entrada",
+    ".ru-RU": "Автоматическое упаковывание и распаковывание файлов XNB на основе ввода",
+    ".tr-TR": "Girişe dayalı olarak XNB dosyalarını otomatik olarak paketleme ve açma"
+  },
+  "Program.5": {
+    ".zh-CN": "解包",
+    ".default": "Unpack",
+    ".de-DE": "Entpacken",
+    ".es-ES": "Desempaquetar",
+    ".fr-FR": "Déballer",
+    ".hu-HU": "Kicsomagolás",
+    ".it-IT": "Scompattare",
+    ".ja-JP": "解凍",
+    ".ko-KR": "압축 해제",
+    ".pt-BR": "Desempacotar",
+    ".ru-RU": "Распаковать",
+    ".tr-TR": "Paket aç"
+  },
+  "Program.6": {
+    ".zh-CN": "打包",
+    ".default": "Pack",
+    ".de-DE": "Packen",
+    ".es-ES": "Empaquetar",
+    ".fr-FR": "Emballer",
+    ".hu-HU": "Csomagolás",
+    ".it-IT": "Impacchettare",
+    ".ja-JP": "パック",
+    ".ko-KR": "패킹",
+    ".pt-BR": "Empacotar",
+    ".ru-RU": "Упаковать",
+    ".tr-TR": "Paketle"
+  },
+  "Program.7": {
+    ".zh-CN": "版本信息",
+    ".default": "Version Information",
+    ".de-DE": "Versionsinformation",
+    ".es-ES": "Información de la versión",
+    ".fr-FR": "Informations sur la version",
+    ".hu-HU": "Verzióinformáció",
+    ".it-IT": "Informazioni sulla versione",
+    ".ja-JP": "バージョン情報",
+    ".ko-KR": "버전 정보",
+    ".pt-BR": "Informações da versão",
+    ".ru-RU": "Информация о версии",
+    ".tr-TR": "Sürüm Bilgisi"
+  },
+  "Program.8": {
+    ".zh-CN": "版本更新",
+    ".default": "Version Update",
+    ".de-DE": "Version aktualisieren",
+    ".es-ES": "Actualizar versión",
+    ".fr-FR": "Mise à jour de version",
+    ".hu-HU": "Verziófrissítés",
+    ".it-IT": "Aggiornamento della versione",
+    ".ja-JP": "バージョン更新",
+    ".ko-KR": "버전 업데이트",
+    ".pt-BR": "Atualização de versão",
+    ".ru-RU": "Обновление версии",
+    ".tr-TR": "Sürüm Güncelleme"
+  },
+  "Program.9": {
+    ".zh-CN": "错误命令\n",
+    ".default": "bad command\n",
+    ".de-DE": "Ungültiger Befehl\n",
+    ".es-ES": "Comando incorrecto\n",
+    ".fr-FR": "Commande incorrecte\n",
+    ".hu-HU": "Rossz parancs\n",
+    ".it-IT": "Comando errato\n",
+    ".ja-JP": "無効なコマンド\n",
+    ".ko-KR": "잘못된 명령\n",
+    ".pt-BR": "Comando inválido\n",
+    ".ru-RU": "Неверная команда\n",
+    ".tr-TR": "Geçersiz komut\n"
+  },
+  "Program.10": {
     ".zh-CN": "捕获异常:",
     ".default": "Catch Exception:",
     ".de-DE": "Fange Ausnahme:",
@@ -557,7 +683,7 @@
     ".pt-BR": "Encontrado mipcount de {0}, apenas o primeiro será usado.",
     ".ru-RU": "Найден mipcount для {0}, будет использован только первый.",
     ".tr-TR": "{0} mip sayısı bulundu, sadece ilk kullanılacak.",
-    ".default": ""
+    ".default": "Found mipcount for {0}, only the first will be used."
   },
   "LayerReader.1": {
     ".zh-CN": "i 的最大值为 {0}，当前值为 {1}",
@@ -571,7 +697,7 @@
     ".pt-BR": "O valor máximo de i é {0}, o valor atual é {1}",
     ".ru-RU": "Максимальное значение i равно {0}, текущее значение {1}",
     ".tr-TR": "i'nin maksimum değeri {0}, mevcut değer {1}",
-    ".default": ""
+    ".default": "Max value of i is {0}, current value is {1}"
   },
   "LayerReader.2": {
     ".zh-CN": "瓦片数据错误",
@@ -585,7 +711,7 @@
     ".pt-BR": "Erro nos dados do azulejo",
     ".ru-RU": "Ошибка в данных плитки",
     ".tr-TR": "Mozaik verilerinde hata",
-    ".default": ""
+    ".default": "Tile data error"
   },
   "PropertieReader.1": {
     ".zh-CN": "错误的地图属性类型：{0}",
@@ -599,7 +725,7 @@
     ".pt-BR": "Tipo de propriedade de mapa incorreto: {0}",
     ".ru-RU": "Неверный тип свойства карты: {0}",
     ".tr-TR": "Hatalı harita özellik türü: {0}",
-    ".default": ""
+    ".default": "Invalid map property type: {0}"
   },
   "TBin10Reader.1": {
     ".zh-CN": "Xnb尚未支持超过{0}层的Tbin地图，目前{1}层",
@@ -613,7 +739,7 @@
     ".pt-BR": "Xnb atualmente não suporta mapas Tbin com mais de {0} camadas, atualmente {1} camadas",
     ".ru-RU": "Xnb в настоящее время не поддерживает Tbin-карты с более чем {0} уровнями, в настоящее время {1} уровней",
     ".tr-TR": "Xnb şu anda {0} katmanı aşan Tbin haritalarını desteklemiyor, şu anda {1} katman",
-    ".default": ""
+    ".default": "Xnb does not currently support Tbin maps with more than {0} layers, currently {1} layers"
   },
   "TBin10Reader.2": {
     ".zh-CN": "未知程序错误",
@@ -627,7 +753,7 @@
     ".pt-BR": "Erro de programa desconhecido",
     ".ru-RU": "Неизвестная программа ошибка",
     ".tr-TR": "Bilinmeyen program hatası",
-    ".default": ""
+    ".default": "Unknown program error"
   },
   "LZX.1": {
     ".zh-CN": "窗口大小超出范围！",
@@ -641,7 +767,7 @@
     ".pt-BR": "Tamanho da janela fora do alcance!",
     ".ru-RU": "Размер окна выходит за пределы допустимого диапазона!",
     ".tr-TR": "Pencere boyutu sınırların dışında!",
-    ".default": ""
+    ".default": "Window size out of range!"
   },
   "LZX.2": {
     ".zh-CN": "发现Intel E8调用，对于XNB文件无效。",
@@ -655,7 +781,7 @@
     ".pt-BR": "Chamada Intel E8 encontrada, inválida para o arquivo XNB.",
     ".ru-RU": "Найден вызов Intel E8, недопустимый для файла XNB.",
     ".tr-TR": "Intel E8 çağrısı bulundu, XNB dosyası için geçersiz.",
-    ".default": ""
+    ".default": "Intel E8 call found, invalid for XNB file."
   },
   "LZX.3": {
     ".zh-CN": "发现无效的块类型: {0}",
@@ -669,7 +795,7 @@
     ".pt-BR": "Tipo de bloco inválido encontrado: {0}",
     ".ru-RU": "Обнаружен недопустимый тип блока: {0}",
     ".tr-TR": "Geçersiz blok türü bulundu: {0}",
-    ".default": ""
+    ".default": "Invalid block type found: {0}"
   },
   "LZX.4": {
     ".zh-CN": "无法在窗框外运行。",
@@ -683,7 +809,7 @@
     ".pt-BR": "Não é possível executar fora da moldura da janela.",
     ".ru-RU": "Невозможно выполнить вне рамки окна.",
     ".tr-TR": "Pencere çerçevesinin dışında çalıştırılamaz.",
-    ".default": ""
+    ".default": "Cannot run outside the window frame."
   },
   "LZX.5": {
     ".zh-CN": "超出范围！{0} {1} {2}",
@@ -697,7 +823,7 @@
     ".pt-BR": "Transbordamento! {0} {1} {2}",
     ".ru-RU": "Переполнение! {0} {1} {2}",
     ".tr-TR": "Aşım! {0} {1} {2}",
-    ".default": ""
+    ".default": "Out of range! {0} {1} {2}"
   },
   "LZX.6": {
     ".zh-CN": "指定的块类型无效！",
@@ -711,7 +837,7 @@
     ".pt-BR": "Tipo de bloco especificado inválido!",
     ".ru-RU": "Указан недопустимый тип блока!",
     ".tr-TR": "Belirtilen blok türü geçersiz!",
-    ".default": ""
+    ".default": "Specified block type invalid!"
   },
   "LZX.7": {
     ".zh-CN": "EOF已到达，数据还有剩余。",
@@ -725,7 +851,7 @@
     ".pt-BR": "EOF atingido, ainda há dados restantes.",
     ".ru-RU": "EOF достигнут, данные остаются.",
     ".tr-TR": "EOF ulaşıldı, veriler hala var.",
-    ".default": ""
+    ".default": "EOF reached, data still remaining."
   },
   "LZX.8": {
     ".zh-CN": "表溢出！",
@@ -739,7 +865,7 @@
     ".pt-BR": "Transbordamento de tabela!",
     ".ru-RU": "Переполнение таблицы!",
     ".tr-TR": "Tablo taşması!",
-    ".default": ""
+    ".default": "Table overflow!"
   },
   "LZX.9": {
     ".zh-CN": "解码过程中表格溢出。",
@@ -753,7 +879,7 @@
     ".pt-BR": "Transbordamento de tabela durante a decodificação.",
     ".ru-RU": "Переполнение таблицы во время декодирования.",
     ".tr-TR": "Çözme işlemi sırasında tablo taşması.",
-    ".default": ""
+    ".default": "Table overflow during decoding."
   },
   "LZX.10": {
     ".zh-CN": "解码表未达到表掩码。",
@@ -767,7 +893,7 @@
     ".pt-BR": "A tabela de decodificação não atingiu a máscara de tabela.",
     ".ru-RU": "Таблица декодирования не достигла маски таблицы.",
     ".tr-TR": "Çözme tablosu tablo maskesine ulaşmadı.",
-    ".default": ""
+    ".default": "Decoding table did not reach table mask."
   },
   "LZX.11": {
     ".zh-CN": "压缩内容中读取的大小无效。",
@@ -781,7 +907,7 @@
     ".pt-BR": "Tamanho inválido ao ler o conteúdo comprimido.",
     ".ru-RU": "Недопустимый размер при чтении сжатого содержимого.",
     ".tr-TR": "Sıkıştırılmış içeriği okurken geçersiz boyut.",
-    ".default": ""
+    ".default": "Invalid size read in compressed content."
   },
   "LZX.12": {
     ".zh-CN": "文件已成功解压缩！",
@@ -795,7 +921,7 @@
     ".pt-BR": "Arquivo descompactado com sucesso!",
     ".ru-RU": "Файл успешно разархивирован!",
     ".tr-TR": "Dosya başarıyla açıldı!",
-    ".default": ""
+    ".default": "File successfully decompressed!"
   },
   "LZX.13": {
     ".zh-CN": "额外位数：{0}",

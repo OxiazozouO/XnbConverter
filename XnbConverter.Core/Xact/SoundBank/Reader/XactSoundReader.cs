@@ -1,3 +1,4 @@
+using System;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.SoundBank.Entity;

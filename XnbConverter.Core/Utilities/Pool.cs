@@ -1,22 +1,22 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
 using XnbConverter.Entity.Mono;
 
 namespace XnbConverter.Utilities;
 
 public static class Pool
 {
+    public const int Len128 = 128; //1<<7, PRETREE_table 104, PRETREE_len 84, ALIGNED_len 72
+    public const int Len512 = 512; //1<<9, ALIGNED_table 144, LENGTH_len 314
+    public const int Len1024 = 1024; //1<<10, MAINTREE_len 720
+    public const int Len8192 = 8192; //1<<13, MAINTREE_table 5408, LENGTH_table 4596
+    public const int LongSize = 1024 * 1024 * 10;
     private static readonly ArrayPool<byte> BytePool = ArrayPool<byte>.Shared;
     private static readonly ArrayPool<ushort> UShortPool = ArrayPool<ushort>.Create(8192, 50);
     private static readonly ArrayPool<int> IntPool = ArrayPool<int>.Create(16, 50);
     private static readonly ArrayPool<float> FloatPool = ArrayPool<float>.Create(16, 50);
     private static readonly ArrayPool<Vector3> Vector3Pool = ArrayPool<Vector3>.Create(16, 50);
     private static readonly ArrayPool<Vector4> Vector4Pool = ArrayPool<Vector4>.Create(16, 50);
-
-    public const int Len128 = 128; //1<<7, PRETREE_table 104, PRETREE_len 84, ALIGNED_len 72
-    public const int Len512 = 512; //1<<9, ALIGNED_table 144, LENGTH_len 314
-    public const int Len1024 = 1024; //1<<10, MAINTREE_len 720
-    public const int Len8192 = 8192; //1<<13, MAINTREE_table 5408, LENGTH_table 4596
-    public const int LongSize = 1024 * 1024 * 10;
 
     private static readonly object MessageLock = new();
 
@@ -78,7 +78,7 @@ public static class Pool
     {
         lock (MessageLock)
         {
-            Vector3[] v = Vector3Pool.Rent(size);
+            var v = Vector3Pool.Rent(size);
             for (var i = 0; i < v.Length; i++)
                 v[i] = new Vector3();
             return v;

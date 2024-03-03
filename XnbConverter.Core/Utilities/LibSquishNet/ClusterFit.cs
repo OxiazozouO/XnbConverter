@@ -1,23 +1,27 @@
-﻿using XnbConverter.Entity.Mono;
+﻿using System;
+using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
 namespace Squish;
 
 public class ClusterFit : ColourFit
 {
+    private static readonly Vector4 V1 = new(3.0f, 3.0f, 3.0f, 9.0f);
+    private static readonly Vector4 V2 = new(2.0f, 2.0f, 2.0f, 4.0f);
+    private static readonly Vector4 TwothirdsTwothirds2 = V2 / V1;
     private readonly int IterationCount;
 
-    private Vector3 Principle;
+    private readonly byte[] Order = Pool.RentByte(16 * 8);
 
-    private byte[] Order = Pool.RentByte(16 * 8);
+    private readonly Vector4[] PointsWeights = Pool.RentVector4(16);
 
-    private Vector4[] PointsWeights = Pool.RentVector4(16);
-
-    private Vector4 XsumWsum = new();
+    private Vector4 BestError = new();
 
     private Vector4 Metric = new();
 
-    private Vector4 BestError = new();
+    private Vector3 Principle;
+
+    private Vector4 XsumWsum = new();
 
     public ClusterFit(ColourSet colours, bool isDxt1, bool isColourIterativeClusterFit)
         : base(colours, isDxt1)
@@ -139,10 +143,6 @@ public class ClusterFit : ColourFit
 
         return true;
     }
-
-    private static readonly Vector4 V1 = new(3.0f, 3.0f, 3.0f, 9.0f);
-    private static readonly Vector4 V2 = new(2.0f, 2.0f, 2.0f, 4.0f);
-    private static readonly Vector4 TwothirdsTwothirds2 = V2 / V1;
 
     protected override void Compress3(Span<byte> block)
     {

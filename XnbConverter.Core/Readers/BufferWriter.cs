@@ -1,20 +1,16 @@
-﻿using System.Text;
+﻿using System;
+using System.IO;
+using System.Text;
 using XnbConverter.Utilities;
 
 namespace XnbConverter.Readers;
 
 public class BufferWriter : IDisposable
 {
+    private readonly bool _isPool = true;
     public byte[] Buffer;
 
-    public void SaveBufferToFile(string path)
-    {
-        using var fs = new FileStream(path, FileMode.Create);
-        fs.Write(Buffer, 0, BytePosition);
-    }
-
-    public int BytePosition = 0;
-    private readonly bool _isPool = true;
+    public int BytePosition;
 
     public BufferWriter(int size = Pool.LongSize)
     {
@@ -25,6 +21,18 @@ public class BufferWriter : IDisposable
     {
         _isPool = false;
         Buffer = buffer;
+    }
+
+    public void Dispose()
+    {
+        if (_isPool)
+            Pool.Return(Buffer);
+    }
+
+    public void SaveBufferToFile(string path)
+    {
+        using var fs = new FileStream(path, FileMode.Create);
+        fs.Write(Buffer, 0, BytePosition);
     }
 
     public void Skip(int off)
@@ -194,11 +202,5 @@ public class BufferWriter : IDisposable
                 a |= 0x80;
             Buffer[BytePosition++] = (byte)(sbyte)a;
         } while (number > 0);
-    }
-
-    public void Dispose()
-    {
-        if (_isPool)
-            Pool.Return(Buffer);
     }
 }

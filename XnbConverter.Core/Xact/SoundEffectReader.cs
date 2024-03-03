@@ -1,4 +1,5 @@
-﻿using XnbConverter.Readers;
+﻿using System;
+using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Entity;
 using XnbConverter.Xact.WaveBank.Reader;
@@ -7,14 +8,30 @@ namespace XnbConverter.Xact;
 
 public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
 {
+    private readonly DATAChunkReader dataChunkReader = new();
+    private readonly FmtChunkReader fmtChunkReader = new();
+
+    private readonly WaveFormReader waveFormReader = new();
+
+    public void Save(SoundEffect input)
+    {
+        waveFormReader.Save(input.WaveForm);
+    }
+
+    public SoundEffect Load()
+    {
+        var result = new SoundEffect();
+
+        result.WaveForm = waveFormReader.Load();
+        result.WaveForm.fmtChunk.CheckFmtID("SoundEffect");
+
+        return result;
+    }
+
     public override bool IsValueType()
     {
         throw new NotImplementedException();
     }
-
-    private WaveFormReader waveFormReader = new();
-    private FmtChunkReader fmtChunkReader = new();
-    private DATAChunkReader dataChunkReader = new();
 
     public override void Init(ReaderResolver readerResolver)
     {
@@ -59,30 +76,15 @@ public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
         bufferWriter.WriteUInt32(soundEffect.exData.DurationMs);
     }
 
-    public void Save(SoundEffect input)
-    {
-        waveFormReader.Save(input.WaveForm);
-    }
-
     public static void Save(SoundEffect input, string path)
     {
         var soundEffectReader = new SoundEffectReader();
-        soundEffectReader.Init(new ReaderResolver()
+        soundEffectReader.Init(new ReaderResolver
         {
             bufferWriter = new BufferWriter((int)(input.WaveForm.riffChunk.ChunkSize + 1000))
         });
         soundEffectReader.waveFormReader.Save(input.WaveForm);
         soundEffectReader.bufferWriter.SaveBufferToFile(path);
-    }
-
-    public SoundEffect Load()
-    {
-        var result = new SoundEffect();
-
-        result.WaveForm = waveFormReader.Load();
-        result.WaveForm.fmtChunk.CheckFmtID("SoundEffect");
-
-        return result;
     }
 
     public static SoundEffect FormFile(string path)
@@ -92,7 +94,7 @@ public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
 
         //
         var soundEffectReader = new SoundEffectReader();
-        soundEffectReader.Init(new ReaderResolver()
+        soundEffectReader.Init(new ReaderResolver
         {
             bufferReader = BufferReader.FormFile(path)
         });

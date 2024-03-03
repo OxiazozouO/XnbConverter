@@ -1,6 +1,5 @@
-﻿using System.Text;
+﻿using System;
 using XnbConverter.Entity.Mono;
-using StringReader = XnbConverter.Readers.Base.StringReader;
 
 namespace XnbConverter.Readers.Mono;
 
@@ -16,9 +15,9 @@ public class EffectReader : BaseReader
     {
         var result = new Effect();
         var size = bufferReader.ReadUInt32();
-        var bytecode = bufferReader.Read((int)size);
+        result.Data = bufferReader.Read((int)size);
 
-        return new Effect { Data = bytecode };
+        return result;
     }
 
     public override void Write(object content)

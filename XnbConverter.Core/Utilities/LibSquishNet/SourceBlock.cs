@@ -2,9 +2,9 @@
 
 public class SourceBlock
 {
-    public byte Start;
     public byte End;
     public byte Error;
+    public byte Start;
 
     public SourceBlock(byte s, byte e, byte err)
     {

@@ -1,9 +1,33 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using XnbConverter.Utilities;
 
 namespace XnbConverter.Cli;
 
 public static class Process
 {
+    [Flags]
+    public enum Mode
+    {
+        Pack = 1,
+        UnPack = 2
+    }
+
+    public class CmdContent
+    {
+        public string? Input;
+        public string? Output;
+        public bool IsEnableConcurrency;
+        public Mode Mode;
+
+        public override string ToString()
+        {
+            return $" Input: {Input}\n Output: {Output}\n IsEnableConcurrency: {IsEnableConcurrency}\n Mode: {Mode}\n";
+        }
+    }
+
     // 用于显示成功和失败的计数
     private static int _success; //成功计数
 
@@ -74,7 +98,7 @@ public static class Process
         Log.Info(Helpers.I18N["XNB.6"], input);
         XNB xnb = null;
         FileStream fs = null;
-        
+
         // 捕获任何异常以保持文件批处理的进行
         try
         {
@@ -95,32 +119,27 @@ public static class Process
             Log.Error(Helpers.I18N["Process.4"], input, ex.Message, ex.StackTrace);
             // 增加失败计数
             _fail++;
-        }finally
+        }
+        finally
         {
             xnb?.Dispose();
             fs?.Dispose();
         }
     }
-    [Flags]
-    public enum Mode
-    {
-        Pack = 1,
-        UnPack = 2,
-    }
 
     private static void ProcessFilesAsync(Action<string, string> fn, List<(string, string)> files)
     {
         Helpers.EnableMultithreading();
-        int concurrency = Helpers.Config.Concurrency;
-        List<Task> list = new List<Task>(concurrency);
-        for (int i = 0; i < files.Count; i += concurrency)
+        var concurrency = Helpers.Config.Concurrency;
+        List<Task> list = new(concurrency);
+        for (var i = 0; i < files.Count; i += concurrency)
         {
             list.Clear();
-            int end = Math.Min(i + concurrency, files.Count);
-            for (int j = i; j < end; j++)
+            var end = Math.Min(i + concurrency, files.Count);
+            for (var j = i; j < end; j++)
             {
                 var file = files[j];
-                Task task = Task.Run(() => { fn(file.Item1, file.Item2); });
+                var task = Task.Run(() => { fn(file.Item1, file.Item2); });
                 list.Add(task);
             }
 
@@ -132,67 +151,59 @@ public static class Process
         Helpers.TurnOffMultithreading();
     }
 
-    private static void ProcessFiles(Action<string, string> fn, List<(string,string)> files)
+    private static void ProcessFiles(Action<string, string> fn, List<(string, string)> files)
     {
-        foreach(var file in files)
+        foreach (var file in files)
             fn(file.Item1, file.Item2);
         // 完成遍历
         Details();
     }
 
-
-    public static void Get(string? input, string? output,bool isEnableConcurrency, Mode mode = Mode.Pack | Mode.UnPack)
+    public static void Get(CmdContent cmd)
     {
-        var files = FileUtils.BuildFiles(input, output);
-        
-        if ((mode & Mode.Pack) > 0)
+        var t1 = DateTime.Now;
+        var files = FileUtils.BuildFiles(cmd.Input, cmd.Output);
+        if ((cmd.Mode & Mode.Pack) > 0)
         {
             if (files.TryGetValue(".config", out var xnb))
             {
                 xnb.CreateDirectory();
                 //组装路径并执行函数
-                if (isEnableConcurrency && xnb.Count > 10 && Helpers.Config.Concurrency > 1)
-                {
+                if (cmd.IsEnableConcurrency && xnb.Count > 10 &&
+                    Helpers.Config.Concurrency > 1)
                     ProcessFilesAsync(Pack, xnb);
-                }
                 else
-                {
                     ProcessFiles(Pack, xnb);
-                }
             }
         }
-        if ((mode & Mode.UnPack) > 0)
+        if ((cmd.Mode & Mode.UnPack) > 0)
         {
             if (files.TryGetValue(".xnb", out var xnb))
             {
                 xnb.CreateDirectory();
                 //组装路径并执行函数
-                if (isEnableConcurrency && xnb.Count > 10 && Helpers.Config.Concurrency > 1)
-                {
+                if (cmd.IsEnableConcurrency && xnb.Count > 10 && Helpers.Config.Concurrency > 1)
                     ProcessFilesAsync(Unpack, xnb);
-                }
                 else
-                {
                     ProcessFiles(Unpack, xnb);
-                }
             }
 
             if (files.TryGetValue(".xwb", out var xwb))
             {
-                List<(string, string)> xact = new List<(string, string)>();
+                List<(string, string)> xact = new();
                 xact.AddRange(xwb);
-                if (files.TryGetValue(".xgs", out var xgs))
-                {
-                    xact.AddRange(xgs);
-                }
+                if (files.TryGetValue(".xgs", out var xgs)) xact.AddRange(xgs);
 
-                if (files.TryGetValue(".xsb", out var xsb))
-                {
-                    xact.AddRange(xsb);
-                }
+                if (files.TryGetValue(".xsb", out var xsb)) xact.AddRange(xsb);
                 // xact.CreateDirectory();
                 XACT.Load(xact)?.Save();
             }
         }
+
+        if (_success == _fail && _fail == 0)
+        {
+            return;
+        }
+        Console.WriteLine(DateTime.Now.Subtract(t1).TotalSeconds);
     }
 }

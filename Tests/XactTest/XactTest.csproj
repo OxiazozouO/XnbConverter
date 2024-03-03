@@ -14,69 +14,68 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-      <Content Include="..\..\.config\config.json">
+      <None Include="..\..\.config\config.json">
         <Link>.config\config.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\custom_dll.json">
+      </None>
+      <None Include="..\..\.config\custom_dll.json">
         <Link>.config\custom_dll.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\ffmpeg\ffmpeg.exe">
-        <Link>.config\ffmpeg\ffmpeg.exe</Link>
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\ffmpeg\LICENSE.md">
+      </None>
+      <None Include="..\..\.config\ffmpeg\LICENSE.md">
         <Link>.config\ffmpeg\LICENSE.md</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.de-DE.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.de-DE.json">
         <Link>.config\i18n\error.de-DE.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.es-ES.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.es-ES.json">
         <Link>.config\i18n\error.es-ES.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.fr-FR.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.fr-FR.json">
         <Link>.config\i18n\error.fr-FR.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.hu-HU.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.hu-HU.json">
         <Link>.config\i18n\error.hu-HU.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.it-IT.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.it-IT.json">
         <Link>.config\i18n\error.it-IT.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.ja-JP.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.ja-JP.json">
         <Link>.config\i18n\error.ja-JP.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.json">
         <Link>.config\i18n\error.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.ko-KR.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.ko-KR.json">
         <Link>.config\i18n\error.ko-KR.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.pt-BR.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.pt-BR.json">
         <Link>.config\i18n\error.pt-BR.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.ru-RU.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.ru-RU.json">
         <Link>.config\i18n\error.ru-RU.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.tr-TR.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.tr-TR.json">
         <Link>.config\i18n\error.tr-TR.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-      <Content Include="..\..\.config\i18n\error.zh-CN.json">
+      </None>
+      <None Include="..\..\.config\i18n\error.zh-CN.json">
         <Link>.config\i18n\error.zh-CN.json</Link>
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
+      </None>
     </ItemGroup>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Exec Command="xcopy &quot;$(SolutionDir).config\ffmpeg\ffmpeg.exe&quot; &quot;$(PublishDir)\.config\ffmpeg\&quot; /Y /I" />
+    </Target>
 </Project>

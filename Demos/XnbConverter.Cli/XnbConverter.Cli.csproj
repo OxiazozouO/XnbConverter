@@ -8,6 +8,10 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <ApplicationIcon>..\..\.resources\App.ico</ApplicationIcon>
         <StartupObject>XnbConverter.Cli.Program</StartupObject>
+        <LangVersion>10</LangVersion>
+        <IsTrimmable>false</IsTrimmable>
+        <PublishSingleFile>false</PublishSingleFile>
+        <Version>1.1.0</Version>
     </PropertyGroup>
 
 
@@ -15,11 +19,6 @@
         <ProjectReference Include="..\..\XnbConverter.Core\XnbConverter.Core.csproj">
             <Private>True</Private>
         </ProjectReference>
-    </ItemGroup>
-
-
-    <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
     </ItemGroup>
 
 
@@ -33,96 +32,83 @@
         <Content Update="Tool\音频信息查看.bat">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="..\..\.config\config.json">
+        <None Include="..\..\.config\config.json">
           <Link>.config\config.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\custom_dll.json">
+        </None>
+        <None Include="..\..\.config\custom_dll.json">
           <Link>.config\custom_dll.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\ffmpeg\ffmpeg.exe">
-          <Link>.config\ffmpeg\ffmpeg.exe</Link>
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\ffmpeg\LICENSE.md">
+        </None>
+        <None Include="..\..\.config\ffmpeg\LICENSE.md">
           <Link>.config\ffmpeg\LICENSE.md</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.de-DE.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.de-DE.json">
           <Link>.config\i18n\error.de-DE.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.es-ES.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.es-ES.json">
           <Link>.config\i18n\error.es-ES.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.fr-FR.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.fr-FR.json">
           <Link>.config\i18n\error.fr-FR.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.hu-HU.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.hu-HU.json">
           <Link>.config\i18n\error.hu-HU.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.it-IT.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.it-IT.json">
           <Link>.config\i18n\error.it-IT.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.ja-JP.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.ja-JP.json">
           <Link>.config\i18n\error.ja-JP.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.json">
           <Link>.config\i18n\error.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.ko-KR.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.ko-KR.json">
           <Link>.config\i18n\error.ko-KR.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.pt-BR.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.pt-BR.json">
           <Link>.config\i18n\error.pt-BR.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.ru-RU.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.ru-RU.json">
           <Link>.config\i18n\error.ru-RU.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.tr-TR.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.tr-TR.json">
           <Link>.config\i18n\error.tr-TR.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.config\i18n\error.zh-CN.json">
+        </None>
+        <None Include="..\..\.config\i18n\error.zh-CN.json">
           <Link>.config\i18n\error.zh-CN.json</Link>
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\..\.resources\App.ico">
-            <Link>App.ico</Link>
-        </Content>
-        <Content Include="..\..\.resources\appIco.pptx">
-            <Link>appIco.pptx</Link>
-        </Content>
-        <Content Include="..\..\.resources\pack.bat">
-            <Link>pack.bat</Link>
-        </Content>
-        <Content Include="..\..\.resources\unpack.bat">
-            <Link>unpack.bat</Link>
-        </Content>
-        <Content Include="..\..\.resources\音频信息查看.bat">
-            <Link>音频信息查看.bat</Link>
-        </Content>
-        <Content Include="..\..\README.md">
-            <Link>README.md</Link>
-        </Content>
-        <Content Include="..\..\README.zh-CN.md">
-            <Link>README.zh-CN.md</Link>
-        </Content>
-        <Content Include="..\..\README.zh-CN.pdf">
-            <Link>README.zh-CN.pdf</Link>
-        </Content>
+        </None>
+        <None Include="..\..\.resources\pack.bat">
+          <Link>pack.bat</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.resources\README.md">
+          <Link>README.md</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.resources\unpack.bat">
+          <Link>unpack.bat</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\.resources\音频信息查看.bat">
+          <Link>音频信息查看.bat</Link>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
-
 
     <ItemGroup>
         <Compile Remove="bin\Release\net6.0\packed\**"/>
@@ -152,5 +138,12 @@
         </None>
         <None Remove="bin\**"/>
     </ItemGroup>
+
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Exec Command="xcopy &quot;$(SolutionDir).config\ffmpeg\ffmpeg.exe&quot; &quot;$(PublishDir)\.config\ffmpeg\&quot; /Y /I" />
+        <Exec Command="IF NOT EXIST &quot;$(PublishDir)\packed&quot; mkdir &quot;$(PublishDir)\packed&quot;" />
+        <Exec Command="IF NOT EXIST &quot;$(PublishDir)\unpacked&quot; mkdir &quot;$(PublishDir)\unpacked&quot;" />
+    </Target>
 
 </Project>

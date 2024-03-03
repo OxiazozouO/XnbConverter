@@ -1,5 +1,6 @@
-﻿using XnbConverter.Readers;
-using XnbConverter.Readers.Base;
+﻿using System;
+using System.Collections.Generic;
+using XnbConverter.Readers;
 using XnbConverter.Tbin.Entity;
 using StringReader = XnbConverter.Readers.Base.StringReader;
 
@@ -8,8 +9,8 @@ namespace XnbConverter.Tbin.Readers;
 public class AnimatedTilerReader : BaseReader
 {
     private readonly StringReader stringReader = new();
-    private int staticTileReader;
     private int propertieListReader;
+    private int staticTileReader;
 
     public override void Init(ReaderResolver readerResolver)
     {

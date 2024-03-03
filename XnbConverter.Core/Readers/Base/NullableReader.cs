@@ -2,8 +2,8 @@
 
 public class NullableReader<T, N> : BaseReader where T : BaseReader, new()
 {
-    private int reader;
     private bool b;
+    private int reader;
 
     public override void Init(ReaderResolver readerResolver)
     {

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
@@ -12,6 +15,8 @@ public class WaveBankReader : BaseReader
     public const string WBASIGNi = "HVSIWBA\0"; // intel endian
     public const string WBASIGNb = "ISVH\0ABW"; // network endian
 
+    private int _index1 = 0;
+
     public override bool IsValueType()
     {
         throw new NotImplementedException();
@@ -20,14 +25,12 @@ public class WaveBankReader : BaseReader
     public new static Entity.WaveBank Read(string path)
     {
         var waveBankReader = new WaveBankReader();
-        waveBankReader.Init(new ReaderResolver()
+        waveBankReader.Init(new ReaderResolver
         {
             bufferReader = BufferReader.FormFile(path)
         });
         return waveBankReader.Read();
     }
-
-    private int _index1 = 0;
 
     public override Entity.WaveBank Read()
     {
@@ -235,9 +238,8 @@ public class WaveBankReader : BaseReader
 
         if (Helpers.Config.PInfo)
         {
-            
             Log.Info(Helpers.I18N["WaveBankReader.5"]);
-            string s = "=========================================================================";
+            var s = "=========================================================================";
             Log.Info(s);
         }
 
@@ -254,7 +256,8 @@ public class WaveBankReader : BaseReader
             if (Helpers.Config.PInfo)
             {
                 //log
-                string s = $"{i,5}{entry.PlayRegion.Length,9}{codecStr,9}{rate,7}{channels,3}{(bits > 0 ? 16 : 8),3}     {entry.GetPath()}";
+                var s =
+                    $"{i,5}{entry.PlayRegion.Length,9}{codecStr,9}{rate,7}{channels,3}{(bits > 0 ? 16 : 8),3}     {entry.GetPath()}";
                 Log.Info(s);
                 Log.Debug(Helpers.I18N["WaveBankReader.6"],
                     entry.PlayRegion.Offset, entry.Format, entry.FlagsAndDuration, entry.LoopRegion.Offset,

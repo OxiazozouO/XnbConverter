@@ -7,7 +7,7 @@ namespace XnbConverter.Tbin.Readers;
 
 public class PropertieReader : BaseReader
 {
-    private StringReader stringReader = new();
+    private readonly StringReader stringReader = new();
 
     public override void Init(ReaderResolver readerResolver)
     {

@@ -1,3 +1,4 @@
+using System;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Entity;
@@ -6,43 +7,6 @@ namespace XnbConverter.Xact.WaveBank.Reader;
 
 public class FmtChunkReader : BaseReader, IReaderFileUtil<FmtChunk>
 {
-    public override bool IsValueType()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override FmtChunk Read()
-    {
-        var result = new FmtChunk();
-
-        result.FmtSize = bufferReader.ReadUInt32();
-        result.FmtTag = (FmtChunk.AudioFormats)bufferReader.ReadInt16();
-        result.NumChannels = bufferReader.ReadUInt16();
-        result.SampleRate = bufferReader.ReadUInt32();
-        result.ByteRate = bufferReader.ReadUInt32();
-        result.BlockAlign = bufferReader.ReadUInt16();
-        result.BitsPerSample = bufferReader.ReadUInt16();
-
-        uint tmp = bufferReader.PeekUInt16();
-        if (tmp == 0)
-            result.CbSize = bufferReader.ReadUInt16();
-        return result;
-    }
-
-    public override void Write(object input)
-    {
-        var fmtChunk = (FmtChunk)input;
-        bufferWriter.WriteUInt32(fmtChunk.FmtSize);
-        bufferWriter.WriteInt16((short)fmtChunk.FmtTag);
-        bufferWriter.WriteUInt16(fmtChunk.NumChannels);
-        bufferWriter.WriteUInt32(fmtChunk.SampleRate);
-        bufferWriter.WriteUInt32(fmtChunk.ByteRate);
-        bufferWriter.WriteUInt16(fmtChunk.BlockAlign);
-        bufferWriter.WriteUInt16(fmtChunk.BitsPerSample);
-        if (fmtChunk.CbSize == 0)
-            bufferWriter.WriteUInt16(fmtChunk.CbSize.Value);
-    }
-
     public void Save(FmtChunk fmtChunk)
     {
         bufferWriter.WriteAsciiString(fmtChunk.FmtID);
@@ -98,5 +62,42 @@ public class FmtChunkReader : BaseReader, IReaderFileUtil<FmtChunk>
         }
 
         return fmtChunk;
+    }
+
+    public override bool IsValueType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override FmtChunk Read()
+    {
+        var result = new FmtChunk();
+
+        result.FmtSize = bufferReader.ReadUInt32();
+        result.FmtTag = (FmtChunk.AudioFormats)bufferReader.ReadInt16();
+        result.NumChannels = bufferReader.ReadUInt16();
+        result.SampleRate = bufferReader.ReadUInt32();
+        result.ByteRate = bufferReader.ReadUInt32();
+        result.BlockAlign = bufferReader.ReadUInt16();
+        result.BitsPerSample = bufferReader.ReadUInt16();
+
+        uint tmp = bufferReader.PeekUInt16();
+        if (tmp == 0)
+            result.CbSize = bufferReader.ReadUInt16();
+        return result;
+    }
+
+    public override void Write(object input)
+    {
+        var fmtChunk = (FmtChunk)input;
+        bufferWriter.WriteUInt32(fmtChunk.FmtSize);
+        bufferWriter.WriteInt16((short)fmtChunk.FmtTag);
+        bufferWriter.WriteUInt16(fmtChunk.NumChannels);
+        bufferWriter.WriteUInt32(fmtChunk.SampleRate);
+        bufferWriter.WriteUInt32(fmtChunk.ByteRate);
+        bufferWriter.WriteUInt16(fmtChunk.BlockAlign);
+        bufferWriter.WriteUInt16(fmtChunk.BitsPerSample);
+        if (fmtChunk.CbSize == 0)
+            bufferWriter.WriteUInt16(fmtChunk.CbSize.Value);
     }
 }

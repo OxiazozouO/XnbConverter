@@ -1,13 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace XnbConverter.Entity;
 
 public class XnbObject
 {
-    public HeaderDTO Header;
-    public List<ReadersDTO> Readers = new();
-    public ContentDTO Content;
+    [Flags]
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum CompressedMasks : byte
+    {
+        Hidef = 1,
+        Lz4 = 64,
+        Lzx = 128
+    }
 
     [JsonConverter(typeof(StringEnumConverter))]
     public enum TargetTags : byte
@@ -21,14 +28,9 @@ public class XnbObject
         MacOSX = (byte)'X'
     }
 
-    [Flags]
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum CompressedMasks : byte
-    {
-        Hidef = 1,
-        Lz4 = 64,
-        Lzx = 128
-    }
+    public ContentDTO Content;
+    public HeaderDTO Header;
+    public List<ReadersDTO> Readers = new();
 
     public class HeaderDTO
     {

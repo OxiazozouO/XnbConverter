@@ -1,15 +1,17 @@
-﻿namespace XnbConverter.Readers;
+﻿using System;
+
+namespace XnbConverter.Readers;
 
 /**
-* 所有读取器的基类。
-* @abstract
-* @class
+ * 所有读取器的基类。
+ * @abstract
+ * @class
  */
 public abstract class BaseReader
 {
-    protected ReaderResolver readerResolver;
     protected BufferReader bufferReader;
     protected BufferWriter bufferWriter;
+    protected ReaderResolver readerResolver;
 
     /**
      * 返回类型是否通常需要特殊的读取器。
@@ -55,7 +57,7 @@ public abstract class BaseReader
      * @param {BufferWriter} buffer
      * @param {ReaderResolver} resolver
      */
-    public virtual Type? GetResultType()
+    public virtual Type GetResultType()
     {
         return null;
     }
