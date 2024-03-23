@@ -39,9 +39,4 @@ public class TBinReader : BaseReader
     {
         return false;
     }
-
-    public override Type GetResultType()
-    {
-        return typeof(TBin10);
-    }
 }

@@ -59,7 +59,7 @@
 #endregion
 
 using System;
-using Newtonsoft.Json;
+// using Newtonsoft.Json;
 using XnbConverter.Readers;
 
 namespace XnbConverter.Utilities.LZX;
@@ -128,7 +128,7 @@ public class LZX : IDisposable
         }
 
         Log.Debug(Helpers.I18N["LZX.13"], extra_bits.ToJoinStr());
-        Log.Debug(Helpers.I18N["LZX.14"], JsonConvert.SerializeObject(position_base));
+        Log.Debug(Helpers.I18N["LZX.14"],  position_base.ToJoinStr());
     }
 
     /**

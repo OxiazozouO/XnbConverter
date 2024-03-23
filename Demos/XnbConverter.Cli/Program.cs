@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using XnbConverter.Entity.Mono;
@@ -10,50 +11,80 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        Helpers.NativeMethods.Init();
-        if (1 == 1)
+        switch (0)
         {
-            // if (args[0] == "test")
-            // {
-            //     ReckonByTime(@"auto -c -i .\packed -o .\unpacked");
-            //     return;
-            // }
-            if (args.Length > 0)
+            case 0:
             {
-                ReckonByTime(args);
-                return;
-            }
+                if (args.Length > 0)
+                {
+                    ReckonByTime(args);
+                    return;
+                }
 
-            // Update();
-            ReckonByTime("help");
-            while (true)
+                // Update();
+                ReckonByTime("help");
+                while (true)
+                {
+                    Console.Write("->");
+                    string? str = Console.ReadLine();
+                    ReckonByTime(str);
+                }
+                break;
+            }
+            case 1:
             {
-                Console.Write("->");
-                string? str = Console.ReadLine();
-                ReckonByTime(str);
+                test();
+                break;
+            }
+            case 2:
+            {
+                test_command();
+                break;
+            }
+            case 3:
+            {
+                test_loop();
+                break;
             }
         }
-        else
+    }
+
+    private static void test()
+    {
+        ReckonByTime(@"auto -c -i .\packed -o .\unpacked");
+        ReckonByTime(@"auto -c -i .\unpacked -o .\packed");
+    }
+
+    private static void test_command()
+    {
+        string[] arr = new string[]
         {
-            string[] arr = new string[]
+            @"auto -c -i .\packed -o .\unpacked",
+            @"auto    -c    -i     .\packed          -o   .\unpacked",
+            @"auto        -i     .\pac  ked          -o   .\unpa   ked",
+            @"1",
+            @"unpack -i",
+            @"unpack help",
+        };
+        foreach (var s in arr)
+        {
+            int n = 1;
+            while (n-- > 0)
             {
-                @"auto -c -i .\packed -o .\unpacked",
-                @"auto    -c    -i     .\packed          -o   .\unpacked",
-                @"auto        -i     .\pac  ked          -o   .\unpa   ked",
-                @"1",
-                @"unpack -i",
-                @"unpack help",
-            };
-            foreach (var s in arr)
-            {
-                int n = 1;
-                while (n-- > 0)
-                {
-                    Console.WriteLine(s);
-                    ReckonByTime(s);
-                    Console.WriteLine("\n-------------------------\n");
-                }
+                Console.WriteLine(s);
+                ReckonByTime(s);
+                Console.WriteLine("\n-------------------------\n");
             }
+        }
+    }
+
+    private static void test_loop()
+    {
+        int size = 5;
+        while (size-- > 0)
+        {
+            ReckonByTime(@"auto -c -i .\packed -o .\unpacked");
+            ReckonByTime(@"auto -c -i .\unpacked -o .\packed");
         }
     }
 
@@ -80,11 +111,13 @@ public static class Program
         {
             case CmdContent c:
             {
-                Console.WriteLine(c.ToString());
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                
                 Get(c);
                 Texture2D.WaitAll();
                 Task.WaitAll();
                 Log.Save();
+                PrintRunTime(stopwatch);
                 break;
             }
             case string s:
@@ -96,11 +129,15 @@ public static class Program
         }
     }
 
-    // private static void Update()
-    // {
-    // }
+    private static void PrintRunTime(Stopwatch timer)
+    {
+        timer.Stop();
+        TimeSpan elapsedTime = timer.Elapsed;
+        string time = $"{(int)elapsedTime.TotalSeconds}.{elapsedTime.Milliseconds}s";
+        Log.Message(time);
+    }
 
-    public class Option
+    private class Option
     {
         private enum OptionType
         {
@@ -280,10 +317,12 @@ public static class Program
                     {
                         return Bad._helpText + option._helpText;
                     }
+
                     if (args[0][1] == "help")
                     {
                         return option._helpText;
                     }
+
                     return Bad._helpText + option._helpText;
                 }
 

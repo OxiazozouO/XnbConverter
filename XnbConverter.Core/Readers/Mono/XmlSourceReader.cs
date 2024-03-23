@@ -29,9 +29,4 @@ public class XmlSourceReader : BaseReader
     {
         return false;
     }
-
-    public override Type GetResultType()
-    {
-        return typeof(XmlSource);
-    }
 }

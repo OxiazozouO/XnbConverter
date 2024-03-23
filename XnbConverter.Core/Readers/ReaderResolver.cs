@@ -6,7 +6,10 @@ namespace XnbConverter.Readers;
 
 public class ReaderResolver
 {
-    private readonly string _typeIndex;
+    // private readonly string _typeIndex;
+    private readonly List<int> typeIndex;
+    
+    private readonly List<string> _typeName;
 
     /**
      * 用于使用读取器读取XNB类型的类
@@ -27,13 +30,13 @@ public class ReaderResolver
     {
     }
 
-    public ReaderResolver(BaseReader[] readerArr, BufferWriter bufferWriter, string typeIndex)
-        : this(readerArr, null, bufferWriter, typeIndex)
+    public ReaderResolver(BaseReader[] readerArr, BufferWriter bufferWriter, List<string> typeName, List<int> typeIndex)
+        : this(readerArr, null, bufferWriter, typeName, typeIndex)
     {
     }
 
-    public ReaderResolver(BaseReader[] readerArr, BufferReader bufferReader, string typeIndex)
-        : this(readerArr, bufferReader, null, typeIndex)
+    public ReaderResolver(BaseReader[] readerArr, BufferReader bufferReader, List<string> typeName, List<int> typeIndex)
+        : this(readerArr, bufferReader, null, typeName, typeIndex)
     {
     }
 
@@ -43,26 +46,34 @@ public class ReaderResolver
         this.readerArr = readerArr;
         this.bufferReader = bufferReader;
         this.bufferWriter = bufferWriter;
-        var sb = new StringBuilder();
-        for (var i = 0; i < readerArr.Length; i++) sb.Append((char)i).Append('@').Append(names[i]).Append('@');
+        typeIndex = new List<int>(readerArr.Length);
+        _typeName = new List<string>(readerArr.Length);
+        for (var i = 0; i < readerArr.Length; i++)
+        {
+            typeIndex.Add(i);
+            _typeName.Add(names[i].ToString());
+        }
 
-        _typeIndex = sb.ToString();
         Init();
     }
 
     public ReaderResolver(BaseReader[] readerArr, BufferReader bufferReader, BufferWriter bufferWriter,
-        string typeIndex)
+        List<string> typeName, List<int> typeIndex)
     {
         this.readerArr = readerArr;
         this.bufferReader = bufferReader;
         this.bufferWriter = bufferWriter;
-        _typeIndex = typeIndex;
+        _typeName = typeName;
+        this.typeIndex = typeIndex;
         Init();
     }
 
     private void Init()
     {
-        foreach (var t in readerArr) t.Init(this);
+        foreach (var t in readerArr)
+        {
+            t.Init(this);
+        }
     }
 
     /**
@@ -106,10 +117,12 @@ public class ReaderResolver
 
     public int GetIndex(Type t)
     {
-        var readerStr = '@' + t.ToString() + '@';
-        var i = _typeIndex.AsSpan().IndexOf(readerStr);
-        if (i == -1 || i > _typeIndex.Length) throw new ArgumentException();
-        return _typeIndex[i - 1];
+        int index = _typeName.IndexOf(t.ToString());
+        if (index == -1 || index > typeIndex.Count)
+        {
+            throw new ArgumentException();
+        }
+        return typeIndex[index];
     }
 
     /**

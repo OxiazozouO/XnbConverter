@@ -44,6 +44,7 @@
   "TypeReadHelper.4": "読み込まれていないクラス: {0}!",
   "TypeReadHelper.5": "{0} が存在しません、DLLの読み込みに失敗し、xnbの解析が失敗する可能性があります、\n {1} に正しいファイルパスを修正してください",
   "SpriteFont.1": "ファイルの解析に失敗しました",
+  "EnumReader.1": "値 {0} は、列挙型のメンバーに対応していません。",
   "Texture2DReader.1": "Texture2D形式のECT1タイプは実装されていません！",
   "Texture2DReader.2": "未実装のTexture2D形式タイプが見つかりました（{0}）。",
   "Texture2DReader.3": "画像 幅: {0}, 高さ: {1}, フォーマット: {2}",

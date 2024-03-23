@@ -44,6 +44,7 @@
   "TypeReadHelper.4": "Yüklenmemiş sınıf: {0}!",
   "TypeReadHelper.5": "{0} mevcut değil, DLL yüklemesi başarısız oldu, bu da başarısız xnb ayrıştırmasına neden olabilir, \n Lütfen doğru dosya yolunu {1} olarak değiştirin",
   "SpriteFont.1": "Dosya analizi başarısız oldu",
+  "EnumReader.1": "{0} değeri herhangi bir numaralandırma üyesine karşılık gelmiyor.",
   "Texture2DReader.1": "Texture2D biçimi türü ECT1 uygulanmadı!",
   "Texture2DReader.2": "Bulunamayan Texture2D biçimi türü ({0}) bulundu.",
   "Texture2DReader.3": "Resim Genişliği: {0}, Yükseklik: {1}, Biçim: {2}",

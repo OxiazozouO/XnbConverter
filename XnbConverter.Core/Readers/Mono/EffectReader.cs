@@ -32,9 +32,4 @@ public class EffectReader : BaseReader
     {
         return false;
     }
-
-    public override Type GetResultType()
-    {
-        return typeof(Effect);
-    }
 }

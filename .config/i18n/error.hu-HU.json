@@ -44,6 +44,7 @@
   "TypeReadHelper.4": "Nem betöltött osztály: {0}!",
   "TypeReadHelper.5": "{0} nem létezik, a DLL betöltése sikertelen volt, ami sikertelen xnb elemzéshez vezethet, \n Kérjük, módosítsa a helyes fájlutat {1}-re",
   "SpriteFont.1": "Fájl elemzése sikertelen",
+  "EnumReader.1": "az érték {0} nem felel meg egyetlen enumerációs taghoz sem.",
   "Texture2DReader.1": "A Texture2D formátumú ECT1 típus nincs implementálva!",
   "Texture2DReader.2": "Nem implementált Texture2D formátumtípus található ({0}).",
   "Texture2DReader.3": "Kép szélessége: {0}, Magasság: {1}, Formátum: {2}",

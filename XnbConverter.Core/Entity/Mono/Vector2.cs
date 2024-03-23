@@ -1,13 +1,11 @@
 ﻿namespace XnbConverter.Entity.Mono;
 
-public class Vector2
+public struct Vector2
 {
-    public float X;
-    public float Y;
+    public float X,Y;
 }
 
-public class IntVector2
+public struct IntVector2
 {
-    public int X;
-    public int Y;
+    public int X,Y;
 }

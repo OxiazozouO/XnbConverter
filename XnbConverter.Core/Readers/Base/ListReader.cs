@@ -25,7 +25,6 @@ public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
         _reader = readerResolver.GetIndex(typeof(K));
         _bK = new TK().IsValueType();
     }
-
     public override List<K> Read()
     {
         var size = bufferReader.ReadUInt32();
@@ -62,7 +61,6 @@ public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
     public override void Write(object content)
     {
         var input = (List<K>)content;
-
         bufferWriter.WriteUInt32((uint)input.Count);
         if (_bK)
             foreach (var t in input)
@@ -81,10 +79,5 @@ public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
     public override bool IsValueType()
     {
         return false;
-    }
-
-    public override Type GetResultType()
-    {
-        return typeof(List<K>);
     }
 }

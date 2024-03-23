@@ -44,6 +44,7 @@
   "TypeReadHelper.4": "Klasse nicht geladen: {0}!",
   "TypeReadHelper.5": "{0} existiert nicht, DLL-Datei konnte nicht geladen werden, was zu einer erfolglosen XNB-Analyse führen kann, \n Bitte ändern Sie den korrekten Dateipfad in {1}",
   "SpriteFont.1": "Datei konnte nicht analysiert werden",
+  "EnumReader.1": "Wert {0} entspricht keinem Enum-Mitglied.",
   "Texture2DReader.1": "Texture2D-Formattyp ECT1 nicht implementiert!",
   "Texture2DReader.2": "Nicht implementierter Texture2D-Formattyp ({0}) gefunden.",
   "Texture2DReader.3": "Bildbreite: {0}, Höhe: {1}, Format: {2}",

@@ -93,6 +93,7 @@ public static class Log
             File.Move(p1, p2,true);
         }
 
+        last = new FileInfo(err).LastWriteTime;
         if (File.Exists(err) && last.Day != now.Day)
         {
             var p1 = Path.GetFullPath(err);

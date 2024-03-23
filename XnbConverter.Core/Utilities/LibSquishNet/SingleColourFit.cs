@@ -8,8 +8,8 @@ public class SingleColourFit : ColourFit
 {
     private readonly SourceBlock[] _sources;
     private readonly byte[] m_colour = Pool.RentByte(3);
-    private readonly Vector3 m_end;
-    private readonly Vector3 m_start;
+    private Vector3 m_end;
+    private Vector3 m_start;
 
     // initialise the best error
     private int m_besterror;

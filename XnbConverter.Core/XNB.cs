@@ -122,7 +122,9 @@ public class XNB : IDisposable
         // 循环读取读取器的数量
         var sb = new StringBuilder();
         var readerArr = new BaseReader[count];
-        var typeIndex = new StringBuilder();
+        List<string> typeList = new List<string>(count * 2);
+        List<int> typeIndexList = new List<int>(count * 2);
+
         for (var i = 0; i < count; i++)
         {
             // 读取类型
@@ -132,18 +134,20 @@ public class XNB : IDisposable
             var version = bufferReader.ReadUInt32();
             // 获取此类型的读取器  并将读取器添加到列表中
             var info = TypeReadHelper.GetReaderInfo(type);
-            if (i == 0)
-                json.Content = new ContentDTO
-                {
-                    Extension = info.Extension
-                };
-
             readerArr[i] = info.Reader.CreateReader();
-            typeIndex.Append((char)i).Append('@').Append(info.Reader).Append('@')
-                .Append((char)i).Append('@').Append(info.Entity).Append('@');
+
+            typeList.Add(info.Reader.ToString());
+            typeList.Add(info.Entity.ToString());
+            typeIndexList.Add(i);
+            typeIndexList.Add(i);
             // 添加本地读取器
             json.Readers.Add(new XnbObject.ReadersDTO { Type = type, Version = version });
         }
+
+        json.Content = new ContentDTO
+        {
+            Extension = TypeReadHelper.GetExtension(json.Readers[0].Type)
+        };
 
         // 获取共享资源的7位值
         var shared = bufferReader.Read7BitNumber();
@@ -155,7 +159,7 @@ public class XNB : IDisposable
             throw new XnbError(Helpers.I18N["XNB.2"], shared);
         // sb.ToString().log();
         // 由已加载的读取器创建内容读取器 并读取内容
-        var readerResolver = new ReaderResolver(readerArr, bufferReader, typeIndex.ToString());
+        var readerResolver = new ReaderResolver(readerArr, bufferReader, typeList, typeIndexList);
         Data = readerResolver.Read(0);
         // 成功加载XNB文件
         Log.Info(Helpers.I18N["XNB.8"]);
@@ -213,31 +217,37 @@ public class XNB : IDisposable
                 outBuffer.WriteUInt32(0u);
 
             // 写入读取器的数量
-            outBuffer.Write7BitNumber(json.Readers.Count);
-            var typeIndex = new StringBuilder();
-            var ReaderArr = new BaseReader[json.Readers.Count];
-            for (var i = 0; i < json.Readers.Count; i++)
+            int count = json.Readers.Count;
+            outBuffer.Write7BitNumber(count);
+            var readerArr = new BaseReader[count];
+            List<string> typeList = new List<string>(count * 2);
+            List<int> typeIndexList = new List<int>(count * 2);
+            for (var i = 0; i < count; i++)
             {
                 var reader = json.Readers[i];
                 var info = TypeReadHelper.GetReaderInfo(reader.Type);
-                ReaderArr[i] = info.Reader.CreateReader();
-                typeIndex.Append((char)i).Append('@').Append(info.Reader).Append('@')
-                    .Append((char)i).Append('@').Append(info.Entity).Append('@');
+                readerArr[i] = info.Reader.CreateReader();
+
+                typeList.Add(info.Reader.ToString());
+                typeList.Add(info.Entity.ToString());
+                typeIndexList.Add(i);
+                typeIndexList.Add(i);
+
                 StringReader.WriteValueBy7Bit(outBuffer, reader.Type);
                 outBuffer.WriteUInt32(reader.Version);
             }
 
             if (json.Content.Extension == TypeReadHelper.Ext.JSON)
             {
-                var t = ReaderArr[0].GetResultType();
-                data = JsonConvert.DeserializeObject((string)data, t);
+                var t = TypeReadHelper.GetResultType(json.Readers[0].Type);
+                data = JsonConvert.DeserializeObject((string)data, t, FileUtils.Settings);
             }
 
             // 写入0个共享资源
             outBuffer.Write7BitNumber(0);
 
             // 创建内容读取器并写入内容 并将内容写入读取器解析器
-            new ReaderResolver(ReaderArr, outBuffer, typeIndex.ToString()).Write(0, data);
+            new ReaderResolver(readerArr, outBuffer, typeList, typeIndexList).Write(0, data);
 
             if (Lzx || Lz4) // 文件需要压缩
             {
@@ -350,9 +360,6 @@ public class XNB : IDisposable
     // 用于掩码的常量
     public record struct XnbConstants
     {
-        // public const int HIDEF_MASK = 1;
-        // public const int COMPRESSED_LZ4_MASK = 64;
-        // public const int COMPRESSED_LZX_MASK = 128;
         public const int XNB_COMPRESSED_PROLOGUE_SIZE = 14;
 
         public const int FILE_SIZE_INDEX = 6;

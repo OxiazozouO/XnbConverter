@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Xml;
 using XnbConverter.Entity;
 using XnbConverter.Readers;
 using XnbConverter.Readers.Mono;
@@ -31,7 +32,7 @@ public static class TypeReadHelper
     // typeof(Int32).FullName;
     // typeof(TailorItemRecipe).FullName;
 
-    private static readonly ConcurrentDictionary<string, ReaderInfo> Map = new();
+    private static ConcurrentDictionary<string, ReaderInfo> Map = new();
 
     private static readonly Dictionary<string, Type> ReaderTypes = new();
     private static readonly Dictionary<string, Type> ExtendTypes = new();
@@ -65,10 +66,17 @@ public static class TypeReadHelper
         Type[] tt =
         {
             typeof(bool), typeof(char), typeof(double), typeof(int), typeof(float),
-            typeof(uint), typeof(Array), typeof(Nullable), typeof(string),
-            Type.GetType("System.Collections.Generic.List`1"), Type.GetType("System.Collections.Generic.Dictionary`2")
+            typeof(uint), typeof(Array), typeof(string),
+            Type.GetType("XnbConverter.Entity.Enum`1"),
+            Type.GetType("System.Nullable`1"),
+            Type.GetType("System.Collections.Generic.List`1"),
+            Type.GetType("System.Collections.Generic.Dictionary`2")
         };
-        foreach (var type in tt) Entities.Add(Regex.Replace(type.Name, @"`\d+$", ""), type);
+
+        foreach (var type in tt)
+        {
+            Entities.Add(Regex.Replace(type.Name, @"`\d+$", ""), type);
+        }
 
         InitExtendTypes();
         Map["xTile.Pipeline.TideReader, xTile"] = new ReaderInfo
@@ -77,7 +85,6 @@ public static class TypeReadHelper
             Entity = typeof(TBin10),
             Extension = ExtMap["Tide"]
         };
-        // Map[""]
     }
 
     public static ReaderInfo GetReaderInfo(string full)
@@ -91,6 +98,10 @@ public static class TypeReadHelper
         try
         {
             (newInfo.Reader, newInfo.Entity) = GetTypeAt(className, ref n);
+            if (newInfo.Entity.Name == "Enum`1")
+            {
+                newInfo.Entity = newInfo.Entity.GenericTypeArguments[0];
+            }
         }
         catch (Exception e)
         {
@@ -103,7 +114,8 @@ public static class TypeReadHelper
 
             var strings = classFull[n].Split(',');
             str = strings.Length == 1 ? classFull[n] : classFull[n].Split(',')[1];
-            throw new XnbError(Helpers.I18N["TypeReadHelper.2"],
+            throw new XnbError(
+                Helpers.I18N["TypeReadHelper.2"],
                 classFull[n], Path.GetFullPath(Dll), str, e.Message);
         }
 
@@ -111,6 +123,10 @@ public static class TypeReadHelper
         Map[full] = newInfo;
         return newInfo;
     }
+
+    public static Type GetResultType(string full) => Map[full].Entity;
+
+    public static string GetExtension(string full) => Map[full].Extension;
 
     public static BaseReader CreateReader(this Type type)
     {
@@ -122,52 +138,78 @@ public static class TypeReadHelper
     {
         var a0 = list[index].Split('@')[0].Split('`');
         var full = list[index].Split('@')[1];
-        var name = a0[0];
+        string name = a0[0];
+        if (name.Contains('+'))
+        {
+            name = name.Split('+')[^1];
+        }
+
+        Type? vv = Type.GetType(full);
+        if (vv == null && Entities.TryGetValue(name, out var ent)) vv = ent;
+
+        if (vv == null && ExtendTypes.TryGetValue(name, out var gam)) vv = gam;
+
+        if (vv == null)
+        {
+            throw new NotImplementedException();
+        }
 
         if (ReaderTypes.TryGetValue(name, out var ga))
         {
             if (a0.Length > 1)
             {
-                var j = int.Parse(a0[1]);
+                int j = int.Parse(a0[1]);
                 var readers = new Type[j * 2];
-                for (var k = 0; k < j; k++)
+                for (int k = 0; k < j; k++)
                 {
                     ++index;
                     (readers[k], readers[k + j]) = GetTypeAt(list, ref index);
                 }
 
                 Type main = null;
-                for (var k = 0; k < j; k++)
+                if (vv.Name == "Array")
                 {
-                    var vv = Type.GetType(full);
-                    if (vv == null && Entities.TryGetValue(name, out var ent)) vv = ent;
+                    main = readers[j].MakeArrayType();
+                    return (ga.MakeGenericType(readers[j]), main);
+                }
 
-                    if (vv == null && ExtendTypes.TryGetValue(name, out var gam)) vv = gam;
+                main = vv.MakeGenericType(readers[j..(2 * j)]);
 
-                    if (vv == null) throw new Exception();
-
-                    if (main == null) main = vv.MakeGenericType(readers[j..(2 * j)]);
+                if (ga == ReaderTypes["Enum"])
+                {
+                    return (readers[0], main);
                 }
 
                 return (ga.MakeGenericType(readers), main);
             }
 
-            {
-                var vv = Type.GetType(full);
-                if (vv == null && Entities.TryGetValue(name, out var ent)) vv = ent;
-
-                if (vv == null && ExtendTypes.TryGetValue(name, out var gam)) vv = gam;
-
-                if (vv == null) throw new Exception();
-
-                return (ga, vv);
-            }
+            return (ga, vv);
         }
 
         if (ExtendTypes.TryGetValue(name, out var ex))
         {
-            var exx = ReaderTypes["Reflective"].MakeGenericType(ex);
+            Type exx = null;
+            if (ex.IsEnum)
+            {
+                exx = ReaderTypes["Enum"].MakeGenericType(ex);
+            }
+            else if (ex.IsClass)
+            {
+                exx = ReaderTypes["Reflective"].MakeGenericType(ex);
+            }
+
+            if (exx == null)
+            {
+                throw new NotImplementedException();
+            }
+
             return (exx, ex);
+        }
+
+        if (vv.IsArray)
+        {
+            Type exx = ReaderTypes["Array"].MakeGenericType(vv.GetElementType());
+            return (exx, vv);
         }
 
         throw new ReaderTypeError(Helpers.I18N["TypeReadHelper.4"], full);
@@ -189,7 +231,8 @@ public static class TypeReadHelper
             foreach (var type in Assembly.LoadFile(Path.GetFullPath(file)).GetExportedTypes())
                 ExtendTypes.Add(type.Name, type);
         }
-        files.ToJson(Dll,true);
+
+        files.ToJson(Dll, true);
     }
 
     private static void ParseType(string full, ref List<string> nameList, ref List<string> fullList)
@@ -218,7 +261,10 @@ public static class TypeReadHelper
         {
             var n = full[i + 1] - '0';
 
-            foreach (var tf in GetFulls(full, n)) ParseType(tf, ref tNames, ref tFulls);
+            foreach (var tf in GetFulls(full, n))
+            {
+                ParseType(tf, ref tNames, ref tFulls);
+            }
 
             l = full[..i] + "`" + n;
         }

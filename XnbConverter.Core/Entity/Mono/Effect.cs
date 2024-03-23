@@ -2,5 +2,5 @@
 
 public class Effect
 {
-    public byte[] Data { set; get; }
+    public byte[] Data;
 }

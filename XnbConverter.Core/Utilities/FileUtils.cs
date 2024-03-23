@@ -1,7 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Reflection;
+using Microsoft.Xna.Framework.Content;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using static System.IO.Directory;
 using static System.IO.File;
 
@@ -9,6 +10,14 @@ namespace XnbConverter.Utilities;
 
 public static class FileUtils
 {
+
+    public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings()
+    {
+        Converters={new StringEnumConverter()},
+        ContractResolver = new IgnoreJsonIgnoreResolver(),
+        Formatting = Formatting.Indented
+    };
+    
     /**
      * 用于在具有输入/输出的路径上行走以进行处理
      * @param {Function} fn
@@ -44,16 +53,12 @@ public static class FileUtils
             throw new XnbError(Helpers.I18N["FileUtils.2"], Path.GetFullPath(input));
         //构建输出路径
         Dictionary<string, List<(string, string)>> map = new();
-        string fileName;
-        string ext;
-        string secondaryPath;
-        string path;
         foreach (var file in files)
         {
-            fileName = Path.GetFileNameWithoutExtension(file);
-            ext = Path.GetExtension(file);
-            secondaryPath = file[input.Length..^(fileName.Length + ext.Length)];
-            path = output + secondaryPath;
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            string ext = Path.GetExtension(file);
+            string secondaryPath = file[input.Length..^(fileName.Length + ext.Length)];
+            string path = output + secondaryPath;
             if (!map.ContainsKey(ext)) map[ext] = new List<(string, string)>();
             map[ext].Add((file, path + fileName));
         }
@@ -75,7 +80,7 @@ public static class FileUtils
 
     public static void ToJson(this object data, string path, bool isFileOrd = false)
     {
-        string text = JsonConvert.SerializeObject(data, Formatting.Indented);
+        string text = JsonConvert.SerializeObject(data, Settings);
         if (isFileOrd)
         {
             text = text.Replace(@"\\", @"\").Replace(@"\n", "\n");
@@ -93,7 +98,24 @@ public static class FileUtils
         {
             json = json.Replace(@"\", @"\\").Replace(@"\n", @"\\n");
         }
-        return JsonConvert.DeserializeObject<T>(json) ??
+
+        return JsonConvert.DeserializeObject<T>(json,Settings) ??
                throw new FileLoadException("读取json失败！");
     }
+    
+    public class IgnoreJsonIgnoreResolver : DefaultContractResolver
+    {
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            var property = base.CreateProperty(member, memberSerialization);
+
+            if (member.GetCustomAttribute<ContentSerializerIgnoreAttribute>() != null)
+            {
+                property.ShouldSerialize = _ => false;
+            }
+
+            return property;
+        }
+    }
+    
 }

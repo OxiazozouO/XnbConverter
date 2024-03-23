@@ -120,9 +120,4 @@ public class Texture2DReader : BaseReader
     {
         return false;
     }
-
-    public override Type GetResultType()
-    {
-        return typeof(Texture2D);
-    }
 }

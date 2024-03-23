@@ -2,5 +2,5 @@
 
 public class XmlSource
 {
-    public string Data { set; get; }
+    public string Data;
 }

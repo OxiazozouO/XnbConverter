@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Runtime.InteropServices;
+﻿using System.Globalization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace XnbConverter.Utilities;
 
@@ -74,25 +69,6 @@ public static class Helpers
         public static readonly string FFmpeg = Path.GetFullPath(@".\.config\ffmpeg\ffmpeg.exe");
     }
 
-    public static class NativeMethods
-    {
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, int mode);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GetConsoleMode(IntPtr handle, out int mode);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetStdHandle(int handle = -11);
-
-        public static void Init()
-        {
-            var handle = GetStdHandle();
-            GetConsoleMode(handle, out var mode);
-            SetConsoleMode(handle, mode | 0x4);
-        }
-    }
-
     public class Configuration
     {
         [JsonIgnore] private readonly int _concurrency;
@@ -158,7 +134,6 @@ public static class Helpers
         }
 
         [Flags]
-        [JsonConverter(typeof(StringEnumConverter))]
         private enum LogLevels
         {
             Info = 1,

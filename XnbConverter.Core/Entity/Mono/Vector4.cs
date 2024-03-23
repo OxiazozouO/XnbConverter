@@ -6,10 +6,7 @@ public struct Vector4
     public static readonly Vector4 HalfHalf2 = new(0.5f, 0.5f, 0.5f, 0.25f);
     public static readonly Vector4 Grid = new(31.0f, 63.0f, 31.0f, 0.0f);
 
-    public float X;
-    public float Y;
-    public float Z;
-    public float W;
+    public float X,Y,Z,W;
 
     public Vector4()
     {

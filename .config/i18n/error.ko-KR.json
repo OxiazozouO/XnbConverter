@@ -44,6 +44,7 @@
   "TypeReadHelper.4": "로드되지 않은 클래스: {0}!",
   "TypeReadHelper.5": "{0}가 존재하지 않습니다, DLL 로드에 실패하여 xnb 구문 분석이 실패할 수 있습니다, \n 올바른 파일 경로를 {1}로 수정하세요",
   "SpriteFont.1": "파일 분석 실패",
+  "EnumReader.1": "값 {0}은(는) 열거형 멤버와 일치하지 않습니다.",
   "Texture2DReader.1": "Texture2D 형식 유형 ECT1이 구현되지 않았습니다!",
   "Texture2DReader.2": "구현되지 않은 Texture2D 형식 유형({0})을(를) 찾았습니다.",
   "Texture2DReader.3": "이미지 너비: {0}, 높이: {1}, 형식: {2}",

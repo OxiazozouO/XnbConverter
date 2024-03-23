@@ -15,7 +15,7 @@ public class RectangleReader : BaseReader
         bufferWriter = readerResolver.bufferWriter;
     }
 
-    public override Rectangle Read()
+    public override object Read()
     {
         var result = new Rectangle();
 

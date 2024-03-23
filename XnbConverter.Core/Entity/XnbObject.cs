@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-
-namespace XnbConverter.Entity;
+﻿namespace XnbConverter.Entity;
 
 public class XnbObject
 {
     [Flags]
-    [JsonConverter(typeof(StringEnumConverter))]
     public enum CompressedMasks : byte
     {
         Hidef = 1,
         Lz4 = 64,
         Lzx = 128
     }
-
-    [JsonConverter(typeof(StringEnumConverter))]
+    
     public enum TargetTags : byte
     {
         Windows = (byte)'w',

@@ -4,7 +4,7 @@ namespace XnbConverter.Tbin.Entity;
 
 public class TBin10
 {
-    public const int LayerMax = 7;
+    public const int LayerMax = 100;
     public byte[] Data { set; get; }
     public string Format { get; set; }
     public string Id { get; set; }

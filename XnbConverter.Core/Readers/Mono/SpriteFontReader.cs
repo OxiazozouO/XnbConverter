@@ -58,9 +58,4 @@ public class SpriteFontReader : BaseReader
     {
         return false;
     }
-
-    public override Type GetResultType()
-    {
-        return typeof(SpriteFont);
-    }
 }

@@ -44,6 +44,7 @@
   "TypeReadHelper.4": "未加载的类：{0}！",
   "TypeReadHelper.5": "{0} 不存在，dll加载失败，可能导致解析xnb不成功，\n 请把正确的文件路径修改到{1}",
   "SpriteFont.1": "解析文件失败",
+  "EnumReader.1": "值 {0} 不对应任何枚举成员。",
   "Texture2DReader.1": "Texture2D格式类型ECT1未实现！",
   "Texture2DReader.2": "找到未实现的Texture2D格式类型（{0}）。",
   "Texture2DReader.3": "图片 宽: {0}, 高: {1}, 格式:  {2}",

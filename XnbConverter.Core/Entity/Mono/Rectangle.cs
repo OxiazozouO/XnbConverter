@@ -1,9 +1,9 @@
 ﻿namespace XnbConverter.Entity.Mono;
 
-public class Rectangle
+public struct Rectangle
 {
-    public int X { get; set; }
-    public int Y { get; set; }
-    public int Width { get; set; }
-    public int Height { get; set; }
+    public int X;
+    public int Y;
+    public int Width;
+    public int Height;
 }

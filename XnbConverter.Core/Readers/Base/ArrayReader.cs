@@ -8,7 +8,7 @@ namespace XnbConverter.Readers.Base;
  * @class
  * @extends BaseReader
  */
-public class ArrayReader<T> : BaseReader where T : BaseReader, new()
+public class ArrayReader<V> : BaseReader where V : new()
 {
     private bool flag;
     private int reader;
@@ -16,55 +16,62 @@ public class ArrayReader<T> : BaseReader where T : BaseReader, new()
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
-        flag = new T().IsValueType();
-        reader = readerResolver.GetIndex(typeof(T));
+        Type tmp = typeof(V);
+        flag = tmp.IsValueType;
+        reader = readerResolver.GetIndex(tmp);
     }
 
-    public override List<T> Read()
+    public override V[] Read()
     {
         // 读取数组中的元素数量
         var size = bufferReader.ReadUInt32();
         // 创建本地数组
-        List<T> array = new();
+        List<V> array = new();
 
         // 循环size次读取数组元素
         if (flag)
-            for (var i = 0; i < size; i++)
+            while (size --> 0)
             {
                 // 从缓冲区获取值
                 var value = readerResolver.ReadValue(reader);
                 // 将值添加到本地数组
-                array.Add((T)value);
+                array.Add((V)value);
             }
         else
-            for (var i = 0; i < size; i++)
+            while (size --> 0)
             {
                 // 从缓冲区获取值
-                var value = readerResolver.Read(reader);
+                var value = readerResolver.Read_Null(reader);
                 // 将值添加到本地数组
-                array.Add((T)value);
+                array.Add((V)value);
             }
 
         // 返回数组
-        return array;
+        return array.ToArray();
     }
 
     public override void Write(object content)
     {
-        throw new NotImplementedException();
-        var input = (List<T>)content;
+        var input = (V[])content;
 
         // 写入数组的元素数量
-        bufferWriter.WriteUInt32((uint)input.Count);
+        bufferWriter.WriteUInt32((uint)input.Length);
 
         // 循环遍历数组以写入数组内容
         if (flag)
-            foreach (var item in input)
-                readerResolver.Write(reader, item);
-
+        {
+            foreach (var t in input)
+            {
+                readerResolver.WriteValue(reader, t);
+            }
+        }
         else
-            foreach (var item in input)
-                readerResolver.WriteValue(reader, item);
+        {
+            foreach (var t in input)
+            {
+                readerResolver.Write_Null(reader, t);
+            }
+        }
     }
 
     public override bool IsValueType()

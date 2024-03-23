@@ -44,6 +44,7 @@
   "TypeReadHelper.4": "Classe non chargée : {0}!",
   "TypeReadHelper.5": "{0} n'existe pas, le chargement de la DLL a échoué, ce qui peut entraîner une analyse xnb non réussie, \n Veuillez modifier le chemin de fichier correct vers {1}",
   "SpriteFont.1": "Échec de l'analyse du fichier",
+  "EnumReader.1": "la valeur {0} ne correspond à aucun membre de l'énumération.",
   "Texture2DReader.1": "Type de format Texture2D ECT1 non implémenté !",
   "Texture2DReader.2": "Type de format Texture2D non implémenté trouvé ({0}).",
   "Texture2DReader.3": "Largeur de l'image : {0}, Hauteur : {1}, Format : {2}",

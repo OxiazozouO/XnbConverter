@@ -11,12 +11,12 @@ public class Texture2D
 {
     private static readonly List<Task> tasks = new();
 
-    [JsonIgnore] public byte[] Data { set; get; }
-    public int Format { get; set; }
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public int MipCount { get; set; }
-    public uint DataSize { get; set; }
+    [JsonIgnore] public byte[] Data;
+    public int Format;
+    public int Width;
+    public int Height;
+    public int MipCount;
+    public uint DataSize;
 
     /**
      * 将Texture2D转换为PNG。

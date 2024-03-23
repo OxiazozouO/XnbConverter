@@ -629,6 +629,20 @@
     ".ru-RU": "Ошибка анализа файла",
     ".tr-TR": "Dosya analizi başarısız oldu"
   },
+  "EnumReader.1": {
+    ".zh-CN": "值 {0} 不对应任何枚举成员。",
+    ".default": "value {0} does not correspond to any enum member.",
+    ".de-DE": "Wert {0} entspricht keinem Enum-Mitglied.",
+    ".es-ES": "el valor {0} no corresponde a ningún miembro de la enumeración.",
+    ".fr-FR": "la valeur {0} ne correspond à aucun membre de l'énumération.",
+    ".hu-HU": "az érték {0} nem felel meg egyetlen enumerációs taghoz sem.",
+    ".it-IT": "il valore {0} non corrisponde a nessun membro dell'enumerazione.",
+    ".ja-JP": "値 {0} は、列挙型のメンバーに対応していません。",
+    ".ko-KR": "값 {0}은(는) 열거형 멤버와 일치하지 않습니다.",
+    ".pt-BR": "o valor {0} não corresponde a nenhum membro de enumeração.",
+    ".ru-RU": "значение {0} не соответствует ни одному элементу перечисления.",
+    ".tr-TR": "{0} değeri herhangi bir numaralandırma üyesine karşılık gelmiyor."
+  },
   "Texture2DReader.1": {
     ".zh-CN": "Texture2D格式类型ECT1未实现！",
     ".default": "Texture2D format type ECT1 not implemented!",
@@ -683,7 +697,7 @@
     ".pt-BR": "Encontrado mipcount de {0}, apenas o primeiro será usado.",
     ".ru-RU": "Найден mipcount для {0}, будет использован только первый.",
     ".tr-TR": "{0} mip sayısı bulundu, sadece ilk kullanılacak.",
-    ".default": ""
+    ".default": "Found mipcount for {0}, only the first will be used."
   },
   "LayerReader.1": {
     ".zh-CN": "i 的最大值为 {0}，当前值为 {1}",
@@ -697,7 +711,7 @@
     ".pt-BR": "O valor máximo de i é {0}, o valor atual é {1}",
     ".ru-RU": "Максимальное значение i равно {0}, текущее значение {1}",
     ".tr-TR": "i'nin maksimum değeri {0}, mevcut değer {1}",
-    ".default": ""
+    ".default": "Max value of i is {0}, current value is {1}"
   },
   "LayerReader.2": {
     ".zh-CN": "瓦片数据错误",
@@ -711,7 +725,7 @@
     ".pt-BR": "Erro nos dados do azulejo",
     ".ru-RU": "Ошибка в данных плитки",
     ".tr-TR": "Mozaik verilerinde hata",
-    ".default": ""
+    ".default": "Tile data error"
   },
   "PropertieReader.1": {
     ".zh-CN": "错误的地图属性类型：{0}",
@@ -725,7 +739,7 @@
     ".pt-BR": "Tipo de propriedade de mapa incorreto: {0}",
     ".ru-RU": "Неверный тип свойства карты: {0}",
     ".tr-TR": "Hatalı harita özellik türü: {0}",
-    ".default": ""
+    ".default": "Invalid map property type: {0}"
   },
   "TBin10Reader.1": {
     ".zh-CN": "Xnb尚未支持超过{0}层的Tbin地图，目前{1}层",
@@ -739,7 +753,7 @@
     ".pt-BR": "Xnb atualmente não suporta mapas Tbin com mais de {0} camadas, atualmente {1} camadas",
     ".ru-RU": "Xnb в настоящее время не поддерживает Tbin-карты с более чем {0} уровнями, в настоящее время {1} уровней",
     ".tr-TR": "Xnb şu anda {0} katmanı aşan Tbin haritalarını desteklemiyor, şu anda {1} katman",
-    ".default": ""
+    ".default": "Xnb does not currently support Tbin maps with more than {0} layers, currently {1} layers"
   },
   "TBin10Reader.2": {
     ".zh-CN": "未知程序错误",
@@ -753,7 +767,7 @@
     ".pt-BR": "Erro de programa desconhecido",
     ".ru-RU": "Неизвестная программа ошибка",
     ".tr-TR": "Bilinmeyen program hatası",
-    ".default": ""
+    ".default": "Unknown program error"
   },
   "LZX.1": {
     ".zh-CN": "窗口大小超出范围！",

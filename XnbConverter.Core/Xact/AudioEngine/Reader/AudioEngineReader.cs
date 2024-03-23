@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.AudioEngine.Entity;
@@ -232,7 +231,7 @@ public class AudioEngineReader : BaseReader
         }
 
 
-        Log.Debug(JsonConvert.SerializeObject(reverbCurves, Formatting.Indented));
+        Log.Debug(reverbCurves.ToJoinStr());
 
         return result;
     }

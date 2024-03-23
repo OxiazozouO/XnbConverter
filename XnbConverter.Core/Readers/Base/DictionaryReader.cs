@@ -15,11 +15,6 @@ public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, 
     private int _keyReader;
     private int _valueReader;
 
-    public override Type GetResultType()
-    {
-        return typeof(Dictionary<K, V>);
-    }
-
     public override void Init(ReaderResolver readerResolver)
     {
         base.Init(readerResolver);
@@ -68,7 +63,7 @@ public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, 
                 readerResolver.Write(_keyReader, key);
 
             if (_bV)
-                readerResolver.WriteValue(_keyReader, value);
+                readerResolver.WriteValue(_valueReader, value);
             else
                 readerResolver.Write(_valueReader, value);
         }

@@ -1,15 +1,12 @@
 ﻿namespace XnbConverter.Entity.Mono;
 
-public class Vector3
+public struct Vector3
 {
     public static readonly Vector3 Zero = new();
     public static readonly Vector3 One = new(1.0f);
     public static readonly Vector3 Grid = new(31.0f, 63.0f, 31.0f);
-
-
-    public float X;
-    public float Y;
-    public float Z;
+    
+    public float X,Y,Z;
 
     public Vector3(float x, float y, float z)
     {

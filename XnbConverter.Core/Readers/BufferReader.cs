@@ -66,7 +66,6 @@ public class BufferReader : IDisposable
 
     //缓冲区的大小。
     public int Size { get; private set; }
-
     /**
      * 关闭和归还相关资源
      */

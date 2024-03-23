@@ -51,14 +51,4 @@ public abstract class BaseReader
      * @param {ReaderResolver} resolver 用于写入非原始类型的读取器解析器
      */
     public abstract void Write(object input);
-
-    /**
-     * 获取返回的数据类型
-     * @param {BufferWriter} buffer
-     * @param {ReaderResolver} resolver
-     */
-    public virtual Type GetResultType()
-    {
-        return null;
-    }
 }

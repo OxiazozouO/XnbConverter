@@ -44,6 +44,7 @@
   "TypeReadHelper.4": "Class not loaded: {0}!",
   "TypeReadHelper.5": "{0} does not exist, DLL loading failed, which may result in unsuccessful xnb parsing, \n Please modify the correct file path to {1}",
   "SpriteFont.1": "Parse file failed",
+  "EnumReader.1": "value {0} does not correspond to any enum member.",
   "Texture2DReader.1": "Texture2D format type ECT1 not implemented!",
   "Texture2DReader.2": "Unimplemented Texture2D format type ({0}).",
   "Texture2DReader.3": "Image Width: {0}, Height: {1}, Format: {2}",
