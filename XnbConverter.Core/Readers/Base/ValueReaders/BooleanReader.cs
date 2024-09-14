@@ -1,42 +1,25 @@
-﻿namespace XnbConverter.Readers.Base.ValueReaders;
+namespace XnbConverter.Readers.Base.ValueReaders;
 
-/**
- * Boolean Reader
- * @class
- * @extends BaseReader
- */
 public class BooleanReader : BaseReader
 {
-    public override bool IsValueType()
-    {
-        return true;
-    }
+	public override bool IsValueType()
+	{
+		return true;
+	}
 
-    public override void Init(ReaderResolver readerResolver)
-    {
-        bufferReader = readerResolver.bufferReader;
-        bufferWriter = readerResolver.bufferWriter;
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		bufferReader = resolver.bufferReader;
+		bufferWriter = resolver.bufferWriter;
+	}
 
-    /**
-     * 从缓冲区读取布尔值。
-     * @param {BufferReader} buffer 缓冲区读取器
-     * @returns {Boolean} 布尔值
-     */
-    public override object Read()
-    {
-        var value = bufferReader.ReadByte();
-        return value != 0;
-    }
+	public override object Read()
+	{
+		return bufferReader.ReadByte() != 0;
+	}
 
-    /**
-     * 将布尔值写入缓冲区。
-     * @param {BufferWriter} buffer 缓冲区写入器
-     * @param {Mixed} data 布尔值
-     * @param {ReaderResolver} 解析器
-     */
-    public override void Write(object input)
-    {
-        bufferWriter.WriteByte((byte)((bool)input ? 1 : 0));
-    }
+	public override void Write(object input)
+	{
+		bufferWriter.WriteByte((byte)(((bool)input) ? 1u : 0u));
+	}
 }

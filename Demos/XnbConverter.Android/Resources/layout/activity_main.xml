@@ -1,17 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    <Button
-            android:id="@+id/browseButton"
+    <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
+
+            <HorizontalScrollView
+                    android:scrollbars="none"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content">
+
+                <LinearLayout
+                        android:id="@+id/id_file_search_bar"
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+            </HorizontalScrollView>
+
+            <ImageButton
+                    android:id="@+id/id_file_path_search_btn"
+                    android:background="@drawable/ic_menu_search"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"/>
+
+        </LinearLayout>
+
+
+        <HorizontalScrollView
+                android:id="@+id/id_gallery"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/colorFileListViewBg"
+                android:scrollbars="none">
+
+            <LinearLayout
+                    android:id="@+id/id_file_view_list"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                <include
+                        android:id="@+id/id_left"
+                        layout="@layout/file_view"/>
+
+                <include
+                        android:id="@+id/id_right"
+                        layout="@layout/file_view"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+
+        <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/id_bottom_menu_main"
+                android:layout_alignParentBottom="true"
+                android:layout_width="match_parent"
+                android:background="#dcdcdc"
+                android:layout_height="wrap_content">
+
+            <RelativeLayout
+                    android:layout_height="56dp"
+                    android:layout_width="match_parent">
+
+                <LinearLayout
+                        android:id="@+id/id_botton_menu_select"
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <ImageButton
+                            android:background="@drawable/ic_filemenu_shear"
+                            android:id="@+id/id_left_shear_file"
+                            android:scaleType="fitCenter"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginRight="15dp"/>
+
+                    <ImageButton
+                            android:background="@drawable/ic_filemenu_copy"
+                            android:id="@+id/id_left_copy_file"
+                            android:scaleType="fitCenter"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginRight="15dp"/>
+
+                    <ImageButton
+                            android:background="@drawable/ic_del"
+                            android:id="@+id/id_left_del_file"
+                            android:scaleType="fitCenter"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginRight="15dp"/>
+
+                    <ImageButton
+                            android:background="@drawable/ic_info"
+                            android:id="@+id/id_left_zip_file"
+                            android:scaleType="fitCenter"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginRight="15dp"/>
+
+                    <ImageButton
+                            android:background="@drawable/ic_more"
+                            android:id="@+id/id_left_zip_file"
+                            android:scaleType="fitCenter"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginRight="15dp"/>
+                </LinearLayout>
+            </RelativeLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+            android:id="@+id/id_more_menu"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Browse" />
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="30dp"
+            android:layout_marginBottom="30dp"
+            android:gravity="right">
 
-    <ListView
-            android:id="@+id/listView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-</LinearLayout>
+        <LinearLayout
+                android:id="@+id/id_more_menu_list"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"/>
+
+
+        <ImageButton
+                android:id="@+id/id_more_menu_bnt"
+                android:background="@drawable/ic_add"
+                android:layout_width="64dp"
+                android:layout_height="64dp"/>
+    </LinearLayout>
+    
+    <include layout="@layout/image_viewer_layout"
+            android:visibility="gone"/>
+
+</RelativeLayout>

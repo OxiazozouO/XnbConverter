@@ -1,43 +1,125 @@
 using System;
-using System.Text;
+using System.Collections.Generic;
+using System.IO;
+using LZ4PCL;
 using Newtonsoft.Json;
-using XnbConverter.Entity;
+using XnbConverter.Configurations;
+using XnbConverter.Entity.Mono;
+using XnbConverter.Exceptions;
 using XnbConverter.Readers;
+using XnbConverter.Readers.Base;
+using XnbConverter.Tbin.Entity;
+using XnbConverter.Tbin.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Utilities.LZX;
-using static XnbConverter.Entity.XnbObject.TargetTags;
-using LZ4 = LZ4PCL.LZ4Codec;
-using StringReader = XnbConverter.Readers.Base.StringReader;
+using XnbConverter.Xact;
 
 namespace XnbConverter;
 
-/// <summary>
-///     用于读取和写入XNB文件的XNB文件类
-/// </summary>
 public class XNB : IDisposable
 {
-    // 由XNB文件使用的读取器数组。
-    private BufferReader bufferReader;
-    private BufferWriter bufferWriter;
+    [Flags]
+    public enum CompressedMasks : byte
+    {
+        Hidef = 1,
+        Lz4 = 0x40,
+        Lzx = 0x80
+    }
+
+    public enum TargetTags : byte
+    {
+        Windows = 119,
+        WindowsPhone7 = 109,
+        Xbox360 = 120,
+        Android = 97,
+        Ios = 105,
+        Linux = 108,
+        MacOSX = 88
+    }
+
+    public class XnbObject
+    {
+        public class HeaderDto
+        {
+            public TargetTags Target;
+
+            public byte FormatVersion;
+
+            public CompressedMasks CompressedFlag;
+        }
+
+        public class ReadersDto
+        {
+            public string? Type;
+
+            public uint Version;
+        }
+
+        public class ContentDto
+        {
+            public string Extension;
+
+            public int Format;
+        }
+
+        public ContentDto Content;
+
+        public HeaderDto Header;
+
+        public List<ReadersDto> Readers = new List<ReadersDto>();
+
+        public int JsonSize()
+        {
+            int num = 0;
+            for (int i = 0; i < Readers.Count; i++)
+            {
+                num += 1 + Readers[i].Type.Length + 1 + 1;
+            }
+
+            return num + 100;
+        }
+    }
+
+    public static class Ext
+    {
+        public const string DEF = ".bin";
+
+        public const string JSON = ".json";
+
+        public const string TEXTURE_2D = ".png";
+
+        public const string EFFECT = ".cso";
+
+        public const string TBIN = ".tbin";
+
+        public const string BM_FONT = ".xml";
+
+        public const string SPRITE_FONT = ".json .png";
+
+        public const string SOUND_EFFECT = ".json .wav";
+    }
+
+    public const int XnbCompressedPrologueSize = 14;
+
+    public const int FileSizeIndex = 6;
+
+    public const int ContentOriginalSizeIndex = 10;
+
+    private BufferReader? bufferReader;
+
+    private BufferWriter? bufferWriter;
+
     public object? Data;
 
-    // 格式版本
-    private byte FormatVersion;
+    private int fileSize;
 
-    // HiDef标志
+    public XnbObject XnbConfig = new XnbObject();
+
     private bool Hidef;
 
     private bool Lz4;
 
-    // 压缩标志
-    // 压缩类型
     private bool Lzx;
-
-    // 目标平台
-    private XnbObject.TargetTags Target;
-
-    //Xnb配置文件
-    public XnbObject? XnbConfig;
 
     public void Dispose()
     {
@@ -45,324 +127,430 @@ public class XNB : IDisposable
         bufferWriter?.Dispose();
     }
 
-    /**
-     * 将文件加载到XNB类中。
-     * @param {String} filename 要加载的XNB文件。
-     */
-    public void Load(string inputPath)
+    private void _validateHeader(BufferReader bufferReader)
     {
-        XnbConfig = new XnbObject();
-        var json = XnbConfig;
-        Log.Info(Helpers.I18N["XNB.6"], inputPath);
-
-        // XNB缓冲区读取器
-        bufferReader = BufferReader.FormXnbFile(inputPath);
-        // Console.WriteLine(XnbObject.CompressedMask.Lzx.ToString());
-
-        //验证XNB文件头
-        var flags = _validateHeader(bufferReader);
-
-        // 我们成功验证了该文件
-        Log.Info(Helpers.I18N["XNB.7"]);
-        // 读取文件大小
-        // 文件大小
-        var fileSize = bufferReader.ReadUInt32();
-        // 验证文件大小
-        if (bufferReader.Size != fileSize)
-            throw new XnbError(Helpers.I18N["XNB.1"]);
-
-        // 打印文件大小
-        Log.Debug(Helpers.I18N["XNB.9"], fileSize);
-        // 如果文件被压缩，则需要解压缩
-        if (Lz4 || Lzx)
+        if (bufferReader == null)
         {
-            // 获取解压缩后的大小
-            var decompressedSize = (int)bufferReader.ReadUInt32();
-            Log.Debug(Helpers.I18N["XNB.10"], decompressedSize);
-            // 解压缩LZX格式
-            if (Lzx)
-            {
-                // 获取需要压缩的数据量
-                var compressedTodo = (int)fileSize - XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE;
-                // 根据文件大小解压缩缓冲区
-                LZX.Decompress(bufferReader, compressedTodo, decompressedSize);
-            }
-            // 解压缩LZ4格式
-            else if (Lz4)
-            {
-                // 为LZ4解码分配缓冲区
-                var trimmed = bufferReader.Buffer[XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE..bufferReader.Size];
-                // 将修剪后的缓冲区解码到解压缩缓冲区
-                LZ4.Decode(trimmed, 0, trimmed.Length,
-                    bufferReader.Buffer, XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE, decompressedSize);
-            }
-
-            // 重置字节位置以读取内容
-            bufferReader.BytePosition = XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE;
+            throw new XnbError(Error.XNB_1);
         }
 
-        Log.Debug(Helpers.I18N["XNB.11"], bufferReader.BytePosition);
-
-        // 注意：假设缓冲区现在已解压缩
-
-        // 获取读取器的7位值
-        var count = bufferReader.Read7BitNumber();
-        // 记录读取器的数量
-        Log.Debug(Helpers.I18N["XNB.12"], count);
-
-        // 用于导出的读取器的本地副本
-        json.Header = new XnbObject.HeaderDTO
+        string text = bufferReader.ReadString(3);
+        if (text != "XNB")
         {
-            Target = Target,
-            FormatVersion = FormatVersion,
-            CompressedFlag = flags
-        };
-
-        // 创建StringReader的实例
-        // 循环读取读取器的数量
-        var sb = new StringBuilder();
-        var readerArr = new BaseReader[count];
-        List<string> typeList = new List<string>(count * 2);
-        List<int> typeIndexList = new List<int>(count * 2);
-
-        for (var i = 0; i < count; i++)
-        {
-            // 读取类型
-            var type = StringReader.ReadValueBy7Bit(bufferReader);
-            sb.Append(type).Append('\n');
-            // 读取版本
-            var version = bufferReader.ReadUInt32();
-            // 获取此类型的读取器  并将读取器添加到列表中
-            var info = TypeReadHelper.GetReaderInfo(type);
-            readerArr[i] = info.Reader.CreateReader();
-
-            typeList.Add(info.Reader.ToString());
-            typeList.Add(info.Entity.ToString());
-            typeIndexList.Add(i);
-            typeIndexList.Add(i);
-            // 添加本地读取器
-            json.Readers.Add(new XnbObject.ReadersDTO { Type = type, Version = version });
+            throw new XnbError(Error.XNB_2, text);
         }
 
-        json.Content = new ContentDTO
+        Logger.Debug(Error.XNB_14);
+        TargetTags targetTags = (TargetTags)bufferReader.ReadString(1).ToLower().ToCharArray()[0];
+        if (Enum.IsDefined(typeof(TargetTags), targetTags))
         {
-            Extension = TypeReadHelper.GetExtension(json.Readers[0].Type)
+            Logger.Debug(Error.XNB_15, targetTags.ToString());
+        }
+        else
+        {
+            Logger.Warn(Error.XNB_23, (char)targetTags);
+        }
+
+        byte b = bufferReader.ReadByte();
+        if ((uint)(b - 3) <= 2u)
+        {
+            Logger.Debug(Error.XNB_16, b % 3);
+        }
+        else
+        {
+            Logger.Warn(Error.XNB_24, b);
+        }
+
+        CompressedMasks compressedFlag = (CompressedMasks)bufferReader.ReadByte();
+        XnbConfig.Header = new XnbObject.HeaderDto
+        {
+            Target = targetTags,
+            FormatVersion = b,
+            CompressedFlag = compressedFlag
         };
-
-        // 获取共享资源的7位值
-        var shared = bufferReader.Read7BitNumber();
-        // 记录共享资源的数量
-        Log.Debug(Helpers.I18N["XNB.13"], shared);
-
-        // 不接受共享资源，因为SDV XNB文件没有共享资源
-        if (shared != 0)
-            throw new XnbError(Helpers.I18N["XNB.2"], shared);
-        // sb.ToString().log();
-        // 由已加载的读取器创建内容读取器 并读取内容
-        var readerResolver = new ReaderResolver(readerArr, bufferReader, typeList, typeIndexList);
-        Data = readerResolver.Read(0);
-        // 成功加载XNB文件
-        Log.Info(Helpers.I18N["XNB.8"]);
+        _AnalysisFlag();
     }
 
-    /**
-     * 将JSON转换为XNB文件结构
-     * @param {Object} json 要转换为XNB文件的JSON对象
-     */
-    public void Convert(string path)
+    private void _AnalysisFlag()
     {
-        var json = XnbConfig;
-        var data = Data;
-        // 捕获无效的JSON文件格式的异常
+        CompressedMasks compressedFlag = XnbConfig.Header.CompressedFlag;
+        Hidef = (compressedFlag & CompressedMasks.Hidef) != 0;
+        Lzx = (compressedFlag & CompressedMasks.Lzx) != 0;
+        Lz4 = (compressedFlag & CompressedMasks.Lz4) != 0;
+        Logger.Debug(Error.XNB_17, compressedFlag.ToString());
+    }
+
+    public void Decode(string inputPath)
+    {
+        XnbObject xnbConfig = XnbConfig;
+        Logger.Info(Error.XNB_10, inputPath);
+        bufferReader = BufferReader.FormXnbFile(inputPath);
+        _validateHeader(bufferReader);
+        Logger.Info(Error.XNB_11);
+        uint num = bufferReader.ReadUInt32();
+        if (bufferReader.Size != num)
+        {
+            throw new XnbError(Error.XNB_3);
+        }
+
+        Logger.Debug(Error.XNB_18, num);
+        if (Lz4 || Lzx)
+        {
+            int num2 = (int)bufferReader.ReadUInt32();
+            Logger.Debug(Error.XNB_19, num2);
+            if (Lzx)
+            {
+                int compressedTodo = (int)(num - 14);
+                LZX.Decompress(bufferReader, compressedTodo, num2);
+            }
+            else if (Lz4)
+            {
+                byte[] subArray = bufferReader.Buffer[14..bufferReader.Size];
+                LZ4Codec.Decode(subArray, 0, subArray.Length, bufferReader.Buffer, 14, num2);
+            }
+
+            bufferReader.BytePosition = 14;
+        }
+
+        Logger.Debug(Error.XNB_20, bufferReader.BytePosition);
+        int num3 = bufferReader.Read7BitNumber();
+        Logger.Debug(Error.XNB_21, num3);
+        BaseReader[] array = new BaseReader[num3];
+        List<string> list = new List<string>(num3 * 2);
+        List<int> list2 = new List<int>(num3 * 2);
+        for (int i = 0; i < num3; i++)
+        {
+            string text = Readers.Base.StringReader.ReadValueBy7Bit(bufferReader);
+            uint version = bufferReader.ReadUInt32();
+            TypeReadHelper.ReaderInfo readerInfo = TypeReadHelper.GetReaderInfo(text);
+            array[i] = readerInfo.Reader.CreateReader();
+            list.Add(readerInfo.Reader.ToString());
+            list.Add(readerInfo.Entity.ToString());
+            list2.Add(i);
+            list2.Add(i);
+            xnbConfig.Readers.Add(new XnbObject.ReadersDto
+            {
+                Type = text,
+                Version = version
+            });
+        }
+
+        xnbConfig.Content = new XnbObject.ContentDto
+        {
+            Extension = TypeReadHelper.GetExtension(xnbConfig.Readers[0].Type)
+        };
+        int num4 = bufferReader.Read7BitNumber();
+        Logger.Debug(Error.XNB_22, num4);
+        if (num4 != 0)
+        {
+            throw new XnbError(Error.XNB_4, num4);
+        }
+
+        ReaderResolver readerResolver = new ReaderResolver(array, bufferReader, list, list2);
+        Data = readerResolver.Read(0);
+        Logger.Info(Error.XNB_12);
+    }
+
+    public bool ExportFiles(string filename)
+    {
+        string directoryName = Path.GetDirectoryName(filename);
+        if (!Directory.Exists(directoryName))
+        {
+            Directory.CreateDirectory(directoryName);
+        }
+
+        if (XnbConfig == null || XnbConfig.Content == null)
+        {
+            throw new XnbError(Error.XNB_5);
+        }
+
+        XnbObject.ContentDto content = XnbConfig.Content;
+        if (Data != null)
+        {
+            if (content == null || Data == null)
+            {
+                throw new XnbError(Error.XNB_6);
+            }
+
+            Logger.Info(Error.XNB_13, content.Extension);
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+            string[] array = content.Extension.Split(' ');
+            string[] array2 = new string[array.Length];
+            for (int i = 0; i < array.Length; i++)
+            {
+                array2[i] = Path.Combine(directoryName, fileNameWithoutExtension + array[i]);
+            }
+
+            switch (content.Extension)
+            {
+                case ".png":
+                {
+                    Texture2D texture2D = (Texture2D)Data;
+                    texture2D.SaveAsPng(array2[0]);
+                    content.Format = texture2D.Format;
+                    break;
+                }
+                case ".json":
+                    Data.ToJson(array2[0]);
+                    content.Format = 0;
+                    break;
+                case ".tbin":
+                {
+                    TBin10 tBin = (TBin10)Data;
+                    File.WriteAllBytes(array2[0], tBin.Data);
+                    break;
+                }
+                case ".json .png":
+                {
+                    SpriteFont spriteFont = (SpriteFont)Data;
+                    content.Format = spriteFont.Texture.Format;
+                    spriteFont.Save(array2[0], array2[1]);
+                    break;
+                }
+                case ".cso":
+                    File.WriteAllBytes(array2[0], ((Effect)Data).Data);
+                    break;
+                case ".xml":
+                    File.WriteAllText(array2[0], ((XmlSource)Data).Data);
+                    break;
+                case ".json .wav":
+                    ((SoundEffect)Data).Save(array2[0], array2[1]);
+                    break;
+            }
+        }
+
+        XnbConfig.ToJson(filename);
+        return true;
+    }
+
+    public void Encode(string path)
+    {
+        XnbObject xnbConfig = XnbConfig;
+        object obj = Data;
         try
         {
-            // 设置头信息
-            Target = json.Header.Target; // 目标平台
-            FormatVersion = json.Header.FormatVersion; // 格式版本
-
-            _AnalysisFlag(json.Header.CompressedFlag);
-            // Hidef = json.Header.Hidef; // 高清标志
-            // 如果是Android平台，则暂时写入LZ4解压缩大小
-            var lz4Compression = Target is Android or Ios;
-            // 是否启用压缩（根据目标平台和LZ4压缩标志判断） 
-            if (lz4Compression)
+            TargetTags target = xnbConfig.Header.Target;
+            byte formatVersion = xnbConfig.Header.FormatVersion;
+            _AnalysisFlag();
+            bool flag = ((target == TargetTags.Android || target == TargetTags.Ios) ? true : false);
+            if (flag)
             {
-                //write the decompression size temporarily if android
-                json.Header.CompressedFlag |= XnbObject.CompressedMasks.Lz4;
+                xnbConfig.Header.CompressedFlag |= CompressedMasks.Lz4;
                 Lz4 = true;
             }
-            //其他无压缩
             else
             {
-                json.Header.CompressedFlag = (XnbObject.CompressedMasks)(byte)(Hidef ? 1 : 0);
+                xnbConfig.Header.CompressedFlag = (CompressedMasks)(Hidef ? 1u : 0u);
                 Lz4 = false;
                 Lzx = false;
             }
 
-            // 用于存储文件的输出缓冲区
-            var outBuffer = new BufferWriter();
-
-            // 将头信息写入缓冲区
-            // 文件标识  // 目标平台
-            outBuffer.WriteAsciiString("XNB" + (char)(byte)Target);
-            // 格式版本
-            outBuffer.WriteByte(FormatVersion);
-            outBuffer.WriteByte((byte)json.Header.CompressedFlag); // 高清标志和压缩标志
-
-            // 写入临时文件大小
-            outBuffer.WriteUInt32(0u);
-
-            // write the decompression size temporarily if android
-            if (lz4Compression)
-                outBuffer.WriteUInt32(0u);
-
-            // 写入读取器的数量
-            int count = json.Readers.Count;
-            outBuffer.Write7BitNumber(count);
-            var readerArr = new BaseReader[count];
-            List<string> typeList = new List<string>(count * 2);
-            List<int> typeIndexList = new List<int>(count * 2);
-            for (var i = 0; i < count; i++)
+            BufferWriter bufferWriter = new BufferWriter(GetLen());
+            char c = (char)target;
+            bufferWriter.WriteAsciiString("XNB" + c);
+            bufferWriter.WriteByte(formatVersion);
+            bufferWriter.WriteByte((byte)xnbConfig.Header.CompressedFlag);
+            bufferWriter.WriteUInt32(0u);
+            if (flag)
             {
-                var reader = json.Readers[i];
-                var info = TypeReadHelper.GetReaderInfo(reader.Type);
-                readerArr[i] = info.Reader.CreateReader();
-
-                typeList.Add(info.Reader.ToString());
-                typeList.Add(info.Entity.ToString());
-                typeIndexList.Add(i);
-                typeIndexList.Add(i);
-
-                StringReader.WriteValueBy7Bit(outBuffer, reader.Type);
-                outBuffer.WriteUInt32(reader.Version);
+                bufferWriter.WriteUInt32(0u);
             }
 
-            if (json.Content.Extension == TypeReadHelper.Ext.JSON)
+            int count = xnbConfig.Readers.Count;
+            bufferWriter.Write7BitNumber(count);
+            BaseReader[] array = new BaseReader[count];
+            List<string> list = new List<string>(count * 2);
+            List<int> list2 = new List<int>(count * 2);
+            for (int i = 0; i < count; i++)
             {
-                var t = TypeReadHelper.GetResultType(json.Readers[0].Type);
-                data = JsonConvert.DeserializeObject((string)data, t, FileUtils.Settings);
+                XnbObject.ReadersDto readersDto = xnbConfig.Readers[i];
+                TypeReadHelper.ReaderInfo readerInfo = TypeReadHelper.GetReaderInfo(readersDto.Type);
+                array[i] = readerInfo.Reader.CreateReader();
+                list.Add(readerInfo.Reader.ToString());
+                list.Add(readerInfo.Entity.ToString());
+                list2.Add(i);
+                list2.Add(i);
+                XnbConverter.Readers.Base.StringReader.WriteValueBy7Bit(bufferWriter, readersDto.Type);
+                bufferWriter.WriteUInt32(readersDto.Version);
             }
 
-            // 写入0个共享资源
-            outBuffer.Write7BitNumber(0);
-
-            // 创建内容读取器并写入内容 并将内容写入读取器解析器
-            new ReaderResolver(readerArr, outBuffer, typeList, typeIndexList).Write(0, data);
-
-            if (Lzx || Lz4) // 文件需要压缩
+            if (xnbConfig.Content.Extension == ".json")
             {
-                // 压缩LZX格式
-                if (Lzx)
-                {
-                }
-                // 压缩LZ4格式
-                else if (Lz4)
-                {
-                    // 原始内容大小
-                    var contentSize = outBuffer.BytePosition - XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE;
-                    // 创建用于存储压缩数据的缓冲区
-                    var maximumLength = LZ4.MaximumOutputLength(contentSize);
-                    var compressed = new byte[maximumLength];
-
-                    // 将数据压缩到缓冲区中
-                    var compressedSize = LZ4.Encode(outBuffer.Buffer, XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE,
-                        contentSize,
-                        compressed, 0, contentSize);
-                    // 生成的xnb大小
-                    var fileLen = XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE + compressedSize;
-
-                    // 将解压缩大小写入缓冲区
-                    outBuffer.WriteUInt32((uint)contentSize, XnbConstants.CONTENT_ORIGINAL_SIZE_INDEX);
-                    // 将文件大小写入缓冲区
-                    outBuffer.WriteUInt32((uint)fileLen, XnbConstants.FILE_SIZE_INDEX);
-
-                    compressed.AsSpan(0, compressedSize) // 切掉多余的部分
-                        .CopyTo(outBuffer.Buffer.AsSpan(XnbConstants.XNB_COMPRESSED_PROLOGUE_SIZE,
-                            compressedSize)); // 将内容插入返回缓冲区
-                    //切掉多余的部分
-                    outBuffer.BytePosition = fileLen;
-                    // 返回缓冲区
-                    goto save;
-                }
+                Type resultType = TypeReadHelper.GetResultType(xnbConfig.Readers[0].Type);
+                obj = JsonConvert.DeserializeObject((string)obj, resultType, FileUtils.Settings);
             }
 
-            // 将文件大小写入缓冲区
-            outBuffer.WriteUInt32((uint)outBuffer.BytePosition, XnbConstants.FILE_SIZE_INDEX);
+            bufferWriter.Write7BitNumber(0);
+            new ReaderResolver(array, bufferWriter, list, list2).Write(0, obj);
+            if ((Lzx || Lz4) && !Lzx && Lz4)
+            {
+                int num = bufferWriter.BytePosition - 14;
+                byte[] array2 = new byte[LZ4Codec.MaximumOutputLength(num)];
+                int num2 = LZ4Codec.Encode(bufferWriter.Buffer, 14, num, array2, 0, num);
+                int num3 = 14 + num2;
+                bufferWriter.WriteUInt32((uint)num, 10);
+                bufferWriter.WriteUInt32((uint)num3, 6);
+                array2.AsSpan(0, num2).CopyTo(bufferWriter.Buffer.AsSpan(14, num2));
+                bufferWriter.BytePosition = num3;
+            }
+            else
+            {
+                bufferWriter.WriteUInt32((uint)bufferWriter.BytePosition, 6);
+            }
 
-            save:
-            outBuffer.SaveBufferToFile(path);
+            bufferWriter.SaveBufferToFile(path);
         }
         catch (Exception ex)
         {
-            throw new XnbError(Helpers.I18N["XNB.3"], ex.Message);
+            throw new XnbError(Error.XNB_7, ex.Message);
         }
     }
 
-    /**
-     * 确保XNB文件头部是有效的。
-     * @private
-     * @method _validateHeader
-     */
-    private XnbObject.CompressedMasks _validateHeader(BufferReader bufferReader)
+    public void ImportFiles(string filename)
     {
-        // 确保缓冲区不为null
-        if (bufferReader == null)
-            throw new XnbError(Helpers.I18N["XNB.4"]);
-
-        // 从文件开头获取魔术值
-        var magic = bufferReader.ReadString(3);
-        // 检查魔术值是否正确
-        if (magic != "XNB")
-            throw new XnbError(Helpers.I18N["XNB.5"], magic);
-
-        // 调试打印找到有效的XNB魔术值
-        Log.Debug(Helpers.I18N["XNB.14"]);
-
-        // 加载目标平台
-        Target = (XnbObject.TargetTags)(byte)bufferReader.ReadString(1).ToLower().ToCharArray()[0];
-
-        // 读取目标平台
-        if (Enum.IsDefined(typeof(XnbObject.TargetTags), Target))
-            Log.Debug(Helpers.I18N["XNB.15"], Target.ToString());
-        else
-            Log.Warn(Helpers.I18N["XNB.18"], (char)Target);
-
-        // 读取格式版本
-        FormatVersion = bufferReader.ReadByte();
-
-        // 读取XNB格式版本
-        switch (FormatVersion)
+        XnbConfig = filename.ToEntity<XnbObject>();
+        if (XnbConfig == null)
         {
-            case 3 or 4 or 5:
-                Log.Debug(Helpers.I18N["XNB.16"], FormatVersion % 3);
-                break;
-            default:
-                Log.Warn(Helpers.I18N["XNB.19"], FormatVersion);
-                break;
+            throw new XnbError(Error.XNB_8, filename);
         }
 
-        // 读取标志位
-        var flags = (XnbObject.CompressedMasks)bufferReader.ReadByte();
-        _AnalysisFlag(flags);
-        return flags;
+        if (XnbConfig.Content == null)
+        {
+            throw new XnbError(Error.XNB_9, filename);
+        }
+
+        XnbObject.ContentDto content = XnbConfig.Content;
+        string[] array = content.Extension.Split(' ');
+        string[] array2 = new string[array.Length];
+        for (int i = 0; i < array.Length; i++)
+        {
+            array2[i] = Path.ChangeExtension(filename, array[i]);
+        }
+
+        string extension = content.Extension;
+        if (extension == null)
+        {
+            return;
+        }
+
+        switch (extension.Length)
+        {
+            case 4:
+                switch (extension[1])
+                {
+                    case 'p':
+                        if (extension == ".png")
+                        {
+                            Texture2D texture2D = Texture2D.FromPng(array2[0]);
+                            texture2D.Format = XnbConfig.Content.Format;
+                            Data = texture2D;
+                        }
+
+                        break;
+                    case 'c':
+                        if (extension == ".cso")
+                        {
+                            Data = new Effect
+                            {
+                                Data = File.ReadAllBytes(array2[0])
+                            };
+                        }
+
+                        break;
+                    case 'x':
+                        if (extension == ".xml")
+                        {
+                            Data = new XmlSource
+                            {
+                                Data = File.ReadAllText(array2[0])
+                            };
+                        }
+
+                        break;
+                }
+
+                break;
+            case 5:
+                switch (extension[1])
+                {
+                    case 't':
+                        if (extension == ".tbin")
+                        {
+                            byte[] data2 = File.ReadAllBytes(array2[0]);
+                            TBin10Reader.RemoveTileSheetsExtension(ref data2);
+                            TBin10 data3 = new TBin10
+                            {
+                                Data = data2
+                            };
+                            Data = data3;
+                        }
+
+                        break;
+                    case 'j':
+                        if (extension == ".json")
+                        {
+                            Data = File.ReadAllText(array2[0]);
+                        }
+
+                        break;
+                }
+
+                break;
+            case 10:
+                switch (extension[7])
+                {
+                    case 'p':
+                        if (extension == ".json .png")
+                        {
+                            SpriteFont spriteFont = SpriteFont.FormFiles(array2[0], array2[1]);
+                            spriteFont.Texture.Format = XnbConfig.Content.Format;
+                            Data = spriteFont;
+                        }
+
+                        break;
+                    case 'w':
+                        if (extension == ".json .wav")
+                        {
+                            SoundEffect data = SoundEffect.FormWave(array2[0], array2[1]);
+                            Data = data;
+                        }
+
+                        break;
+                }
+
+                break;
+        }
     }
 
-    private void _AnalysisFlag(XnbObject.CompressedMasks flags)
+    private int GetLen()
     {
-        // 获取HiDef标志
-        Hidef = (flags & XnbObject.CompressedMasks.Hidef) != 0;
-        Lzx = (flags & XnbObject.CompressedMasks.Lzx) != 0;
-        Lz4 = (flags & XnbObject.CompressedMasks.Lz4) != 0;
-        // 打印压缩状态
-        Log.Debug(Helpers.I18N["XNB.17"], flags.ToString());
-    }
+        int num = XnbConfig.JsonSize();
+        object data = Data;
+        if (!(data is Texture2D texture2D))
+        {
+            if (!(data is SpriteFont spriteFont))
+            {
+                if (!(data is string text))
+                {
+                    if (!(data is Effect effect))
+                    {
+                        if (data is XmlSource xmlSource)
+                        {
+                            return num + (xmlSource.Data.Length + 200);
+                        }
 
-    // 用于掩码的常量
-    public record struct XnbConstants
-    {
-        public const int XNB_COMPRESSED_PROLOGUE_SIZE = 14;
+                        return 10485760;
+                    }
 
-        public const int FILE_SIZE_INDEX = 6;
-        public const int CONTENT_ORIGINAL_SIZE_INDEX = 10;
+                    return num + effect.Data.Length;
+                }
+
+                return num + (int)((double)text.Length * 3.5);
+            }
+
+            return num + (int)((double)spriteFont.Texture.Data.Length * 1.2);
+        }
+
+        return num + texture2D.Data.Length;
     }
 }

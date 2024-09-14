@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using XnbConverter.Entity.Mono;
+using XnbConverter.Exceptions;
 using XnbConverter.Readers;
+using XnbConverter.Readers.Base;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Utilities;
 using StringReader = XnbConverter.Readers.Base.StringReader;
@@ -11,145 +13,146 @@ namespace XnbConverter.Tbin.Readers;
 
 public class LayerReader : BaseReader
 {
-    private readonly StringReader stringReader = new();
-    private int animatedTilerReader;
-    private int intVector2Reader;
-    private int propertieListReader;
-    private int staticTileReader;
+	private readonly StringReader _stringReader = new StringReader();
 
-    public override void Init(ReaderResolver readerResolver)
-    {
-        base.Init(readerResolver);
-        stringReader.Init(readerResolver);
-        intVector2Reader = readerResolver.GetIndex(typeof(IntVector2));
-        propertieListReader = readerResolver.GetIndex(typeof(List<Propertie>));
-        staticTileReader = readerResolver.GetIndex(typeof(StaticTile));
-        animatedTilerReader = readerResolver.GetIndex(typeof(AnimatedTile));
-    }
+	private int _animatedTilerReader;
 
-    public override bool IsValueType()
-    {
-        return true;
-    }
+	private int _intVector2Reader;
 
-    public override Layer Read()
-    {
-        var result = new Layer();
+	private int _propertieListReader;
 
-        result.Id = stringReader.ReadByInt32();
-        result.Visible = bufferReader.ReadByte();
-        result.Description = stringReader.ReadByInt32();
-        result.LayerSize = readerResolver.ReadValue<IntVector2>(intVector2Reader);
-        result.TileSize = readerResolver.ReadValue<IntVector2>(intVector2Reader);
+	private int _staticTileReader;
 
-        result.Properties = readerResolver.ReadValue<List<Propertie>>(propertieListReader);
+	public override void Init(ReaderResolver resolver)
+	{
+		base.Init(resolver);
+		_stringReader.Init(resolver);
+		_intVector2Reader = resolver.GetIndex(typeof(IntVector2));
+		_propertieListReader = resolver.GetIndex(typeof(List<Propertie>));
+		_staticTileReader = resolver.GetIndex(typeof(StaticTile));
+		_animatedTilerReader = resolver.GetIndex(typeof(AnimatedTile));
+	}
 
-        float x = result.LayerSize.X;
-        float y = result.LayerSize.Y;
+	public override bool IsValueType()
+	{
+		return true;
+	}
 
-        result._currTileSheet = new List<string>();
-        result._currTileSheet.Add("");
-        result.Tiles = new List<BaseTile>((int)(x * y));
-        result.Index = new List<char>();
-        result._sizeArr = new List<int>();
-        for (var j = 0; j < y; ++j)
-        for (var i = 0; i < x;)
-        {
-            var c = (char)bufferReader.ReadByte();
-            result.Index.Add(c);
-            switch (c)
-            {
-                case 'N': //NULL SIZE
-                {
-                    var size = bufferReader.ReadInt32();
-                    result._sizeArr.Add(size);
-                    for (var n = 0; n < size; ++n)
-                        result.Tiles.Add(null);
-                    i += size;
-                }
-                    break;
-                case 'S': //Static Tile
-                    var tmp = readerResolver.ReadValue<StaticTile>(staticTileReader);
-                    tmp.TileSheet = result._currTileSheet[^1];
-                    result.Tiles.Add(tmp); //reader, currTileSheet
-                    ++i;
-                    break;
-                case 'A': //Animated Tile
-                    result.Tiles.Add(readerResolver.ReadValue<AnimatedTile>(animatedTilerReader));
-                    ++i;
-                    break;
-                case 'T': //
-                    result._currTileSheet.Add(stringReader.ReadByInt32());
-                    break;
-                default:
-                    throw new Exception(Helpers.I18N["LayerReader.2"]);
-            }
-        }
+	public override object Read()
+	{
+		Layer layer = new Layer();
+		layer.Id = _stringReader.ReadByInt32();
+		layer.Visible = bufferReader.ReadByte();
+		layer.Description = _stringReader.ReadByInt32();
+		layer.LayerSize = readerResolver.ReadValue<IntVector2>(_intVector2Reader);
+		layer.TileSize = readerResolver.ReadValue<IntVector2>(_intVector2Reader);
+		layer.Properties = readerResolver.ReadValue<List<Propertie>>(_propertieListReader);
+		float num = layer.LayerSize.X;
+		float num2 = layer.LayerSize.Y;
+		layer._currTileSheet = new List<string>();
+		layer._currTileSheet.Add("");
+		layer.Tiles = new List<BaseTile>((int)(num * num2));
+		layer.Index = new List<char>();
+		layer._sizeArr = new List<int>();
+		for (int i = 0; (float)i < num2; i++)
+		{
+			int num3 = 0;
+			while ((float)num3 < num)
+			{
+				char c = (char)bufferReader.ReadByte();
+				layer.Index.Add(c);
+				switch (c)
+				{
+				case 'N':
+				{
+					int num4 = bufferReader.ReadInt32();
+					layer._sizeArr.Add(num4);
+					for (int j = 0; j < num4; j++)
+					{
+						layer.Tiles.Add(null);
+					}
+					num3 += num4;
+					break;
+				}
+				case 'S':
+				{
+					StaticTile staticTile = readerResolver.ReadValue<StaticTile>(_staticTileReader);
+					List<string> currTileSheet = layer._currTileSheet;
+					staticTile.TileSheet = currTileSheet[currTileSheet.Count - 1];
+					layer.Tiles.Add(staticTile);
+					num3++;
+					break;
+				}
+				case 'A':
+					layer.Tiles.Add(readerResolver.ReadValue<AnimatedTile>(_animatedTilerReader));
+					num3++;
+					break;
+				case 'T':
+					layer._currTileSheet.Add(_stringReader.ReadByInt32());
+					break;
+				default:
+					throw new Exception(Error.LayerReader_2);
+				}
+			}
+		}
+		return layer;
+	}
 
-        return result;
-    }
-
-    public override void Write(object content)
-    {
-        var input = (Layer)content;
-
-        stringReader.WriteByInt32(input.Id);
-        bufferWriter.WriteByte(input.Visible);
-        stringReader.WriteByInt32(input.Description);
-        readerResolver.WriteValue(intVector2Reader, input.LayerSize);
-        readerResolver.WriteValue(intVector2Reader, input.TileSize);
-        readerResolver.WriteValue(propertieListReader, input.Properties);
-
-        var x = input.LayerSize.X;
-        var y = input.LayerSize.Y;
-
-        var sizeIndex = -1;
-        var tilesIndex = 0;
-        var currTileSheetIndex = 0;
-        var index = -1;
-        var sb = new StringBuilder();
-        int ans;
-        for (var j = 0; j < y; ++j)
-            // sb.Length = 0;
-            // ans = tilesIndex;
-        for (var i = 0; i < x;)
-        {
-            var c = input.Index[++index];
-            bufferWriter.WriteByte((byte)c);
-            switch (c)
-            {
-                case 'N':
-                {
-                    var size = input._sizeArr[++sizeIndex];
-                    bufferWriter.WriteInt32(size);
-                    if (i + size > x) throw new TbinError(Helpers.I18N["LayerReader.1"], x, i);
-
-                    tilesIndex += size;
-                    i += size;
-                    // sb.Append('+').Append(size);
-                }
-                    break;
-                case 'S':
-                    var tmp = (StaticTile)input.Tiles[tilesIndex++];
-                    readerResolver.WriteValue(staticTileReader, tmp);
-                    ++i;
-                    // sb.Append('+').Append(1);
-                    break;
-                case 'A':
-                    readerResolver.WriteValue(animatedTilerReader, input.Tiles[tilesIndex++]);
-                    ++i;
-                    // sb.Append('+').Append(1);
-                    break;
-                case 'T':
-                    stringReader.WriteByInt32(input._currTileSheet[++currTileSheetIndex]);
-                    break;
-                default:
-                    throw new TbinError(Helpers.I18N["LayerReader.2"]);
-            }
-        }
-        // sb.Append("ans:" + (tilesIndex-ans) + "  w:"+x+"\n");
-        // // if(tilesIndex-ans !=x)
-        //     Console.WriteLine(sb.ToString());
-        // Console.WriteLine("\n\n\n");
-    }
+	public override void Write(object content)
+	{
+		Layer layer = (Layer)content;
+		_stringReader.WriteByInt32(layer.Id);
+		bufferWriter.WriteByte(layer.Visible);
+		_stringReader.WriteByInt32(layer.Description);
+		readerResolver.WriteValue(_intVector2Reader, layer.LayerSize);
+		readerResolver.WriteValue(_intVector2Reader, layer.TileSize);
+		readerResolver.WriteValue(_propertieListReader, layer.Properties);
+		int x = layer.LayerSize.X;
+		int y = layer.LayerSize.Y;
+		int num = -1;
+		int num2 = 0;
+		int num3 = 0;
+		int num4 = -1;
+		new StringBuilder();
+		for (int i = 0; i < y; i++)
+		{
+			int num5 = 0;
+			while (num5 < x)
+			{
+				char c = layer.Index[++num4];
+				bufferWriter.WriteByte((byte)c);
+				switch (c)
+				{
+				case 'N':
+				{
+					int num6 = layer._sizeArr[++num];
+					bufferWriter.WriteInt32(num6);
+					if (num5 + num6 > x)
+					{
+						throw new TbinError(Error.LayerReader_1, x, num5);
+					}
+					num2 += num6;
+					num5 += num6;
+					break;
+				}
+				case 'S':
+				{
+					StaticTile item = (StaticTile)layer.Tiles[num2++];
+					readerResolver.WriteValue(_staticTileReader, item);
+					num5++;
+					break;
+				}
+				case 'A':
+					readerResolver.WriteValue(_animatedTilerReader, layer.Tiles[num2++]);
+					num5++;
+					break;
+				case 'T':
+					_stringReader.WriteByInt32(layer._currTileSheet[++num3]);
+					break;
+				default:
+					throw new TbinError(Error.LayerReader_2);
+				}
+			}
+		}
+	}
 }

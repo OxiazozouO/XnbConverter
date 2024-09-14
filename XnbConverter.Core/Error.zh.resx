@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string"/>
+                            <xsd:attribute name="type" type="xsd:string"/>
+                            <xsd:attribute name="mimetype" type="xsd:string"/>
+                            <xsd:attribute ref="xml:space"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string"/>
+                            <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+                            <xsd:attribute ref="xml:space"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="XNB.1" xml:space="preserve">
+        <value>缓冲区为空</value>
+    </data>
+    <data name="XNB.2" xml:space="preserve">
+        <value>无效的文件魔术值，期望值为XNB，实际值为{0}</value>
+    </data>
+    <data name="XNB.3" xml:space="preserve">
+        <value>XNB文件已被截断！</value>
+    </data>
+    <data name="XNB.4" xml:space="preserve">
+        <value>意外的共享资源（{0}）。</value>
+    </data>
+    <data name="XNB.5" xml:space="preserve">
+        <value>无效的对象！</value>
+    </data>
+    <data name="XNB.6" xml:space="preserve">
+        <value>无效的文件导出！</value>
+    </data>
+    <data name="XNB.7" xml:space="preserve">
+        <value>无效的JSON文件格式: {0}</value>
+    </data>
+    <data name="XNB.8" xml:space="preserve">
+        <value>{0} 文件为空。</value>
+    </data>
+    <data name="XNB.9" xml:space="preserve">
+        <value>{0} 缺少 'content' 字段。</value>
+    </data>
+    <data name="XNB.10" xml:space="preserve">
+        <value>正在读取文件 '{0}' ……</value>
+    </data>
+    <data name="XNB.11" xml:space="preserve">
+        <value>XNB文件验证成功！</value>
+    </data>
+    <data name="XNB.12" xml:space="preserve">
+        <value>成功读取XNB文件！</value>
+    </data>
+    <data name="XNB.13" xml:space="preserve">
+        <value>正在导出 {0}...</value>
+    </data>
+    <data name="XNB.14" xml:space="preserve">
+        <value>找到有效的XNB魔术值！</value>
+    </data>
+    <data name="XNB.15" xml:space="preserve">
+        <value>目标平台：{0}</value>
+    </data>
+    <data name="XNB.16" xml:space="preserve">
+        <value>XNB格式版本：XNA Game Studio 3.{0}</value>
+    </data>
+    <data name="XNB.17" xml:space="preserve">
+        <value>压缩：{0}</value>
+    </data>
+    <data name="XNB.18" xml:space="preserve">
+        <value>文件大小：{0} 字节。</value>
+    </data>
+    <data name="XNB.19" xml:space="preserve">
+        <value>解压缩后大小：{0} 字节。</value>
+    </data>
+    <data name="XNB.20" xml:space="preserve">
+        <value>从字节位置读取：{0}</value>
+    </data>
+    <data name="XNB.21" xml:space="preserve">
+        <value>读取器数量：{0}</value>
+    </data>
+    <data name="XNB.22" xml:space="preserve">
+        <value>共享资源数量：{0}</value>
+    </data>
+    <data name="XNB.23" xml:space="preserve">
+        <value>找到无效的目标平台{0}。</value>
+    </data>
+    <data name="XNB.24" xml:space="preserve">
+        <value>未知的XNB格式版本 {0}。</value>
+    </data>
+    <data name="Process.1" xml:space="preserve">
+        <value>输出文件已保存：{0}</value>
+    </data>
+    <data name="Process.2" xml:space="preserve">
+        <value>文件{0}无法保存！</value>
+    </data>
+    <data name="Process.3" xml:space="preserve">
+        <value>文件名：{0} {1}</value>
+    </data>
+    <data name="Process.4" xml:space="preserve">
+        <value>文件名：{0} {1} {2}</value>
+    </data>
+    <data name="Program.1" xml:space="preserve">
+        <value>[可选]是否开启并发</value>
+    </data>
+    <data name="Program.2" xml:space="preserve">
+        <value>[必填]输入的文件或文件夹</value>
+    </data>
+    <data name="Program.3" xml:space="preserve">
+        <value>[必填]输出的文件夹</value>
+    </data>
+    <data name="Program.4" xml:space="preserve">
+        <value>根据输入的文件自动拆装xnb</value>
+    </data>
+    <data name="Program.5" xml:space="preserve">
+        <value>解包</value>
+    </data>
+    <data name="Program.6" xml:space="preserve">
+        <value>打包</value>
+    </data>
+    <data name="Program.7" xml:space="preserve">
+        <value>错误命令
+</value>
+    </data>
+    <data name="Program.8" xml:space="preserve">
+        <value>捕获异常:</value>
+    </data>
+    <data name="BufferReader.1" xml:space="preserve">
+        <value>'{0}'不存在！</value>
+    </data>
+    <data name="BufferReader.2" xml:space="preserve">
+        <value>缓冲区寻找超出范围！ {0} ~ {1}</value>
+    </data>
+    <data name="ReaderResolver.1" xml:space="preserve">
+        <value>无效的读取器索引 {0}</value>
+    </data>
+    <data name="ReaderResolver.2" xml:space="preserve">
+        <value>找不到读取器, 索引：{0}</value>
+    </data>
+    <data name="FileUtils.1" xml:space="preserve">
+        <value>无效的输出路径{0}
+{1}</value>
+    </data>
+    <data name="FileUtils.2" xml:space="preserve">
+        <value>无效的输入路径: {0}</value>
+    </data>
+    <data name="TypeReadHelper.1" xml:space="preserve">
+        <value>尚未实现的类型：{0}
+{1}</value>
+    </data>
+    <data name="TypeReadHelper.2" xml:space="preserve">
+        <value>获取读取器时发生错误！
+ 请检查程序集: {0} 
+ 对应的dll文件路径是否存在，或者路径是否正确写入到 {1} 文件中。
+ dll文件可能为 {2}.dll 
+ 错误信息: {3}</value>
+    </data>
+    <data name="TypeReadHelper.3" xml:space="preserve">
+        <value>未实现的类型：{0}</value>
+    </data>
+    <data name="TypeReadHelper.4" xml:space="preserve">
+        <value>未加载的类：{0}！</value>
+    </data>
+    <data name="TypeReadHelper.5" xml:space="preserve">
+        <value>{0} 不存在，dll加载失败，可能导致解析xnb不成功，
+ 请把正确的文件路径修改到{1}</value>
+    </data>
+    <data name="SpriteFont.1" xml:space="preserve">
+        <value>解析文件失败</value>
+    </data>
+    <data name="EnumReader.1" xml:space="preserve">
+        <value>值 {0} 不对应任何枚举成员。</value>
+    </data>
+    <data name="Texture2DReader.1" xml:space="preserve">
+        <value>Texture2D格式类型ECT1未实现！</value>
+    </data>
+    <data name="Texture2DReader.2" xml:space="preserve">
+        <value>找到未实现的Texture2D格式类型（{0}）。</value>
+    </data>
+    <data name="Texture2DReader.3" xml:space="preserve">
+        <value>图片 宽: {0}, 高: {1}, 格式:  {2}</value>
+    </data>
+    <data name="Texture2DReader.4" xml:space="preserve">
+        <value>找到 {0} 的 mipcount，将只使用第一个。</value>
+    </data>
+    <data name="LayerReader.1" xml:space="preserve">
+        <value>i 的最大值为 {0}，当前值为 {1}</value>
+    </data>
+    <data name="LayerReader.2" xml:space="preserve">
+        <value>瓦片数据错误</value>
+    </data>
+    <data name="PropertieReader.1" xml:space="preserve">
+        <value>错误的地图属性类型：{0}</value>
+    </data>
+    <data name="TBin10Reader.1" xml:space="preserve">
+        <value>Xnb尚未支持超过{0}层的Tbin地图，目前{1}层</value>
+    </data>
+    <data name="TBin10Reader.2" xml:space="preserve">
+        <value>未知程序错误</value>
+    </data>
+    <data name="LZX.1" xml:space="preserve">
+        <value>窗口大小超出范围！</value>
+    </data>
+    <data name="LZX.2" xml:space="preserve">
+        <value>发现Intel E8调用，对于XNB文件无效。</value>
+    </data>
+    <data name="LZX.3" xml:space="preserve">
+        <value>发现无效的块类型: {0}</value>
+    </data>
+    <data name="LZX.4" xml:space="preserve">
+        <value>无法在窗框外运行。</value>
+    </data>
+    <data name="LZX.5" xml:space="preserve">
+        <value>超出范围！{0} {1} {2}</value>
+    </data>
+    <data name="LZX.6" xml:space="preserve">
+        <value>指定的块类型无效！</value>
+    </data>
+    <data name="LZX.7" xml:space="preserve">
+        <value>EOF已到达，数据还有剩余。</value>
+    </data>
+    <data name="LZX.8" xml:space="preserve">
+        <value>表溢出！</value>
+    </data>
+    <data name="LZX.9" xml:space="preserve">
+        <value>解码过程中表格溢出。</value>
+    </data>
+    <data name="LZX.10" xml:space="preserve">
+        <value>解码表未达到表掩码。</value>
+    </data>
+    <data name="LZX.11" xml:space="preserve">
+        <value>压缩内容中读取的大小无效。</value>
+    </data>
+    <data name="LZX.12" xml:space="preserve">
+        <value>文件已成功解压缩！</value>
+    </data>
+    <data name="LZX.13" xml:space="preserve">
+        <value>额外位数：{0}</value>
+    </data>
+    <data name="LZX.14" xml:space="preserve">
+        <value>位置基址：{0}</value>
+    </data>
+    <data name="LZX.15" xml:space="preserve">
+        <value>英特尔: {0} = {1}</value>
+    </data>
+    <data name="LZX.16" xml:space="preserve">
+        <value>块类型: {0} = {1}</value>
+    </data>
+    <data name="LZX.17" xml:space="preserve">
+        <value>剩余块字节数: {0}</value>
+    </data>
+    <data name="LZX.18" xml:space="preserve">
+        <value>位置: {0}，位掩码: {1}，表掩码: {2}</value>
+    </data>
+    <data name="LZX.19" xml:space="preserve">
+        <value>位数: {0}，位串: {1}</value>
+    </data>
+    <data name="LZX.20" xml:space="preserve">
+        <value>符号: {0}，符号串: {1}</value>
+    </data>
+    <data name="LZX.21" xml:space="preserve">
+        <value>--------块大小：{0}，框架大小：{1}</value>
+    </data>
+    <data name="AudioEngineReader.1" xml:space="preserve">
+        <value>发现无效的魔术值, {0}</value>
+    </data>
+    <data name="AudioEngineReader.2" xml:space="preserve">
+        <value>工具版本: {0}</value>
+    </data>
+    <data name="AudioEngineReader.3" xml:space="preserve">
+        <value>格式版本：{0}</value>
+    </data>
+    <data name="AudioEngineReader.4" xml:space="preserve">
+        <value>类别：{0}, 变量：{1}</value>
+    </data>
+    <data name="AudioEngineReader.5" xml:space="preserve">
+        <value>RPC: {0}</value>
+    </data>
+    <data name="AudioEngineReader.6" xml:space="preserve">
+        <value>DSP预设: {0}</value>
+    </data>
+    <data name="AudioEngineReader.7" xml:space="preserve">
+        <value>DSP参数: {0}</value>
+    </data>
+    <data name="AudioEngineReader.8" xml:space="preserve">
+        <value>类别偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.9" xml:space="preserve">
+        <value>变量偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.10" xml:space="preserve">
+        <value>类别名称索引偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.11" xml:space="preserve">
+        <value>变量名称索引偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.12" xml:space="preserve">
+        <value>类别名称偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.13" xml:space="preserve">
+        <value>变量名称偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.14" xml:space="preserve">
+        <value>RPC偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.15" xml:space="preserve">
+        <value>DSP预设偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.16" xml:space="preserve">
+        <value>DSP参数偏移量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.17" xml:space="preserve">
+        <value>类别: {0}</value>
+    </data>
+    <data name="AudioEngineReader.18" xml:space="preserve">
+        <value>变量: {0}</value>
+    </data>
+    <data name="AudioEngineReader.19" xml:space="preserve">
+        <value>不支持的XGS格式！</value>
+    </data>
+    <data name="SoundBankReader.1" xml:space="preserve">
+        <value>CRC: {0}</value>
+    </data>
+    <data name="SoundBankReader.2" xml:space="preserve">
+        <value>最后修改时间低位: {0}, 最后修改时间高位: {1}</value>
+    </data>
+    <data name="SoundBankReader.3" xml:space="preserve">
+        <value>平台: {0}</value>
+    </data>
+    <data name="SoundBankReader.4" xml:space="preserve">
+        <value>简单提示数: {0}</value>
+    </data>
+    <data name="SoundBankReader.5" xml:space="preserve">
+        <value>复杂提示数: {0}</value>
+    </data>
+    <data name="SoundBankReader.6" xml:space="preserve">
+        <value>总提示数: {0}</value>
+    </data>
+    <data name="SoundBankReader.7" xml:space="preserve">
+        <value>波形库数: {0}</value>
+    </data>
+    <data name="SoundBankReader.8" xml:space="preserve">
+        <value>声音数: {0}</value>
+    </data>
+    <data name="SoundBankReader.9" xml:space="preserve">
+        <value>Cue名称表长度: {0}</value>
+    </data>
+    <data name="SoundBankReader.10" xml:space="preserve">
+        <value>简单提示音偏移量: {0}</value>
+    </data>
+    <data name="SoundBankReader.11" xml:space="preserve">
+        <value>复杂提示音偏移量: {0}</value>
+    </data>
+    <data name="SoundBankReader.12" xml:space="preserve">
+        <value>提示音名称偏移量:      {0}</value>
+    </data>
+    <data name="SoundBankReader.13" xml:space="preserve">
+        <value>变化表偏移量:         {0}</value>
+    </data>
+    <data name="SoundBankReader.14" xml:space="preserve">
+        <value>波形库名称表偏移量:    {0}</value>
+    </data>
+    <data name="SoundBankReader.15" xml:space="preserve">
+        <value>提示音名称哈希表偏移量: {0}</value>
+    </data>
+    <data name="SoundBankReader.16" xml:space="preserve">
+        <value>提示音名称哈希值偏移量: {0}</value>
+    </data>
+    <data name="SoundBankReader.17" xml:space="preserve">
+        <value>声音偏移量:           {0}</value>
+    </data>
+    <data name="SoundBankReader.18" xml:space="preserve">
+        <value>名字: {0}</value>
+    </data>
+    <data name="SoundBankReader.19" xml:space="preserve">
+        <value>波形库：{0}</value>
+    </data>
+    <data name="SoundBankReader.20" xml:space="preserve">
+        <value>提示：{0}</value>
+    </data>
+    <data name="SoundBankReader.21" xml:space="preserve">
+        <value>发现 {0}</value>
+    </data>
+    <data name="SoundBankReader.22" xml:space="preserve">
+        <value>为 {0} 发现 {1} 个提示音</value>
+    </data>
+    <data name="SoundBankReader.23" xml:space="preserve">
+        <value>WaveBank 索引: {0}</value>
+    </data>
+    <data name="SoundBankReader.24" xml:space="preserve">
+        <value>发现 {0} 个提示音！</value>
+    </data>
+    <data name="SoundBankReader.25" xml:space="preserve">
+        <value>不支持的 SoundBank 格式 {0}。</value>
+    </data>
+    <data name="XactClipReader.1" xml:space="preserve">
+        <value>偏移量：{0}</value>
+    </data>
+    <data name="XactClipReader.2" xml:space="preserve">
+        <value>音轨：{0}</value>
+    </data>
+    <data name="XactClipReader.3" xml:space="preserve">
+        <value>事件 播放 波形 音调 音量 滤波 变化</value>
+    </data>
+    <data name="XactSoundReader.1" xml:space="preserve">
+        <value>额外数据长度: {0}</value>
+    </data>
+    <data name="XactSoundReader.2" xml:space="preserve">
+        <value>轨道索引: {0}</value>
+    </data>
+    <data name="FmtChunk.1" xml:space="preserve">
+        <value>对于SoundEffect仅支持Pcm格式的wav，目前的格式为{0}</value>
+    </data>
+    <data name="FmtChunk.2" xml:space="preserve">
+        <value>对于Xact，仅支持Pcm或AdpcmMs格式的wav，目前的格式为{0}</value>
+    </data>
+    <data name="FmtChunk.3" xml:space="preserve">
+        <value>不是游戏支持的类型！</value>
+    </data>
+    <data name="WaveBank.1" xml:space="preserve">
+        <value>
+- 标志 {0}
+- 文件数 {1}
+- 波形库名称 {2}
+- 条目元数据大小 {3}
+- 条目名称大小 {4}
+- 对齐 {5}</value>
+    </data>
+    <data name="WaveBank.2" xml:space="preserve">
+        <value>- 条目元数据元素大小太小</value>
+    </data>
+    <data name="FmtChunkReader.1" xml:space="preserve">
+        <value>无效的 WAV 格式：{0}，应为 fmt</value>
+    </data>
+    <data name="RIFFChunkReader.1" xml:space="preserve">
+        <value>无效的 WAV 格式：{0}，应为 RIFF</value>
+    </data>
+    <data name="RIFFChunkReader.2" xml:space="preserve">
+        <value>无效的wav格式：{0}，应为WAVE</value>
+    </data>
+    <data name="WaveBankReader.1" xml:space="preserve">
+        <value>- 签名：{0} 大/网络字节顺序值</value>
+    </data>
+    <data name="WaveBankReader.2" xml:space="preserve">
+        <value>- 签名：{0} 小/英特尔字节顺序值</value>
+    </data>
+    <data name="WaveBankReader.3" xml:space="preserve">
+        <value>- 版本 : {0}</value>
+    </data>
+    <data name="WaveBankReader.4" xml:space="preserve">
+        <value> 编号        大小     格式 采样率  声道 位深度 输出路径</value>
+    </data>
+    <data name="WaveBankReader.5" xml:space="preserve">
+        <value>偏移 : {0}, 格式 : {1}, 标志 : {2}, 区域偏移 : {3}, 区域长度 : {4}</value>
+    </data>
+    <data name="WaveBankReader.6" xml:space="preserve">
+        <value>- 片段：{0}    偏移量{1}    长度：{2}({3})</value>
+    </data>
+</root>

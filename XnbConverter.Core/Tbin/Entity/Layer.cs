@@ -1,49 +1,27 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using XnbConverter.Entity.Mono;
 
 namespace XnbConverter.Tbin.Entity;
 
 public class Layer
 {
-    /// <summary>
-    ///     The layer ID.
-    /// </summary>
-    public string Id { get; set; }
+	public string Id;
 
-    /// <summary>
-    ///     If the layer is visible or not.
-    /// </summary>
-    public byte Visible { get; set; }
+	public byte Visible;
 
-    /// <summary>
-    ///     The layer description.
-    /// </summary>
-    public string Description { get; set; }
+	public string Description;
 
-    /// <summary>
-    ///     The size of a layer, in tiles.
-    /// </summary>
-    public IntVector2 LayerSize { get; set; }
+	public IntVector2 LayerSize;
 
-    /// <summary>
-    ///     The size of a tile, in pixels.
-    /// </summary>
-    public IntVector2 TileSize { get; set; }
+	public IntVector2 TileSize;
 
-    /// <summary>
-    ///     The layer properties.
-    /// </summary>
-    public List<Propertie> Properties { get; set; }
+	public List<Propertie> Properties;
 
-    /// <summary>
-    ///     The list of tiles.
-    /// </summary>
-    public List<BaseTile> Tiles { get; set; }
+	public List<BaseTile> Tiles;
 
+	public List<char> Index;
 
-    public List<char> Index { get; set; }
+	public List<int> _sizeArr;
 
-    public List<int> _sizeArr { get; set; }
-
-    public List<string> _currTileSheet { get; set; }
+	public List<string> _currTileSheet;
 }

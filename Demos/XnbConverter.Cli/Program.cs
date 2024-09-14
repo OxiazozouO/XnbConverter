@@ -1,142 +1,19 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using XnbConverter.Cli.Configurations;
+using XnbConverter.Configurations;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
-using static XnbConverter.Cli.Process;
 
 namespace XnbConverter.Cli;
 
 public static class Program
 {
-    public static void Main(string[] args)
-    {
-        switch (0)
-        {
-            case 0:
-            {
-                if (args.Length > 0)
-                {
-                    ReckonByTime(args);
-                    return;
-                }
-
-                // Update();
-                ReckonByTime("help");
-                while (true)
-                {
-                    Console.Write("->");
-                    string? str = Console.ReadLine();
-                    ReckonByTime(str);
-                }
-                break;
-            }
-            case 1:
-            {
-                test();
-                break;
-            }
-            case 2:
-            {
-                test_command();
-                break;
-            }
-            case 3:
-            {
-                test_loop();
-                break;
-            }
-        }
-    }
-
-    private static void test()
-    {
-        ReckonByTime(@"auto -c -i .\packed -o .\unpacked");
-        ReckonByTime(@"auto -c -i .\unpacked -o .\packed");
-    }
-
-    private static void test_command()
-    {
-        string[] arr = new string[]
-        {
-            @"auto -c -i .\packed -o .\unpacked",
-            @"auto    -c    -i     .\packed          -o   .\unpacked",
-            @"auto        -i     .\pac  ked          -o   .\unpa   ked",
-            @"1",
-            @"unpack -i",
-            @"unpack help",
-        };
-        foreach (var s in arr)
-        {
-            int n = 1;
-            while (n-- > 0)
-            {
-                Console.WriteLine(s);
-                ReckonByTime(s);
-                Console.WriteLine("\n-------------------------\n");
-            }
-        }
-    }
-
-    private static void test_loop()
-    {
-        int size = 5;
-        while (size-- > 0)
-        {
-            ReckonByTime(@"auto -c -i .\packed -o .\unpacked");
-            ReckonByTime(@"auto -c -i .\unpacked -o .\packed");
-        }
-    }
-
-    private static void ReckonByTime(string[] args)
-    {
-        for (var i = 0; i < args.Length; i++)
-        {
-            args[i] = args[i].Trim();
-        }
-
-        string cmd = string.Join(' ', args);
-        ReckonByTime(cmd);
-    }
-
-    private static void ReckonByTime(string? args)
-    {
-        if (args is null or "" || args.Trim(' ') is "")
-        {
-            return;
-        }
-
-        var obj = Option.ParseCmd(args);
-        switch (obj)
-        {
-            case CmdContent c:
-            {
-                Stopwatch stopwatch = Stopwatch.StartNew();
-                
-                Get(c);
-                Texture2D.WaitAll();
-                Task.WaitAll();
-                Log.Save();
-                PrintRunTime(stopwatch);
-                break;
-            }
-            case string s:
-                Log.Message(s);
-                break;
-            case Action a:
-                a.Invoke();
-                break;
-        }
-    }
-
-    private static void PrintRunTime(Stopwatch timer)
-    {
-        timer.Stop();
-        TimeSpan elapsedTime = timer.Elapsed;
-        string time = $"{(int)elapsedTime.TotalSeconds}.{elapsedTime.Milliseconds}s";
-        Log.Message(time);
-    }
-
     private class Option
     {
         private enum OptionType
@@ -150,22 +27,28 @@ public static class Program
         }
 
         private string _helpText;
+
         private object? _value;
+
+        private readonly OptionType _type;
+
+        private Dictionary<string, Option> _next;
+
+        private static readonly Option Instance;
+
+        private static readonly Option Bad;
 
         private object? Value
         {
-            get => _value;
+            get { return _value; }
             set
             {
                 _value = value;
-                OnValueChanged?.Invoke(value);
+                this.OnValueChanged?.Invoke(value);
             }
         }
 
         public event Action<object>? OnValueChanged;
-
-        private readonly OptionType _type;
-        private Dictionary<string, Option> _next;
 
         private Option(OptionType type)
         {
@@ -177,124 +60,130 @@ public static class Program
             _helpText = help;
         }
 
-        private static readonly Option Instance;
-        private static readonly Option Bad;
-
         static Option()
         {
-            Bad = new(OptionType.Help);
-            var optionPack = new Dictionary<string, Option>()
+            Bad = new Option(OptionType.Help);
+            Dictionary<string, Option> next = new Dictionary<string, Option>
             {
-                ["c"] = new(OptionType.Bool),
-                ["i"] = new(OptionType.String),
-                ["o"] = new(OptionType.String),
+                ["c"] = new Option(OptionType.Bool),
+                ["i"] = new Option(OptionType.String),
+                ["o"] = new Option(OptionType.String)
             };
             Instance = new Option(OptionType.None)
             {
-                _next = new Dictionary<string, Option>()
+                _next = new Dictionary<string, Option>
                 {
-                    ["auto"] = new(OptionType.Int),
-                    ["unpack"] = new(OptionType.Int),
-                    ["pack"] = new(OptionType.Int),
-                    ["version"] = new(OptionType.Help),
-                    // ["update"] = new(OptionType.Fun),
+                    ["auto"] = new Option(OptionType.Int),
+                    ["unpack"] = new Option(OptionType.Int),
+                    ["pack"] = new Option(OptionType.Int),
+                    ["version"] = new Option(OptionType.Help)
                 }
             };
-            Instance._next["auto"]._next =
-                Instance._next["unpack"]._next =
-                    Instance._next["pack"]._next = optionPack;
-            // Instance._next["update"].Value = (Action)Update;
-            var assembly = Assembly.GetExecutingAssembly().GetName();
-            string v = assembly.Name + " v" + assembly.Version;
-            Instance._next["version"].Value = v;
-            Instance._next["version"].SetHelpText(v);
+            Instance._next["auto"]._next = (Instance._next["unpack"]._next = (Instance._next["pack"]._next = next));
+            AssemblyName name = Assembly.GetExecutingAssembly().GetName();
+            string text = name.Name + " v" + name.Version;
+            Instance._next["version"].Value = text;
+            Instance._next["version"].SetHelpText(text);
             BuildI18N();
         }
 
         public static void BuildI18N()
         {
-            var optionsPack = Instance._next["auto"];
-            optionsPack._next["c"].SetHelpText(Helpers.I18N["Program.1"]);
-            optionsPack._next["i"].SetHelpText(Helpers.I18N["Program.2"]);
-            optionsPack._next["o"].SetHelpText(Helpers.I18N["Program.3"]);
-            Instance._next["auto"].SetHelpText(Helpers.I18N["Program.4"]);
-            Instance._next["unpack"].SetHelpText(Helpers.I18N["Program.5"]);
-            Instance._next["pack"].SetHelpText(Helpers.I18N["Program.6"]);
-            // Instance._next["version"].SetHelpText(Helpers.I18N["Program.7"]);
-            // Instance._next["update"].SetHelpText(Helpers.I18N["Program.8"]);
-            Bad.SetHelpText(Helpers.I18N["Program.9"]);
+            Option option = Instance._next["auto"];
+            option._next["c"].SetHelpText(Error.Program_1);
+            option._next["i"].SetHelpText(Error.Program_2);
+            option._next["o"].SetHelpText(Error.Program_3);
+            Instance._next["auto"].SetHelpText(Error.Program_4);
+            Instance._next["unpack"].SetHelpText(Error.Program_5);
+            Instance._next["pack"].SetHelpText(Error.Program_6);
+            Bad.SetHelpText(Error.Program_7);
             BuildHelp();
         }
 
         private static void BuildHelp()
         {
-            var optionsPack = Instance._next["auto"];
-            foreach (var (key, value) in optionsPack._next)
+            string key;
+            Option value;
+            foreach (KeyValuePair<string, Option> item in Instance._next["auto"]._next)
             {
-                value._helpText = "-" + key + "  " + value._helpText;
+                item.Deconstruct(out key, out value);
+                string text = key;
+                Option option = value;
+                option._helpText = "-" + text + "  " + option._helpText;
             }
 
-            StringBuilder sb2 = new StringBuilder();
-            foreach (var (key, value) in Instance._next)
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach (KeyValuePair<string, Option> item2 in Instance._next)
             {
-                value._helpText = key + "  " + value._helpText;
-                // sb2.Append(value._helpText).AppendLine();
-                if (value._next != null)
+                item2.Deconstruct(out key, out value);
+                string text2 = key;
+                Option option2 = value;
+                option2._helpText = text2 + "  " + option2._helpText;
+                if (option2._next != null)
                 {
-                    StringBuilder sb = new StringBuilder().AppendLine();
-                    foreach (var (s, option) in value._next)
+                    StringBuilder stringBuilder2 = new StringBuilder().AppendLine();
+                    foreach (KeyValuePair<string, Option> item3 in option2._next)
                     {
-                        sb.Append("    ").Append(option._helpText).AppendLine();
+                        item3.Deconstruct(out key, out value);
+                        Option option3 = value;
+                        stringBuilder2.Append("    ").Append(option3._helpText).AppendLine();
                     }
 
-                    value._helpText += sb.ToString();
+                    option2._helpText += stringBuilder2.ToString();
                 }
 
-                sb2.Append(value._helpText).AppendLine();
+                stringBuilder.Append(option2._helpText).AppendLine();
             }
 
-            Instance._helpText = sb2.ToString();
+            var s = "    packed                                   unpacked\n    \u251c\u25001.xnb                                  \u251c\u25001.config\n    \u251c\u25002.xnb                                  \u251c\u25001.png\n    \u251c\u25003.xnb           unpack.bat             \u251c\u25002.config\n    \u251c\u2500folder1      \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500>          \u251c\u25002.tbin\n    \u2502  \u251c\u25004.xnb                               \u251c\u25003.config\n    \u2502  \u251c\u25005.xnb                               \u251c\u25003.json\n    \u2502  \u251c\u25006.xnb                               \u251c\u25003.png\n    \u2502  \u2514\u25007.xnb                               \u251c\u2500folder1\n    \u251c\u2500folder3          pack.bat              \u2502  \u251c\u25004.config\n    \u2514\u2500...          <\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500          \u2502  \u251c\u25004.xml\n      \u251c\u25008.xnb                                \u2502  \u251c\u25005.config\n      \u251c\u25009.xnb                                \u2502  ...\n      \u2514\u250010.xnb                               ...";
+            Instance._helpText = stringBuilder.Append(s).ToString();
         }
 
-        private static CmdContent BuildCEnt(string index)
+        private static Process.CmdContent BuildCEnt(string index)
         {
-            CmdContent cmdContent = new CmdContent();
-            var pack = Instance._next[index];
-            pack.OnValueChanged += value => cmdContent.Mode = (Mode)value;
-            pack._next["c"].OnValueChanged += value => cmdContent.IsEnableConcurrency = (bool)value;
-            pack._next["i"].OnValueChanged += value => cmdContent.Input = value.ToString();
-            pack._next["o"].OnValueChanged += value => cmdContent.Output = value.ToString();
+            Process.CmdContent cmdContent = new Process.CmdContent();
+            Option option = Instance._next[index];
+            option.OnValueChanged += delegate(object value) { cmdContent.Mode = (Process.Mode)value; };
+            option._next["c"].OnValueChanged += delegate(object value)
+            {
+                cmdContent.IsEnableConcurrency = (bool)value;
+            };
+            option._next["i"].OnValueChanged += delegate(object value) { cmdContent.Input = value.ToString(); };
+            option._next["o"].OnValueChanged += delegate(object value) { cmdContent.Output = value.ToString(); };
             return cmdContent;
         }
 
         private static string[][] ParseStrings(string[] args)
         {
-            string[][] ret = new string[args.Length][];
-            for (var i = 0; i < args.Length; i++)
+            string[][] array = new string[args.Length][];
+            for (int i = 0; i < args.Length; i++)
             {
-                string s = args[i].Trim(' ');
-                int n = s.IndexOf(' ');
-                if (n == -1)
+                string text = args[i].Trim(' ');
+                int num = text.IndexOf(' ');
+                if (num == -1)
                 {
-                    ret[i] = new string[] { s.Trim(' ') };
+                    array[i] = new string[1] { text.Trim(' ') };
+                    continue;
                 }
-                else
+
+                int num2 = i;
+                string[] obj = new string[2]
                 {
-                    ret[i] = new string[]
-                    {
-                        s[..n].Trim(' '),
-                        s[n..].Trim(' '),
-                    };
-                }
+                    text.Substring(0, num).Trim(' '),
+                    null
+                };
+                string text2 = text;
+                int num3 = num;
+                obj[1] = text2.Substring(num3, text2.Length - num3).Trim(' ');
+                array[num2] = obj;
             }
 
-            return ret;
+            return array;
         }
 
         public static object? ParseCmd(string args)
         {
-            var cmd = ParseStrings(args.Split(" -"));
-            return GetEnt(cmd);
+            return GetEnt(ParseStrings(args.Split(" -")));
         }
 
         private static object? GetEnt(string[][] args)
@@ -304,115 +193,215 @@ public static class Program
                 return Instance._helpText;
             }
 
-            if (Instance._next.TryGetValue(args[0][0], out var option))
+            if (Instance._next.TryGetValue(args[0][0], out Option value))
             {
                 if (args.Length == 1)
                 {
-                    if (option._next == null)
+                    if (value._next == null)
                     {
-                        return option.Value;
+                        return value.Value;
                     }
 
                     if (args[0].Length == 1)
                     {
-                        return Bad._helpText + option._helpText;
+                        return Bad._helpText + value._helpText;
                     }
 
                     if (args[0][1] == "help")
                     {
-                        return option._helpText;
+                        return value._helpText;
                     }
 
-                    return Bad._helpText + option._helpText;
+                    return Bad._helpText + value._helpText;
                 }
 
-                if (option._next == null)
+                if (value._next == null)
                 {
-                    return Bad._helpText + option._helpText;
+                    return Bad._helpText + value._helpText;
                 }
-                else
-                {
-                    var cmd = BuildCEnt(args[0][0]);
-                    switch (args[0][0])
-                    {
-                        case "pack":
-                            option.Value = Mode.Pack;
-                            break;
-                        case "unpack":
-                            option.Value = Mode.UnPack;
-                            break;
-                        case "auto":
-                            option.Value = Mode.Pack | Mode.UnPack;
-                            break;
-                        default:
-                            return "";
-                    }
 
-                    for (int i = 1; i < args.Length; i++)
+                Process.CmdContent result = BuildCEnt(args[0][0]);
+                switch (args[0][0])
+                {
+                    case "pack":
+                        value.Value = Process.Mode.Pack;
+                        break;
+                    case "unpack":
+                        value.Value = Process.Mode.UnPack;
+                        break;
+                    case "auto":
+                        value.Value = Process.Mode.Pack | Process.Mode.UnPack;
+                        break;
+                    default:
+                        return "";
+                }
+
+                for (int i = 1; i < args.Length; i++)
+                {
+                    if (value._next.TryGetValue(args[i][0], out Option value2))
                     {
-                        if (option._next.TryGetValue(args[i][0], out var next))
+                        if (args[i].Length == 1)
                         {
-                            if (args[i].Length == 1)
+                            if (value2._type == OptionType.Bool)
                             {
-                                if (next._type == OptionType.Bool)
-                                {
-                                    next.Value = true;
-                                }
-                                else
-                                {
-                                    return Bad._helpText + next._helpText;
-                                }
+                                value2.Value = true;
+                                continue;
                             }
-                            else if (args[i][1] == "help")
-                            {
-                                return next._helpText;
-                            }
-                            else
-                            {
-                                switch (next._type)
-                                {
-                                    case OptionType.Bool:
-                                        return Bad._helpText + next._helpText;
-                                    case OptionType.Help:
-                                        return next._helpText;
-                                    case OptionType.Fun:
-                                        return next.Value;
-                                    case OptionType.String:
-                                        next.Value = args[i][1];
-                                        break;
-                                }
-                            }
+
+                            return Bad._helpText + value2._helpText;
                         }
-                        else
+
+                        if (args[i][1] == "help")
+                        {
+                            return value2._helpText;
+                        }
+
+                        switch (value2._type)
+                        {
+                            case OptionType.Bool:
+                                return Bad._helpText + value2._helpText;
+                            case OptionType.Help:
+                                return value2._helpText;
+                            case OptionType.Fun:
+                                return value2.Value;
+                            case OptionType.String:
+                                value2.Value = args[i][1];
+                                break;
+                        }
+
+                        continue;
+                    }
+
+                    return Bad._helpText + value._helpText;
+                }
+
+                if (value._next == Instance._next["auto"]._next)
+                {
+                    string[] array = new string[2] { "i", "o" };
+                    foreach (string key in array)
+                    {
+                        Option option = value._next[key];
+                        if (option.Value == null)
+                        {
+                            return Bad._helpText + option._helpText;
+                        }
+
+                        string path = option.Value.ToString();
+                        path = Path.GetFullPath(path);
+                        if (!File.Exists(path) && !Directory.Exists(path))
                         {
                             return Bad._helpText + option._helpText;
                         }
                     }
-
-                    if (option._next == Instance._next["auto"]._next)
-                    {
-                        foreach (var s in new string[] { "i", "o" })
-                        {
-                            var op = option._next[s];
-                            if (op.Value is null)
-                            {
-                                return Bad._helpText + op._helpText;
-                            }
-
-                            string path = op.Value.ToString();
-                            path = Path.GetFullPath(path);
-                            if (!File.Exists(path) && !Directory.Exists(path))
-                            {
-                                return Bad._helpText + op._helpText;
-                            }
-                        }
-                    }
-
-                    return cmd;
                 }
+
+                return result;
             }
 
             return Bad._helpText + Instance._helpText;
         }
+    }
+
+    public static void Main(string[] args)
+    {
+        ConsoleLogger.Build();
+        ConsoleRootPath.Build();
+
+        if (args.Length != 0)
+        {
+            ReckonByTime(args);
+            return;
+        }
+
+        ReckonByTime("help");
+        while (true)
+        {
+            Console.Write("->");
+            ReckonByTime(Console.ReadLine());
+        }
+    }
+
+    private static void test()
+    {
+        ReckonByTime("auto -c -i .\\unpacked -o .\\packed");
+    }
+
+    private static void test_command()
+    {
+        string[] array = new string[6]
+        {
+            "auto -c -i .\\packed -o .\\unpacked", "auto    -c    -i     .\\packed          -o   .\\unpacked",
+            "auto        -i     .\\pac  ked          -o   .\\unpa   ked", "1", "unpack -i", "unpack help"
+        };
+        foreach (string text in array)
+        {
+            int num = 1;
+            while (num-- > 0)
+            {
+                Console.WriteLine(text);
+                ReckonByTime(text);
+                Console.WriteLine('\n' + new string('-', 25) + '\n');
+            }
+        }
+    }
+
+    private static void test_loop()
+    {
+        int num = 10;
+        while (num-- > 0)
+        {
+            ReckonByTime("auto -c -i .\\packed -o .\\unpacked");
+        }
+    }
+
+    private static void ReckonByTime(string[] args)
+    {
+        for (int i = 0; i < args.Length; i++)
+        {
+            args[i] = args[i].Trim();
+        }
+
+        ReckonByTime(string.Join(' ', args));
+    }
+
+    private static void ReckonByTime(string? args)
+    {
+        bool flag = string.IsNullOrEmpty(args);
+        if (flag || args?.Trim(' ') == "")
+        {
+            return;
+        }
+
+        object obj = Option.ParseCmd(args);
+        if (!(obj is Process.CmdContent cmd))
+        {
+            if (!(obj is string message))
+            {
+                if (obj is Action action)
+                {
+                    action();
+                }
+            }
+            else
+            {
+                Logger.Message(message);
+            }
+        }
+        else
+        {
+            Stopwatch timer = Stopwatch.StartNew();
+            Process.Get(cmd);
+            Texture2D.WaitAll();
+            Task.WaitAll();
+            Logger.Save();
+            PrintRunTime(timer);
+        }
+    }
+
+    private static void PrintRunTime(Stopwatch timer)
+    {
+        timer.Stop();
+        TimeSpan elapsed = timer.Elapsed;
+        Logger.Message($"{(int)elapsed.TotalSeconds}.{elapsed.Milliseconds}s");
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using XnbConverter.Readers;
+using XnbConverter.Readers.Base;
 using XnbConverter.Tbin.Entity;
 using StringReader = XnbConverter.Readers.Base.StringReader;
 
@@ -8,90 +9,91 @@ namespace XnbConverter.Tbin.Readers;
 
 public class AnimatedTilerReader : BaseReader
 {
-    private readonly StringReader stringReader = new();
-    private int propertieListReader;
-    private int staticTileReader;
+	private readonly StringReader stringReader = new StringReader();
 
-    public override void Init(ReaderResolver readerResolver)
-    {
-        base.Init(readerResolver);
-        stringReader.Init(readerResolver);
-        staticTileReader = readerResolver.GetIndex(typeof(StaticTile));
-        propertieListReader = readerResolver.GetIndex(typeof(List<Propertie>));
-    }
+	private int propertieListReader;
 
-    public override bool IsValueType()
-    {
-        return true;
-    }
+	private int staticTileReader;
 
-    public override object Read()
-    {
-        var result = new AnimatedTile();
+	public override void Init(ReaderResolver resolver)
+	{
+		base.Init(resolver);
+		stringReader.Init(resolver);
+		staticTileReader = resolver.GetIndex(typeof(StaticTile));
+		propertieListReader = resolver.GetIndex(typeof(List<Propertie>));
+	}
 
-        result.FrameInterval = bufferReader.ReadInt32();
+	public override bool IsValueType()
+	{
+		return true;
+	}
 
-        result._frameCount = bufferReader.ReadInt32();
-        result.Frames = new List<StaticTile>();
+	public override object Read()
+	{
+		AnimatedTile animatedTile = new AnimatedTile();
+		animatedTile.FrameInterval = bufferReader.ReadInt32();
+		animatedTile._frameCount = bufferReader.ReadInt32();
+		animatedTile.Frames = new List<StaticTile>();
+		animatedTile._currTileSheet = new List<string>();
+		animatedTile._currTileSheet.Add("");
+		int num = 0;
+		animatedTile.Index = new List<char>();
+		int num2 = 0;
+		while (num2 < animatedTile._frameCount)
+		{
+			char c = (char)bufferReader.ReadByte();
+			animatedTile.Index.Add(c);
+			switch (c)
+			{
+			case 'T':
+				animatedTile._currTileSheet.Add(stringReader.ReadByInt32());
+				num++;
+				break;
+			case 'S':
+			{
+				StaticTile staticTile = readerResolver.ReadValue<StaticTile>(staticTileReader);
+				staticTile.TileSheet = animatedTile._currTileSheet[num];
+				animatedTile.Frames.Add(staticTile);
+				num2++;
+				break;
+			}
+			default:
+				throw new Exception("Bad animated tile data");
+			}
+		}
+		animatedTile.Properties = readerResolver.ReadValue<List<Propertie>>(propertieListReader);
+		return animatedTile;
+	}
 
-        result._currTileSheet = new List<string>();
-        result._currTileSheet.Add("");
-        var currTileSheetIndex = 0;
-        result.Index = new List<char>();
-        for (var i = 0; i < result._frameCount;)
-        {
-            var b = (char)bufferReader.ReadByte();
-            result.Index.Add(b);
-            switch (b)
-            {
-                case 'T':
-                    result._currTileSheet.Add(stringReader.ReadByInt32());
-                    currTileSheetIndex++;
-                    break;
-                case 'S':
-                    var staticTile = readerResolver.ReadValue<StaticTile>(staticTileReader);
-                    staticTile.TileSheet = result._currTileSheet[currTileSheetIndex];
-                    result.Frames.Add(staticTile);
-                    ++i;
-                    break;
-                default:
-                    throw new Exception("Bad animated tile data");
-            }
-        }
-
-        result.Properties = readerResolver.ReadValue<List<Propertie>>(propertieListReader);
-        return result;
-    }
-
-    public override void Write(object content)
-    {
-        var input = (AnimatedTile)content;
-
-        bufferWriter.WriteInt32(input.FrameInterval);
-        bufferWriter.WriteInt32(input._frameCount);
-
-        var currTileSheetIndex = 0;
-        var p = -1;
-        var index = -1;
-        for (var i = 0; i < input._frameCount;)
-        {
-            var b = input.Index[++index];
-            bufferWriter.WriteByte((byte)b);
-            switch (b)
-            {
-                case 'T':
-                    stringReader.WriteByInt32(input._currTileSheet[++currTileSheetIndex]);
-                    break;
-                case 'S':
-                    var staticTile = input.Frames[++p];
-                    readerResolver.WriteValue(staticTileReader, staticTile);
-                    ++i;
-                    break;
-                default:
-                    throw new Exception("Bad animated tile data");
-            }
-        }
-
-        readerResolver.WriteValue(propertieListReader, input.Properties);
-    }
+	public override void Write(object content)
+	{
+		AnimatedTile animatedTile = (AnimatedTile)content;
+		bufferWriter.WriteInt32(animatedTile.FrameInterval);
+		bufferWriter.WriteInt32(animatedTile._frameCount);
+		int num = 0;
+		int num2 = -1;
+		int num3 = -1;
+		int num4 = 0;
+		while (num4 < animatedTile._frameCount)
+		{
+			char c = animatedTile.Index[++num3];
+			bufferWriter.WriteByte((byte)c);
+			switch (c)
+			{
+			case 'T':
+				stringReader.WriteByInt32(animatedTile._currTileSheet[++num]);
+				break;
+			case 'S':
+			{
+				StaticTile item = animatedTile.Frames[++num2];
+				readerResolver.WriteValue(staticTileReader, item);
+				num4++;
+				break;
+			}
+			default:
+				throw new Exception("Bad animated tile data");
+			}
+		}
+		readerResolver.WriteValue(propertieListReader, animatedTile.Properties);
+	}
 }

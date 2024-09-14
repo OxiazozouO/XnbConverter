@@ -1,44 +1,37 @@
-﻿using Rectangle = XnbConverter.Entity.Mono.Rectangle;
+﻿using XnbConverter.Entity.Mono;
+using Rectangle = XnbConverter.Entity.Mono.Rectangle;
 
 namespace XnbConverter.Readers.Base.ValueReaders;
 
-/**
- * Rectangle Reader
- * @class
- * @extends BaseReader
- */
 public class RectangleReader : BaseReader
 {
-    public override void Init(ReaderResolver readerResolver)
-    {
-        bufferReader = readerResolver.bufferReader;
-        bufferWriter = readerResolver.bufferWriter;
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		bufferReader = resolver.bufferReader;
+		bufferWriter = resolver.bufferWriter;
+	}
 
-    public override object Read()
-    {
-        var result = new Rectangle();
+	public override object Read()
+	{
+		Rectangle rectangle = default(Rectangle);
+		rectangle.X = bufferReader.ReadInt32();
+		rectangle.Y = bufferReader.ReadInt32();
+		rectangle.Width = bufferReader.ReadInt32();
+		rectangle.Height = bufferReader.ReadInt32();
+		return rectangle;
+	}
 
-        result.X = bufferReader.ReadInt32();
-        result.Y = bufferReader.ReadInt32();
-        result.Width = bufferReader.ReadInt32();
-        result.Height = bufferReader.ReadInt32();
+	public override void Write(object content)
+	{
+		Rectangle rectangle = (Rectangle)content;
+		bufferWriter.WriteInt32(rectangle.X);
+		bufferWriter.WriteInt32(rectangle.Y);
+		bufferWriter.WriteInt32(rectangle.Width);
+		bufferWriter.WriteInt32(rectangle.Height);
+	}
 
-        return result;
-    }
-
-    public override void Write(object content)
-    {
-        var input = (Rectangle)content;
-
-        bufferWriter.WriteInt32(input.X);
-        bufferWriter.WriteInt32(input.Y);
-        bufferWriter.WriteInt32(input.Width);
-        bufferWriter.WriteInt32(input.Height);
-    }
-
-    public override bool IsValueType()
-    {
-        return true;
-    }
+	public override bool IsValueType()
+	{
+		return true;
+	}
 }

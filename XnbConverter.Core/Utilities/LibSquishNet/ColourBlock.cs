@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
@@ -6,162 +6,151 @@ namespace Squish;
 
 public static class ColourBlock
 {
-    private const int winSize = 16;
+	private const int winSize = 16;
 
-    public static int ToInt(this float a, int limit)
-    {
-        // use ANSI round-to-zero behaviour to get round-to-nearest
-        return Math.Clamp((int)(a + 0.5f), 0, limit);
-    }
+	public static int ToInt(this float a, int limit)
+	{
+		return Math.Clamp((int)(a + 0.5f), 0, limit);
+	}
 
-    public static byte ScaleToByte(this float a, int limit)
-    {
-        return (byte)Math.Clamp((int)(limit * a + 0.5f), 0, limit);
-    }
+	public static byte ScaleToByte(this float a, int limit)
+	{
+		return (byte)Math.Clamp((int)((float)limit * a + 0.5f), 0, limit);
+	}
 
-    public static int To565(this Vector3 colour)
-    {
-        // get the components in the correct range
-        int r = colour.X.ScaleToByte(31);
-        int g = colour.Y.ScaleToByte(63);
-        int b = colour.Z.ScaleToByte(31);
+	public static int To565(this Vector3 colour)
+	{
+		byte num = colour.X.ScaleToByte(31);
+		int num2 = colour.Y.ScaleToByte(63);
+		int num3 = colour.Z.ScaleToByte(31);
+		return (num << 11) | (num2 << 5) | num3;
+	}
 
-        // pack into a single value
-        return (r << 11) | (g << 5) | b;
-    }
+	public static int To565(this Vector4 colour)
+	{
+		byte num = colour.X.ScaleToByte(31);
+		int num2 = colour.Y.ScaleToByte(63);
+		int num3 = colour.Z.ScaleToByte(31);
+		return (num << 11) | (num2 << 5) | num3;
+	}
 
-    public static int To565(this Vector4 colour)
-    {
-        // get the components in the correct range
-        int r = colour.X.ScaleToByte(31);
-        int g = colour.Y.ScaleToByte(63);
-        int b = colour.Z.ScaleToByte(31);
+	private static void WriteColourBlock(int a, int b, Span<byte> indices, Span<byte> block)
+	{
+		block[0] = (byte)((uint)a & 0xFFu);
+		block[1] = (byte)(a >> 8);
+		block[2] = (byte)((uint)b & 0xFFu);
+		block[3] = (byte)(b >> 8);
+		block[4] = (byte)(indices[0] | (indices[1] << 2) | (indices[2] << 4) | (indices[3] << 6));
+		block[5] = (byte)(indices[4] | (indices[5] << 2) | (indices[6] << 4) | (indices[7] << 6));
+		block[6] = (byte)(indices[8] | (indices[9] << 2) | (indices[10] << 4) | (indices[11] << 6));
+		block[7] = (byte)(indices[12] | (indices[13] << 2) | (indices[14] << 4) | (indices[15] << 6));
+	}
 
-        // pack into a single value
-        return (r << 11) | (g << 5) | b;
-    }
+	public static void WriteColourBlock3(int a565, int b565, Span<byte> indices, Span<byte> block)
+	{
+		if (a565 > b565)
+		{
+			int num = b565;
+			b565 = a565;
+			a565 = num;
+			for (int i = 0; i < 16; i++)
+			{
+				if (indices[i] == 0)
+				{
+					indices[i] = 1;
+				}
+				else if (indices[i] == 1)
+				{
+					indices[i] = 0;
+				}
+			}
+		}
+		WriteColourBlock(a565, b565, indices, block);
+	}
 
-    private static void WriteColourBlock(int a, int b, Span<byte> indices, Span<byte> block)
-    {
-        // write the endpoints
-        block[0] = (byte)(a & 0xff);
-        block[1] = (byte)(a >> 8);
-        block[2] = (byte)(b & 0xff);
-        block[3] = (byte)(b >> 8);
-        // write the indices
-        block[4] = (byte)((indices[0] << 0) | (indices[1] << 2) | (indices[2] << 4) | (indices[3] << 6));
-        block[5] = (byte)((indices[4] << 0) | (indices[5] << 2) | (indices[6] << 4) | (indices[7] << 6));
-        block[6] = (byte)((indices[8] << 0) | (indices[9] << 2) | (indices[10] << 4) | (indices[11] << 6));
-        block[7] = (byte)((indices[12] << 0) | (indices[13] << 2) | (indices[14] << 4) | (indices[15] << 6));
-    }
+	public static void WriteColourBlock4(int a565, int b565, Span<byte> indices, Span<byte> block)
+	{
+		if (a565 < b565)
+		{
+			int num = b565;
+			b565 = a565;
+			a565 = num;
+			for (int i = 0; i < 16; i++)
+			{
+				indices[i] = (byte)((indices[i] ^ 1u) & 3u);
+			}
+		}
+		else if (a565 == b565)
+		{
+			indices.Fill(0);
+		}
+		WriteColourBlock(a565, b565, indices, block);
+	}
 
-    public static void WriteColourBlock3(int a565, int b565, Span<byte> indices, Span<byte> block)
-    {
-        // remap the indices
-        if (a565 > b565)
-        {
-            // swap a and b
-            (a565, b565) = (b565, a565);
-            for (var i = 0; i < winSize; ++i)
-                if (indices[i] == 0)
-                    indices[i] = 1;
-                else if (indices[i] == 1)
-                    indices[i] = 0;
-        }
+	private static int Unpack565(byte p1, byte p2, Span<byte> colour)
+	{
+		int num = p1 | (p2 << 8);
+		byte b = (byte)((uint)(num >> 11) & 0x1Fu);
+		byte b2 = (byte)((uint)(num >> 5) & 0x3Fu);
+		byte b3 = (byte)((uint)num & 0x1Fu);
+		colour[0] = (byte)((b << 3) | (b >> 2));
+		colour[1] = (byte)((b2 << 2) | (b2 >> 4));
+		colour[2] = (byte)((b3 << 3) | (b3 >> 2));
+		colour[3] = byte.MaxValue;
+		return num;
+	}
 
-        // write the block
-        WriteColourBlock(a565, b565, indices, block);
-    }
-
-    public static void WriteColourBlock4(int a565, int b565, Span<byte> indices, Span<byte> block)
-    {
-        // remap the indices
-        if (a565 < b565)
-        {
-            // swap a and b
-            (a565, b565) = (b565, a565);
-            for (var i = 0; i < winSize; ++i)
-                indices[i] = (byte)((indices[i] ^ 0x1) & 0x3);
-        }
-        else if (a565 == b565)
-        {
-            // use index 0
-            indices.Fill(0);
-        }
-
-        // write the block
-        WriteColourBlock(a565, b565, indices, block);
-    }
-
-    private static int Unpack565(byte p1, byte p2, Span<byte> colour)
-    {
-        // build the packed value
-        var value = p1 | (p2 << 8);
-
-        // get the components in the stored range
-        var r = (byte)((value >> 11) & 0x1f);
-        var g = (byte)((value >> 5) & 0x3f);
-        var b = (byte)(value & 0x1f);
-
-        // scale up to 8 bits
-        colour[0] = (byte)((r << 3) | (r >> 2));
-        colour[1] = (byte)((g << 2) | (g >> 4));
-        colour[2] = (byte)((b << 3) | (b >> 2));
-        colour[3] = 255;
-
-        // return the value
-        return value;
-    }
-
-    public static void DecompressColour(Span<byte> rgba, ReadOnlySpan<byte> block, bool isDxt1)
-    {
-        // unpack the endpoints
-        var bytes = Pool.RentByte(winSize);
-        var codes = bytes.AsSpan();
-        codes.Fill(0);
-        var a = Unpack565(block[0], block[1], codes);
-        var b = Unpack565(block[2], block[3], codes[4..]);
-
-        // generate the midpoints
-        if (isDxt1 && a <= b)
-            for (var i = 0; i < 3; ++i)
-            {
-                int c = codes[i];
-                int d = codes[4 + i];
-                codes[8 + i] = (byte)((c + d) / 2);
-                codes[12 + i] = 0;
-            }
-        else
-            for (var i = 0; i < 3; ++i)
-            {
-                int c = codes[i];
-                int d = codes[4 + i];
-                codes[8 + i] = (byte)((2 * c + d) / 3);
-                codes[12 + i] = (byte)((c + 2 * d) / 3);
-            }
-
-
-        // fill in alpha for the intermediate values
-        codes[8 + 3] = 255;
-        codes[12 + 3] = (byte)(isDxt1 && a <= b ? 0 : 255);
-
-        // unpack the indices
-        var indices = Pool.RentByte(winSize);
-
-        for (int i = 4, index = -1; i < 8; ++i)
-        {
-            var packed = block[i];
-
-            indices[++index] = (byte)(packed & 0x3);
-            indices[++index] = (byte)((packed >> 2) & 0x3);
-            indices[++index] = (byte)((packed >> 4) & 0x3);
-            indices[++index] = (byte)((packed >> 6) & 0x3);
-        }
-
-        // store out the colours
-        for (var i = 0; i < winSize; ++i) codes.Slice(4 * indices[i], 4).CopyTo(rgba[(4 * i)..]);
-
-        Pool.Return(indices);
-        Pool.Return(bytes);
-    }
+	public static void DecompressColour(Span<byte> rgba, ReadOnlySpan<byte> block, bool isDxt1)
+	{
+		byte[] array = Pool.RentByte(16);
+		Span<byte> colour = array.AsSpan();
+		colour.Fill(0);
+		int num = Unpack565(block[0], block[1], colour);
+		byte p = block[2];
+		byte p2 = block[3];
+		ref Span<byte> reference = ref colour;
+		int num2 = Unpack565(p, p2, reference.Slice(4, reference.Length - 4));
+		if (isDxt1 && num <= num2)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				int num3 = colour[i];
+				int num4 = colour[4 + i];
+				colour[8 + i] = (byte)((num3 + num4) / 2);
+				colour[12 + i] = 0;
+			}
+		}
+		else
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				int num5 = colour[j];
+				int num6 = colour[4 + j];
+				colour[8 + j] = (byte)((2 * num5 + num6) / 3);
+				colour[12 + j] = (byte)((num5 + 2 * num6) / 3);
+			}
+		}
+		colour[11] = byte.MaxValue;
+		colour[15] = (byte)((!isDxt1 || num > num2) ? 255u : 0u);
+		byte[] array2 = Pool.RentByte(16);
+		int k = 4;
+		int num7 = -1;
+		for (; k < 8; k++)
+		{
+			byte b = block[k];
+			array2[++num7] = (byte)(b & 3u);
+			array2[++num7] = (byte)((uint)(b >> 2) & 3u);
+			array2[++num7] = (byte)((uint)(b >> 4) & 3u);
+			array2[++num7] = (byte)((uint)(b >> 6) & 3u);
+		}
+		for (int l = 0; l < 16; l++)
+		{
+			Span<byte> span = colour.Slice(4 * array2[l], 4);
+			reference = ref rgba;
+			int num8 = 4 * l;
+			span.CopyTo(reference.Slice(num8, reference.Length - num8));
+		}
+		Pool.Return(array2);
+		Pool.Return(array);
+	}
 }

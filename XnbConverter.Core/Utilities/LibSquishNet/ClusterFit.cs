@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
@@ -6,412 +6,367 @@ namespace Squish;
 
 public class ClusterFit : ColourFit
 {
-    private static readonly Vector4 V1 = new(3.0f, 3.0f, 3.0f, 9.0f);
-    private static readonly Vector4 V2 = new(2.0f, 2.0f, 2.0f, 4.0f);
-    private static readonly Vector4 TwothirdsTwothirds2 = V2 / V1;
-    private readonly int IterationCount;
-
-    private readonly byte[] Order = Pool.RentByte(16 * 8);
-
-    private readonly Vector4[] PointsWeights = Pool.RentVector4(16);
-
-    private Vector4 BestError = new();
-
-    private Vector4 Metric = new();
-
-    private Vector3 Principle;
-
-    private Vector4 XsumWsum = new();
-
-    public ClusterFit(ColourSet colours, bool isDxt1, bool isColourIterativeClusterFit)
-        : base(colours, isDxt1)
-    {
-        // set the iteration count
-        IterationCount = isColourIterativeClusterFit ? 8 : 1;
-        // initialise the metric (old perceptual = 0.2126f, 0.7152f, 0.0722f)
-        //m_metric = Vec4( metric[0], metric[1], metric[2], 1.0f );
-    }
-
-    public override void Init()
-    {
-        Metric.Fill(1.0f);
-        BestError.Fill(float.MaxValue);
-        Order.AsSpan().Fill(0);
-        XsumWsum.Clear();
-        // cache some values
-        var count = Colours.Count;
-        var values = Colours.Points;
-        // get the covariance matrix, compute the principle component
-        Principle = Sym3x3.ExtractIndicesFromPackedBytes(count, values, Colours.Weights);
-    }
-
-    private void ConstructOrdering(Vector3 axis)
-    {
-        // cache some values
-        var count = Colours.Count;
-        var values = Colours.Points;
-
-        // build the list of dot products
-        var dps = Pool.RentFloat(16);
-
-        for (var i = 0; i < count; ++i)
-        {
-            dps[i] = values[i].Dot(axis);
-            Order[i] = (byte)i;
-        }
-
-        // stable sort using them
-        for (var i = 0; i < count; ++i)
-        for (var j = i; j > 0 && dps[j] < dps[j - 1]; --j)
-        {
-            (dps[j], dps[j - 1]) = (dps[j - 1], dps[j]);
-            var index = j;
-            (Order[j], Order[j - 1]) = (Order[j - 1], Order[j]);
-        }
-
-        Pool.Return(dps);
-        // copy the ordering and weight all the points
-        var unweighted = Colours.Points;
-        var weights = Colours.Weights;
-
-        XsumWsum = new Vector4(0.0f);
-
-        for (var i = 0; i < count; ++i)
-        {
-            int j = Order[i];
-            var p = new Vector4(unweighted[j].X, unweighted[j].Y, unweighted[j].Z, 1.0f);
-            var x = weights[j] * p;
-            PointsWeights[i] = x;
-            XsumWsum += x;
-        }
-    }
-
-    private bool ConstructOrdering(Vector4 axis, int iteration)
-    {
-        // cache some values
-        var count = Colours.Count;
-        var values = Colours.Points;
-
-        // build the list of dot products
-        var dps = Pool.RentFloat(16);
-
-        for (var i = 0; i < count; ++i)
-        {
-            dps[i] = values[i].Dot(axis);
-            Order[16 * iteration + i] = (byte)i;
-        }
-
-        // stable sort using them
-        for (var i = 0; i < count; ++i)
-        for (var j = i; j > 0 && dps[j] < dps[j - 1]; --j)
-        {
-            (dps[j], dps[j - 1]) = (dps[j - 1], dps[j]);
-            var index = 16 * iteration + j;
-            (Order[index], Order[index - 1]) = (Order[index - 1], Order[index]);
-        }
-
-        Pool.Return(dps);
-        // check this ordering is unique
-        for (var it = 0; it < iteration; ++it)
-        {
-            var same = true;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (Order[16 * iteration + i] == Order[16 * it + i]) continue;
-                same = false;
-                break;
-            }
-
-            if (same) return false;
-        }
-
-        // copy the ordering and weight all the points
-        var unweighted = Colours.Points;
-        var weights = Colours.Weights;
-
-        XsumWsum = new Vector4(0.0f);
-
-        for (var i = 0; i < count; ++i)
-        {
-            int j = Order[16 * iteration + i];
-            var p = new Vector4(unweighted[j].X, unweighted[j].Y, unweighted[j].Z, 1.0f);
-            var x = weights[j] * p;
-            PointsWeights[i] = x;
-            XsumWsum += x;
-        }
-
-        return true;
-    }
-
-    protected override void Compress3(Span<byte> block)
-    {
-        // declare variables
-        var count = Colours.Count;
-
-        // prepare an ordering using the principle axis
-        ConstructOrdering(Principle);
-
-        // check all possible clusters and iterate on the total order
-        var bestStart = Vector4.Zero;
-        var bestEnd = Vector4.Zero;
-        var bestError = BestError;
-        var bestIteration = 0;
-        int bestI = 0, bestJ = 0;
-
-        // loop over iterations (we avoid the case that all points in first or last cluster)
-        for (var iterationIndex = 0;;)
-        {
-            // first cluster [0,i) is at the start
-            var part0 = new Vector4(0.0f);
-            for (var i = 0; i < count; ++i)
-            {
-                // second cluster [i,j) is half along
-                var part1 = i == 0 ? PointsWeights[0] : new Vector4(0.0f);
-                var jmin = i == 0 ? 1 : i;
-                for (var j = jmin;;)
-                {
-                    // last cluster [j,count) is at the end
-                    var part2 = XsumWsum - part1 - part0;
-
-                    // compute least squares terms directly
-                    var _ = part1 * Vector4.HalfHalf2;
-                    var alphax_sum = _ + part0;
-                    var alpha2_sum = alphax_sum.W;
-
-                    var betax_sum = _ + part2;
-                    var beta2_sum = betax_sum.W;
-
-                    var alphabeta_sum = _.W;
-
-                    // compute the least-squares optimal points
-                    var factor = alpha2_sum * beta2_sum - alphabeta_sum * alphabeta_sum;
-                    var a = (beta2_sum * alphax_sum - alphabeta_sum * betax_sum) / factor;
-                    var b = (alpha2_sum * betax_sum - alphabeta_sum * alphax_sum) / factor;
-
-                    // clamp to the grid
-                    a = (Vector4.Grid * a.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector4.Grid;
-                    b = (Vector4.Grid * b.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector4.Grid;
-
-                    // compute the error (we skip the constant xxsum)
-                    var e1 = alpha2_sum * a * a + beta2_sum * b * b;
-                    var e2 = alphabeta_sum * a * b - a * alphax_sum;
-                    var e3 = e2 - b * betax_sum;
-                    var e4 = 2.0f * e3 + e1;
-
-                    // apply the metric to the error term
-                    var e5 = e4 * Metric;
-                    var error = new Vector4(e5.X + e5.Y + e5.Z);
-
-                    // keep the solution if it wins
-                    if (error.CompareAnyLessThan(bestError))
-                    {
-                        bestStart = a;
-                        bestEnd = b;
-                        bestI = i;
-                        bestJ = j;
-                        bestError = error;
-                        bestIteration = iterationIndex;
-                    }
-
-                    // advance
-                    if (j == count) break;
-
-                    part1 += PointsWeights[j];
-                    ++j;
-                }
-
-                // advance
-                part0 += PointsWeights[i];
-            }
-
-            // stop if we didn't improve in this iteration
-            if (bestIteration != iterationIndex) break;
-
-            // advance if possible
-            ++iterationIndex;
-
-            if (iterationIndex == IterationCount) break;
-
-            // stop if a new iteration is an ordering that has already been tried
-            var axis = bestEnd - bestStart;
-
-            if (!ConstructOrdering(axis, iterationIndex)) break;
-        }
-
-        // save the block if necessary
-        if (!bestError.CompareAnyLessThan(BestError)) return;
-
-        var unordered = Pool.RentNewByte(16);
-        var span = Order.AsSpan(16 * bestIteration, count);
-        var m = 0;
-        for (; m < bestI; ++m)
-            unordered[span[m]] = 0;
-        for (; m < bestJ; ++m)
-            unordered[span[m]] = 2;
-        for (; m < count; m++)
-            unordered[span[m]] = 1;
-
-        var bestIndices = Colours.RemapIndices(unordered);
-
-        // save the block
-        ColourBlock.WriteColourBlock3(bestStart.To565(), bestEnd.To565(), bestIndices, block);
-        Pool.Return(unordered);
-        Pool.Return(bestIndices);
-        // save the error
-        BestError = bestError;
-    }
-
-    protected override void Compress4(Span<byte> block)
-    {
-        // declare variables
-        var count = Colours.Count;
-
-        // prepare an ordering using the principle axis
-        ConstructOrdering(Principle);
-
-        // check all possible clusters and iterate on the total order
-        var bestStart = Vector4.Zero;
-        var bestEnd = Vector4.Zero;
-        var bestError = BestError;
-        var part0 = new Vector4();
-        var part1 = new Vector4();
-        var part2Tmp = new Vector4();
-        Vector4 part2, part3, alphaxSum, betaxSum, e1, e2, e3, e4, e5, error, a, b;
-        int bestIteration = 0, bestI = 0, bestJ = 0, bestK = 0;
-        float factor, beta2Sum, alpha2Sum, alphaBetaSum;
-
-        // loop over iterations (we avoid the case that all points in first or last cluster)
-        for (var iterationIndex = 0;;)
-        {
-            // first cluster [0,i) is at the start
-            part0.Clear();
-            for (var i = 0; i < count; ++i)
-            {
-                // second cluster [i,j) is one third along
-                part1.Clear();
-                for (var j = i;;)
-                {
-                    // third cluster [j,k) is two thirds along
-                    int minK;
-                    if (j == 0)
-                    {
-                        part2 = PointsWeights[0];
-                        minK = 1;
-                    }
-                    else
-                    {
-                        part2Tmp.Clear();
-                        part2 = part2Tmp;
-                        minK = j;
-                    }
-
-                    for (var k = minK;;)
-                    {
-                        // last cluster [k,count) is at the end
-                        part3 = XsumWsum - part2 - part1 - part0;
-
-                        // compute least squares terms directly
-                        alphaxSum = part1 * TwothirdsTwothirds2 + part2 / V1 + part0;
-                        alpha2Sum = alphaxSum.W;
-
-                        betaxSum = part1 / V1 + part2 * TwothirdsTwothirds2 + part3;
-                        beta2Sum = betaxSum.W;
-
-                        alphaBetaSum = (part1.W + part2.W) * 2.0f / 9.0f;
-
-                        // compute the least-squares optimal points
-                        factor = beta2Sum * alpha2Sum - alphaBetaSum * alphaBetaSum;
-                        a = (beta2Sum * alphaxSum - alphaBetaSum * betaxSum) / factor;
-                        b = (alpha2Sum * betaxSum - alphaBetaSum * alphaxSum) / factor;
-
-                        // clamp to the grid
-                        a = (Vector4.Grid * a.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector4.Grid;
-                        b = (Vector4.Grid * b.Clamp(0.0f, 1.0f)).HalfAdjust() / Vector4.Grid;
-
-                        // compute the error (we skip the constant xxsum)
-                        e1 = alpha2Sum * a * a + beta2Sum * b * b;
-                        e2 = alphaBetaSum * a * b - a * alphaxSum;
-                        e3 = e2 - b * betaxSum;
-                        e4 = 2.0f * e3 + e1;
-
-                        // apply the metric to the error term
-                        e5 = e4 * Metric;
-                        error = new Vector4(e5.X + e5.Y + e5.Z);
-
-                        // keep the solution if it wins
-                        if (error.CompareAnyLessThan(bestError))
-                        {
-                            bestStart = a;
-                            bestEnd = b;
-                            bestError = error;
-                            bestI = i;
-                            bestJ = j;
-                            bestK = k;
-                            bestIteration = iterationIndex;
-                        }
-
-                        // advance
-                        if (k == count) break;
-
-                        part2 += PointsWeights[k];
-                        ++k;
-                    }
-
-                    // advance
-                    if (j == count) break;
-
-                    part1 += PointsWeights[j];
-                    ++j;
-                }
-
-                // advance
-                part0 += PointsWeights[i];
-            }
-
-            // stop if we didn't improve in this iteration
-            if (bestIteration != iterationIndex) break;
-
-            // advance if possible
-            ++iterationIndex;
-            if (iterationIndex == IterationCount) break;
-
-            // stop if a new iteration is an ordering that has already been tried
-            var axis = bestEnd - bestStart;
-            if (!ConstructOrdering(axis, iterationIndex)) break;
-        }
-
-        // save the block if necessary
-        if (!bestError.CompareAnyLessThan(BestError)) return;
-        // remap the indices
-        var unordered = Pool.RentNewByte(16);
-
-        var span = Order.AsSpan(16 * bestIteration, count);
-        var m = 0;
-        for (; m < bestI; ++m)
-            unordered[span[m]] = 0;
-        for (; m < bestJ; ++m)
-            unordered[span[m]] = 2;
-        for (; m < bestK; ++m)
-            unordered[span[m]] = 3;
-        for (; m < count; ++m)
-            unordered[span[m]] = 1;
-
-        var bestIndices = Colours.RemapIndices(unordered);
-
-        // save the block                // get the packed values
-        ColourBlock.WriteColourBlock4(bestStart.To565(), bestEnd.To565(), bestIndices, block);
-
-        // save the error
-        BestError = bestError;
-
-        Pool.Return(bestIndices);
-        Pool.Return(unordered);
-    }
-
-    public override void Dispose()
-    {
-        Pool.Return(Order);
-        Pool.Return(PointsWeights);
-    }
+	private static readonly Vector4 V1 = new Vector4(3f, 3f, 3f, 9f);
+
+	private static readonly Vector4 V2 = new Vector4(2f, 2f, 2f, 4f);
+
+	private static readonly Vector4 TwothirdsTwothirds2 = V2 / V1;
+
+	private readonly int IterationCount;
+
+	private readonly byte[] Order = Pool.RentByte(128);
+
+	private readonly Vector4[] PointsWeights = Pool.RentVector4(16);
+
+	private Vector4 BestError = new Vector4();
+
+	private Vector4 Metric = new Vector4();
+
+	private Vector3 Principle;
+
+	private Vector4 XsumWsum = new Vector4();
+
+	public ClusterFit(ColourSet colours, bool isDxt1, bool isColourIterativeClusterFit)
+		: base(colours, isDxt1)
+	{
+		IterationCount = ((!isColourIterativeClusterFit) ? 1 : 8);
+	}
+
+	public override void Init()
+	{
+		Metric.Fill(1f);
+		BestError.Fill(float.MaxValue);
+		Order.AsSpan().Fill(0);
+		XsumWsum.Clear();
+		int count = Colours.Count;
+		Vector3[] points = Colours.Points;
+		Principle = Sym3x3.ExtractIndicesFromPackedBytes(count, points, Colours.Weights);
+	}
+
+	private void ConstructOrdering(Vector3 axis)
+	{
+		int count = Colours.Count;
+		Vector3[] points = Colours.Points;
+		float[] array = Pool.RentFloat(16);
+		for (int i = 0; i < count; i++)
+		{
+			array[i] = points[i].Dot(axis);
+			Order[i] = (byte)i;
+		}
+		for (int j = 0; j < count; j++)
+		{
+			int num = j;
+			while (num > 0 && array[num] < array[num - 1])
+			{
+				ref float reference = ref array[num];
+				ref float reference2 = ref array[num - 1];
+				float num2 = array[num - 1];
+				float num3 = array[num];
+				reference = num2;
+				reference2 = num3;
+				ref byte reference3 = ref Order[num];
+				ref byte reference4 = ref Order[num - 1];
+				byte b = Order[num - 1];
+				byte b2 = Order[num];
+				reference3 = b;
+				reference4 = b2;
+				num--;
+			}
+		}
+		Pool.Return(array);
+		Vector3[] points2 = Colours.Points;
+		float[] weights = Colours.Weights;
+		XsumWsum = new Vector4(0f);
+		for (int k = 0; k < count; k++)
+		{
+			int num4 = Order[k];
+			Vector4 vector = new Vector4(points2[num4].X, points2[num4].Y, points2[num4].Z, 1f);
+			Vector4 vector2 = weights[num4] * vector;
+			PointsWeights[k] = vector2;
+			XsumWsum += vector2;
+		}
+	}
+
+	private bool ConstructOrdering(Vector4 axis, int iteration)
+	{
+		int count = Colours.Count;
+		Vector3[] points = Colours.Points;
+		float[] array = Pool.RentFloat(16);
+		for (int i = 0; i < count; i++)
+		{
+			array[i] = points[i].Dot(axis);
+			Order[16 * iteration + i] = (byte)i;
+		}
+		for (int j = 0; j < count; j++)
+		{
+			int num = j;
+			while (num > 0 && array[num] < array[num - 1])
+			{
+				ref float reference = ref array[num];
+				ref float reference2 = ref array[num - 1];
+				float num2 = array[num - 1];
+				float num3 = array[num];
+				reference = num2;
+				reference2 = num3;
+				int num4 = 16 * iteration + num;
+				ref byte reference3 = ref Order[num4];
+				ref byte reference4 = ref Order[num4 - 1];
+				byte b = Order[num4 - 1];
+				byte b2 = Order[num4];
+				reference3 = b;
+				reference4 = b2;
+				num--;
+			}
+		}
+		Pool.Return(array);
+		for (int k = 0; k < iteration; k++)
+		{
+			bool flag = true;
+			for (int l = 0; l < count; l++)
+			{
+				if (Order[16 * iteration + l] != Order[16 * k + l])
+				{
+					flag = false;
+					break;
+				}
+			}
+			if (flag)
+			{
+				return false;
+			}
+		}
+		Vector3[] points2 = Colours.Points;
+		float[] weights = Colours.Weights;
+		XsumWsum = new Vector4(0f);
+		for (int m = 0; m < count; m++)
+		{
+			int num5 = Order[16 * iteration + m];
+			Vector4 vector = new Vector4(points2[num5].X, points2[num5].Y, points2[num5].Z, 1f);
+			Vector4 vector2 = weights[num5] * vector;
+			PointsWeights[m] = vector2;
+			XsumWsum += vector2;
+		}
+		return true;
+	}
+
+	protected override void Compress3(Span<byte> block)
+	{
+		int count = Colours.Count;
+		ConstructOrdering(Principle);
+		Vector4 vector = Vector4.Zero;
+		Vector4 vector2 = Vector4.Zero;
+		Vector4 vector3 = BestError;
+		int num = 0;
+		int num2 = 0;
+		int num3 = 0;
+		int num4 = 0;
+		Vector4 axis;
+		do
+		{
+			Vector4 vector4 = new Vector4(0f);
+			for (int i = 0; i < count; i++)
+			{
+				Vector4 vector5 = ((i == 0) ? PointsWeights[0] : new Vector4(0f));
+				int num5 = ((i == 0) ? 1 : i);
+				while (true)
+				{
+					Vector4 vector6 = XsumWsum - vector5 - vector4;
+					Vector4 vector7 = vector5 * Vector4.HalfHalf2;
+					Vector4 vector8 = vector7 + vector4;
+					float w = vector8.W;
+					Vector4 vector9 = vector7 + vector6;
+					float w2 = vector9.W;
+					float w3 = vector7.W;
+					float num6 = w * w2 - w3 * w3;
+					Vector4 vector10 = (w2 * vector8 - w3 * vector9) / num6;
+					Vector4 vector11 = (w * vector9 - w3 * vector8) / num6;
+					vector10 = (Vector4.Grid * vector10.Clamp(0f, 1f)).HalfAdjust() / Vector4.Grid;
+					vector11 = (Vector4.Grid * vector11.Clamp(0f, 1f)).HalfAdjust() / Vector4.Grid;
+					Vector4 vector12 = w * vector10 * vector10 + w2 * vector11 * vector11;
+					Vector4 vector13 = w3 * vector10 * vector11 - vector10 * vector8 - vector11 * vector9;
+					Vector4 vector14 = (2f * vector13 + vector12) * Metric;
+					Vector4 vector15 = new Vector4(vector14.X + vector14.Y + vector14.Z);
+					if (vector15.CompareAnyLessThan(vector3))
+					{
+						vector = vector10;
+						vector2 = vector11;
+						num2 = i;
+						num3 = num5;
+						vector3 = vector15;
+						num = num4;
+					}
+					if (num5 == count)
+					{
+						break;
+					}
+					vector5 += PointsWeights[num5];
+					num5++;
+				}
+				vector4 += PointsWeights[i];
+			}
+			if (num != num4)
+			{
+				break;
+			}
+			num4++;
+			if (num4 == IterationCount)
+			{
+				break;
+			}
+			axis = vector2 - vector;
+		}
+		while (ConstructOrdering(axis, num4));
+		if (vector3.CompareAnyLessThan(BestError))
+		{
+			byte[] array = Pool.RentNewByte(16);
+			Span<byte> span = Order.AsSpan(16 * num, count);
+			int j;
+			for (j = 0; j < num2; j++)
+			{
+				array[span[j]] = 0;
+			}
+			for (; j < num3; j++)
+			{
+				array[span[j]] = 2;
+			}
+			for (; j < count; j++)
+			{
+				array[span[j]] = 1;
+			}
+			byte[] array2 = Colours.RemapIndices(array);
+			ColourBlock.WriteColourBlock3(vector.To565(), vector2.To565(), array2, block);
+			Pool.Return(array);
+			Pool.Return(array2);
+			BestError = vector3;
+		}
+	}
+
+	protected override void Compress4(Span<byte> block)
+	{
+		int count = Colours.Count;
+		ConstructOrdering(Principle);
+		Vector4 vector = Vector4.Zero;
+		Vector4 vector2 = Vector4.Zero;
+		Vector4 vector3 = BestError;
+		Vector4 vector4 = new Vector4();
+		Vector4 vector5 = new Vector4();
+		Vector4 vector6 = new Vector4();
+		int num = 0;
+		int num2 = 0;
+		int num3 = 0;
+		int num4 = 0;
+		int num5 = 0;
+		Vector4 axis;
+		do
+		{
+			vector4.Clear();
+			for (int i = 0; i < count; i++)
+			{
+				vector5.Clear();
+				int num6 = i;
+				while (true)
+				{
+					Vector4 vector7;
+					int num7;
+					if (num6 == 0)
+					{
+						vector7 = PointsWeights[0];
+						num7 = 1;
+					}
+					else
+					{
+						vector6.Clear();
+						vector7 = vector6;
+						num7 = num6;
+					}
+					int num8 = num7;
+					while (true)
+					{
+						Vector4 vector8 = XsumWsum - vector7 - vector5 - vector4;
+						Vector4 vector9 = vector5 * TwothirdsTwothirds2 + vector7 / V1 + vector4;
+						float w = vector9.W;
+						Vector4 vector10 = vector5 / V1 + vector7 * TwothirdsTwothirds2 + vector8;
+						float w2 = vector10.W;
+						float num9 = (vector5.W + vector7.W) * 2f / 9f;
+						float num10 = w2 * w - num9 * num9;
+						Vector4 vector11 = (w2 * vector9 - num9 * vector10) / num10;
+						Vector4 vector12 = (w * vector10 - num9 * vector9) / num10;
+						vector11 = (Vector4.Grid * vector11.Clamp(0f, 1f)).HalfAdjust() / Vector4.Grid;
+						vector12 = (Vector4.Grid * vector12.Clamp(0f, 1f)).HalfAdjust() / Vector4.Grid;
+						Vector4 vector13 = w * vector11 * vector11 + w2 * vector12 * vector12;
+						Vector4 vector14 = num9 * vector11 * vector12 - vector11 * vector9 - vector12 * vector10;
+						Vector4 vector15 = (2f * vector14 + vector13) * Metric;
+						Vector4 vector16 = new Vector4(vector15.X + vector15.Y + vector15.Z);
+						if (vector16.CompareAnyLessThan(vector3))
+						{
+							vector = vector11;
+							vector2 = vector12;
+							vector3 = vector16;
+							num2 = i;
+							num3 = num6;
+							num4 = num8;
+							num = num5;
+						}
+						if (num8 == count)
+						{
+							break;
+						}
+						vector7 += PointsWeights[num8];
+						num8++;
+					}
+					if (num6 == count)
+					{
+						break;
+					}
+					vector5 += PointsWeights[num6];
+					num6++;
+				}
+				vector4 += PointsWeights[i];
+			}
+			if (num != num5)
+			{
+				break;
+			}
+			num5++;
+			if (num5 == IterationCount)
+			{
+				break;
+			}
+			axis = vector2 - vector;
+		}
+		while (ConstructOrdering(axis, num5));
+		if (vector3.CompareAnyLessThan(BestError))
+		{
+			byte[] array = Pool.RentNewByte(16);
+			Span<byte> span = Order.AsSpan(16 * num, count);
+			int j;
+			for (j = 0; j < num2; j++)
+			{
+				array[span[j]] = 0;
+			}
+			for (; j < num3; j++)
+			{
+				array[span[j]] = 2;
+			}
+			for (; j < num4; j++)
+			{
+				array[span[j]] = 3;
+			}
+			for (; j < count; j++)
+			{
+				array[span[j]] = 1;
+			}
+			byte[] array2 = Colours.RemapIndices(array);
+			ColourBlock.WriteColourBlock4(vector.To565(), vector2.To565(), array2, block);
+			BestError = vector3;
+			Pool.Return(array2);
+			Pool.Return(array);
+		}
+	}
+
+	public override void Dispose()
+	{
+		Pool.Return(Order);
+		Pool.Return(PointsWeights);
+	}
 }

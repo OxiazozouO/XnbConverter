@@ -1,6 +1,6 @@
-﻿namespace XnbConverter.Entity.Mono;
+namespace XnbConverter.Entity.Mono;
 
 public class Effect
 {
-    public byte[] Data;
+	public byte[] Data;
 }

@@ -1,76 +1,66 @@
-﻿using System;
 using System.Collections.Generic;
 
 namespace XnbConverter.Readers.Base;
 
-/**
- * Dictionary Reader
- * @class
- * @extends BaseReader
- */
 public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, new() where TV : BaseReader, new()
 {
-    private bool _bK;
-    private bool _bV;
-    private int _keyReader;
-    private int _valueReader;
+	private bool _bK;
 
-    public override void Init(ReaderResolver readerResolver)
-    {
-        base.Init(readerResolver);
-        _bK = new TK().IsValueType();
-        _bV = new TV().IsValueType();
-        _keyReader = readerResolver.GetIndex(typeof(TK));
-        _valueReader = readerResolver.GetIndex(typeof(TV));
-    }
+	private bool _bV;
 
-    public override Dictionary<K, V> Read()
-    {
-        // 创建要返回的字典
-        var dictionary = new Dictionary<K, V>();
+	private int _keyReader;
 
-        // 读取字典的大小
-        var size = bufferReader.ReadUInt32();
+	private int _valueReader;
 
-        // 循环读取字典的数据
-        while (size-- > 0)
-        {
-            // 获取键
-            var key = _bK ? readerResolver.ReadValue<K>(_keyReader) : readerResolver.Read(_keyReader);
-            // 获取值
-            var value = _bV ? readerResolver.ReadValue<V>(_valueReader) : readerResolver.Read(_valueReader);
+	public override void Init(ReaderResolver resolver)
+	{
+		base.Init(resolver);
+		_bK = new TK().IsValueType();
+		_bV = new TV().IsValueType();
+		_keyReader = resolver.GetIndex(typeof(TK));
+		_valueReader = resolver.GetIndex(typeof(TV));
+	}
 
-            // 将键值对添加到字典中
-            dictionary.Add((K)key, (V)value);
-        }
+	public override object Read()
+	{
+		Dictionary<K, V> dictionary = new Dictionary<K, V>();
+		uint num = bufferReader.ReadUInt32();
+		while (num-- != 0)
+		{
+			object obj = (_bK ? ((object)readerResolver.ReadValue<K>(_keyReader)) : readerResolver.Read(_keyReader));
+			object obj2 = (_bV ? ((object)readerResolver.ReadValue<V>(_valueReader)) : readerResolver.Read(_valueReader));
+			dictionary.Add((K)obj, (V)obj2);
+		}
+		return dictionary;
+	}
 
-        // 返回字典对象
-        return dictionary;
-    }
+	public override void Write(object input)
+	{
+		Dictionary<K, V> dictionary = (Dictionary<K, V>)input;
+		bufferWriter.WriteUInt32((uint)dictionary.Count);
+		foreach (var (val3, val4) in dictionary)
+		{
+			if (_bK)
+			{
+				readerResolver.WriteValue(_keyReader, val3);
+			}
+			else
+			{
+				readerResolver.Write(_keyReader, val3);
+			}
+			if (_bV)
+			{
+				readerResolver.WriteValue(_valueReader, val4);
+			}
+			else
+			{
+				readerResolver.Write(_valueReader, val4);
+			}
+		}
+	}
 
-    public override void Write(object input)
-    {
-        // 写入字典的条目数
-        var dictionary = (Dictionary<K, V>)input;
-        bufferWriter.WriteUInt32((uint)dictionary.Count);
-        // 遍历字典的条目
-        foreach (var (key, value) in dictionary)
-        {
-            // 写入键
-            if (_bK)
-                readerResolver.WriteValue(_keyReader, key);
-            else
-                readerResolver.Write(_keyReader, key);
-
-            if (_bV)
-                readerResolver.WriteValue(_valueReader, value);
-            else
-                readerResolver.Write(_valueReader, value);
-        }
-    }
-
-    public override bool IsValueType()
-    {
-        return false;
-    }
+	public override bool IsValueType()
+	{
+		return false;
+	}
 }

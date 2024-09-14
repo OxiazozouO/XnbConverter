@@ -1,6 +1,8 @@
-﻿namespace XnbConverter.Entity.Mono;
+namespace XnbConverter.Entity.Mono;
 
 public struct Point
 {
-    public int X, Y;
+	public int X;
+
+	public int Y;
 }

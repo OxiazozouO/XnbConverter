@@ -1,180 +1,155 @@
-#region HEADER
-
-/*
- * Author: spacechase0 (https://github.com/spacechase0)
- * Project URL: https://github.com/spacechase0/TbinCSharp
- */
-
-#region MIT License
-
-/*
- * Copyright (c) 2020
- */
-
-#endregion
-
-/*
- * 对于原代码进行了一定适配。
- * 星露谷物语中，图块集后缀名含有”.png"后缀时，游戏实际上读取的是".png.png"，导致读取失败。
- * 此代码主要为了解决这个问题，把图块集读取出来再删除多余的".png"后缀，然后再写回去
- */
-
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.IO;
 using XnbConverter.Entity.Mono;
+using XnbConverter.Exceptions;
 using XnbConverter.Readers;
 using XnbConverter.Readers.Base;
 using XnbConverter.Readers.Base.ValueReaders;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Utilities;
-using StringReader = XnbConverter.Readers.Base.StringReader;
 
 namespace XnbConverter.Tbin.Readers;
 
 public class TBin10Reader : BaseReader
 {
-    private readonly StringReader stringReader = new();
-    private bool isRemoveTileSheetsExtension;
-    private int layerListReader;
-    private int propertieListReader;
-    private int tileSheetListReader;
+	private readonly XnbConverter.Readers.Base.StringReader stringReader = new XnbConverter.Readers.Base.StringReader();
 
+	private bool isRemoveTileSheetsExtension;
 
-    public override void Init(ReaderResolver readerResolver)
-    {
-        base.Init(readerResolver);
-        stringReader.Init(readerResolver);
-        tileSheetListReader = readerResolver.GetIndex(typeof(List<TileSheet>));
-        propertieListReader = readerResolver.GetIndex(typeof(List<Propertie>));
-        layerListReader = readerResolver.GetIndex(typeof(List<Layer>));
-    }
+	private int layerListReader;
 
-    public override bool IsValueType()
-    {
-        return true;
-    }
+	private int propertieListReader;
 
-    public override TBin10 Read()
-    {
-        var result = new TBin10();
-        result.Format = bufferReader.ReadString(6);
-        result.Id = stringReader.ReadByInt32();
-        result.Description = stringReader.ReadByInt32(); //22
-        result.Properties = readerResolver.ReadValue<List<Propertie>>(propertieListReader);
-        result.TileSheets = readerResolver.ReadValue<List<TileSheet>>(tileSheetListReader);
-        if (!isRemoveTileSheetsExtension)
-            result.Layers = readerResolver.ReadValue<List<Layer>>(layerListReader);
-        return result;
-    }
+	private int tileSheetListReader;
 
-    public static void RemoveTileSheetsExtension(ref byte[] data)
-    {
-        var tmp = data;
-        var span = tmp.AsSpan();
+	public override void Init(ReaderResolver resolver)
+	{
+		base.Init(resolver);
+		stringReader.Init(resolver);
+		tileSheetListReader = resolver.GetIndex(typeof(List<TileSheet>));
+		propertieListReader = resolver.GetIndex(typeof(List<Propertie>));
+		layerListReader = resolver.GetIndex(typeof(List<Layer>));
+	}
 
-        var main = Create(data);
+	public override bool IsValueType()
+	{
+		return true;
+	}
 
-        main.isRemoveTileSheetsExtension = true;
-        var tbin = main.Read();
-        var ordLen = main.bufferReader.BytePosition;
-        var size = main.bufferReader.ReadInt32();
-        if (size > TBin10.LayerMax)
-            throw new XnbError(Helpers.I18N["TBin10Reader.1"], TBin10.LayerMax, size);
-        // Log.BigFileDebug("D:\\1\\input.txt", tmp);
-        tbin.RemoveTileSheetsExtension();
+	public override object Read()
+	{
+		TBin10 tBin = new TBin10();
+		tBin.Format = bufferReader.ReadString(6);
+		tBin.Id = stringReader.ReadByInt32();
+		tBin.Description = stringReader.ReadByInt32();
+		tBin.Properties = readerResolver.ReadValue<List<Propertie>>(propertieListReader);
+		tBin.TileSheets = readerResolver.ReadValue<List<TileSheet>>(tileSheetListReader);
+		if (!isRemoveTileSheetsExtension)
+		{
+			tBin.Layers = readerResolver.ReadValue<List<Layer>>(layerListReader);
+		}
+		return tBin;
+	}
 
-        main.Write(tbin);
-        var newLen = main.bufferWriter.BytePosition;
+	public static void RemoveTileSheetsExtension(ref byte[] data)
+	{
+		byte[] array = data;
+		Span<byte> span = array.AsSpan();
+		TBin10Reader tBin10Reader = Create(data);
+		tBin10Reader.isRemoveTileSheetsExtension = true;
+		TBin10 tBin = (TBin10)tBin10Reader.Read();
+		int bytePosition = tBin10Reader.bufferReader.BytePosition;
+		int num = tBin10Reader.bufferReader.ReadInt32();
+		if (num > 100)
+		{
+			throw new XnbError(Error.TBin10Reader_1, 100, num);
+		}
+		tBin.RemoveTileSheetsExtension();
+		tBin10Reader.Write(tBin);
+		int bytePosition2 = tBin10Reader.bufferWriter.BytePosition;
+		int num2 = bytePosition2 + (array.Length - bytePosition);
+		if (bytePosition == bytePosition2)
+		{
+			data = array;
+			return;
+		}
+		if (bytePosition > bytePosition2)
+		{
+			byte[] array2 = new byte[num2];
+			Span<byte> destination = array2.AsSpan();
+			span.Slice(0, bytePosition2).CopyTo(destination);
+			int num3 = bytePosition;
+			Span<byte> span2 = span.Slice(num3, span.Length - num3);
+			int num4 = bytePosition2;
+			span2.CopyTo(destination.Slice(num4, destination.Length - num4));
+			data = array2;
+			return;
+		}
+		throw new XnbError(Error.TBin10Reader_2);
+	}
 
-        var outLen = newLen + (tmp.Length - ordLen);
-        if (ordLen == newLen)
-        {
-            data = tmp;
-        }
-        else if (ordLen > newLen)
-        {
-            var result = new byte[outLen];
-            var span2 = result.AsSpan();
-            span[..newLen].CopyTo(span2);
-            span[ordLen..].CopyTo(span2[newLen..]);
-            data = result;
-        }
-        else
-        {
-            throw new XnbError(Helpers.I18N["TBin10Reader.2"]);
-        }
-        // Log.BigFileDebug("D:\\1\\output.txt", tbin.Data);
-    }
+	public static TBin10Reader Create(byte[] data)
+	{
+		TBin10Reader tBin10Reader = new TBin10Reader();
+		new ReaderResolver(new BaseReader[11]
+		{
+			tBin10Reader,
+			new TileSheetReader(),
+			new ListReader<TileSheetReader, TileSheet>(),
+			new PropertieReader(),
+			new ListReader<PropertieReader, Propertie>(),
+			new LayerReader(),
+			new ListReader<LayerReader, Layer>(),
+			new Vector2Reader(),
+			new IntVector2Reader(),
+			new StaticTileReader(),
+			new AnimatedTilerReader()
+		}, new Type[11]
+		{
+			typeof(TBin10),
+			typeof(TileSheet),
+			typeof(List<TileSheet>),
+			typeof(Propertie),
+			typeof(List<Propertie>),
+			typeof(Layer),
+			typeof(List<Layer>),
+			typeof(Vector2),
+			typeof(IntVector2),
+			typeof(StaticTile),
+			typeof(AnimatedTile)
+		}, new BufferReader(data), new BufferWriter(data));
+		return tBin10Reader;
+	}
 
-    public static TBin10Reader Create(byte[] data)
-    {
-        var main = new TBin10Reader();
-        _ = new ReaderResolver(
-            new BaseReader[]
-            {
-                main,
-                new TileSheetReader(),
-                new ListReader<TileSheetReader, TileSheet>(),
-                new PropertieReader(),
-                new ListReader<PropertieReader, Propertie>(),
-                new LayerReader(),
-                new ListReader<LayerReader, Layer>(),
-                new Vector2Reader(),
-                new IntVector2Reader(),
-                new StaticTileReader(),
-                new AnimatedTilerReader()
-            },
-            new[]
-            {
-                typeof(TBin10),
-                typeof(TileSheet),
-                typeof(List<TileSheet>),
-                typeof(Propertie),
-                typeof(List<Propertie>),
-                typeof(Layer),
-                typeof(List<Layer>),
-                typeof(Vector2),
-                typeof(IntVector2),
-                typeof(StaticTile),
-                typeof(AnimatedTile)
-            },
-            new BufferReader(data),
-            new BufferWriter(data)
-        );
-        return main;
-    }
+	public override void Write(object content)
+	{
+		TBin10 tBin = (TBin10)content;
+		bufferWriter.WriteAsciiString(tBin.Format);
+		stringReader.WriteByInt32(tBin.Id);
+		stringReader.WriteByInt32(tBin.Description);
+		readerResolver.WriteValue(propertieListReader, tBin.Properties);
+		readerResolver.WriteValue(tileSheetListReader, tBin.TileSheets);
+		if (!isRemoveTileSheetsExtension)
+		{
+			readerResolver.WriteValue(layerListReader, tBin.Layers);
+		}
+	}
 
-    public override void Write(object content)
-    {
-        var input = (TBin10)content;
+	public void Save(TBin10 input, string path)
+	{
+		bufferWriter.Buffer = Pool.RentByte(10485760);
+		Write(input);
+		File.WriteAllBytes(path, bufferWriter.Buffer[..bufferWriter.BytePosition]);
+		Pool.Return(bufferWriter.Buffer);
+	}
 
-        bufferWriter.WriteAsciiString(input.Format);
-        stringReader.WriteByInt32(input.Id);
-        stringReader.WriteByInt32(input.Description);
-        readerResolver.WriteValue(propertieListReader, input.Properties);
-        readerResolver.WriteValue(tileSheetListReader, input.TileSheets);
-        if (!isRemoveTileSheetsExtension)
-            readerResolver.WriteValue(layerListReader, input.Layers);
-    }
+	public static TBin10 FormFile(string path)
+	{
+		return (TBin10)Create(File.ReadAllBytes(path)).Read();
+	}
 
-    public void Save(TBin10 input, string path)
-    {
-        bufferWriter.Buffer = Pool.RentByte(Pool.LongSize);
-        Write(input);
-        File.WriteAllBytes(path, bufferWriter.Buffer[..bufferWriter.BytePosition]);
-        Pool.Return(bufferWriter.Buffer);
-    }
-
-    public static TBin10 FormFile(string path)
-    {
-        var v = Create(File.ReadAllBytes(path));
-        return v.Read();
-    }
-
-    public void FormTmx(string path)
-    {
-    }
+	public void FormTmx(string path)
+	{
+	}
 }

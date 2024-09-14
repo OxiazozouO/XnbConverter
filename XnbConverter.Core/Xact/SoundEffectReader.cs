@@ -1,6 +1,4 @@
-﻿using System;
 using XnbConverter.Readers;
-using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Entity;
 using XnbConverter.Xact.WaveBank.Reader;
 
@@ -8,24 +6,23 @@ namespace XnbConverter.Xact;
 
 public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
 {
-    private readonly DATAChunkReader dataChunkReader = new();
-    private readonly FmtChunkReader fmtChunkReader = new();
+    private readonly DATAChunkReader _dataChunkReader = new DATAChunkReader();
 
-    private readonly WaveFormReader waveFormReader = new();
+    private readonly FmtChunkReader _fmtChunkReader = new FmtChunkReader();
+
+    private readonly WaveFormReader _waveFormReader = new WaveFormReader();
 
     public void Save(SoundEffect input)
     {
-        waveFormReader.Save(input.WaveForm);
+        _waveFormReader.Save(input.WaveForm);
     }
 
     public SoundEffect Load()
     {
-        var result = new SoundEffect();
-
-        result.WaveForm = waveFormReader.Load();
-        result.WaveForm.fmtChunk.CheckFmtID("SoundEffect");
-
-        return result;
+        SoundEffect soundEffect = new SoundEffect();
+        soundEffect.WaveForm = _waveFormReader.Load();
+        soundEffect.WaveForm.fmtChunk.CheckFmtID("SoundEffect");
+        return soundEffect;
     }
 
     public override bool IsValueType()
@@ -33,44 +30,40 @@ public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
         throw new NotImplementedException();
     }
 
-    public override void Init(ReaderResolver readerResolver)
+    public override void Init(ReaderResolver resolver)
     {
-        base.Init(readerResolver);
-        waveFormReader.Init(readerResolver);
-        fmtChunkReader.Init(readerResolver);
-        dataChunkReader.Init(readerResolver);
+        base.Init(resolver);
+        _waveFormReader.Init(resolver);
+        _fmtChunkReader.Init(resolver);
+        _dataChunkReader.Init(resolver);
     }
 
-    public override SoundEffect Read()
+    public override object Read()
     {
-        var result = new SoundEffect();
-        var fmtSize = bufferReader.ReadInt32();
-        if (fmtSize != FmtChunk.defSize + 2 /*fmtChunkSize + cbSize = 16 + 2 = 18*/
-           ) throw new AggregateException("参数错误！");
+        SoundEffect soundEffect = new SoundEffect();
+        if ((long)bufferReader.ReadInt32() != 18)
+        {
+            throw new AggregateException("参数错误！");
+        }
 
-        result.WaveForm.fmtChunk = fmtChunkReader.Read(); // cbSize 2 16~17
-
-        result.WaveForm.fmtChunk.CheckFmtID("SoundEffect");
-
-        result.WaveForm.dataChunk = dataChunkReader.Read();
-        result.WaveForm.riffChunk.ChunkSize = 36u + result.WaveForm.dataChunk.DataSize;
-        result.exData.LoopStart = bufferReader.ReadUInt32();
-        result.exData.LoopLength = bufferReader.ReadUInt32();
-        result.exData.DurationMs = bufferReader.ReadUInt32();
-
-        return result;
+        soundEffect.WaveForm.fmtChunk = (FmtChunk)_fmtChunkReader.Read();
+        soundEffect.WaveForm.fmtChunk.CheckFmtID("SoundEffect");
+        soundEffect.WaveForm.dataChunk = (DATAChunk)_dataChunkReader.Read();
+        soundEffect.WaveForm.riffChunk.ChunkSize = 36 + soundEffect.WaveForm.dataChunk.DataSize;
+        soundEffect.exData.LoopStart = bufferReader.ReadUInt32();
+        soundEffect.exData.LoopLength = bufferReader.ReadUInt32();
+        soundEffect.exData.DurationMs = bufferReader.ReadUInt32();
+        return soundEffect;
     }
 
     public override void Write(object input)
     {
-        var soundEffect = (SoundEffect)input;
-        var wave = soundEffect.WaveForm;
-
-        wave.fmtChunk.FmtSize = FmtChunk.defSize + 2u;
-        wave.fmtChunk.CbSize = 0;
-
-        fmtChunkReader.Write(wave.fmtChunk); // cbSize 2 16~17
-        dataChunkReader.Write(wave.dataChunk);
+        SoundEffect soundEffect = (SoundEffect)input;
+        WaveForm waveForm = soundEffect.WaveForm;
+        waveForm.fmtChunk.FmtSize = 18u;
+        waveForm.fmtChunk.CbSize = 0;
+        _fmtChunkReader.Write(waveForm.fmtChunk);
+        _dataChunkReader.Write(waveForm.dataChunk);
         bufferWriter.WriteUInt32(soundEffect.exData.LoopStart);
         bufferWriter.WriteUInt32(soundEffect.exData.LoopLength);
         bufferWriter.WriteUInt32(soundEffect.exData.DurationMs);
@@ -78,22 +71,20 @@ public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
 
     public static void Save(SoundEffect input, string path)
     {
-        var soundEffectReader = new SoundEffectReader();
+        SoundEffectReader soundEffectReader = new SoundEffectReader();
         soundEffectReader.Init(new ReaderResolver
         {
             bufferWriter = new BufferWriter((int)(input.WaveForm.riffChunk.ChunkSize + 1000))
         });
-        soundEffectReader.waveFormReader.Save(input.WaveForm);
+        soundEffectReader._waveFormReader.Save(input.WaveForm);
         soundEffectReader.bufferWriter.SaveBufferToFile(path);
     }
 
     public static SoundEffect FormFile(string path)
     {
-        //ffmpeg预处理
-        FFmpegUtil.Convert(path, format: FmtChunk.AudioFormats.Pcm);
-
-        //
-        var soundEffectReader = new SoundEffectReader();
+        byte[] bytes = File.ReadAllBytes(path);
+        WaveFormReader.Convert(path, bytes);//, FmtChunk.AudioFormats.Pcm
+        SoundEffectReader soundEffectReader = new SoundEffectReader();
         soundEffectReader.Init(new ReaderResolver
         {
             bufferReader = BufferReader.FormFile(path)

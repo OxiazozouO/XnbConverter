@@ -1,93 +1,72 @@
-﻿using static System.Text.Encoding;
+using System.Text;
 
 namespace XnbConverter.Readers.Base;
 
 public class StringReader : BaseReader
 {
-    public override void Init(ReaderResolver readerResolver)
-    {
-        bufferReader = readerResolver.bufferReader;
-        bufferWriter = readerResolver.bufferWriter;
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		bufferReader = resolver.bufferReader;
+		bufferWriter = resolver.bufferWriter;
+	}
 
-    public override string Read()
-    {
-        // 读取字符串的长度
-        var length = bufferReader.Read7BitNumber();
-        // 读取UTF-8编码的字符串
-        return Default.GetString(bufferReader.Read(length));
-    }
+	public override object Read()
+	{
+		int count = bufferReader.Read7BitNumber();
+		return Encoding.Default.GetString(bufferReader.Read(count));
+	}
 
-    public string ReadBy7Bit()
-    {
-        // 读取字符串的长度
-        var length = bufferReader.Read7BitNumber();
-        // 读取UTF-8编码的字符串
-        return Default.GetString(bufferReader.Read(length));
-    }
+	public string ReadBy7Bit()
+	{
+		int count = bufferReader.Read7BitNumber();
+		return Encoding.Default.GetString(bufferReader.Read(count));
+	}
 
-    public string ReadByInt32()
-    {
-        // 读取字符串的长度
-        var length = bufferReader.ReadInt32();
-        // 读取UTF-8编码的字符串
-        return Default.GetString(bufferReader.Read(length));
-    }
+	public string ReadByInt32()
+	{
+		int count = bufferReader.ReadInt32();
+		return Encoding.Default.GetString(bufferReader.Read(count));
+	}
 
-    public static string ReadValueBy7Bit(BufferReader bufferReader)
-    {
-        // 读取字符串的长度
-        var length = bufferReader.Read7BitNumber();
-        // 读取UTF-8编码的字符串
-        return Default.GetString(bufferReader.Read(length));
-    }
+	public static string ReadValueBy7Bit(BufferReader bufferReader)
+	{
+		int count = bufferReader.Read7BitNumber();
+		return Encoding.Default.GetString(bufferReader.Read(count));
+	}
 
-    public override void Write(object content)
-    {
-        WriteBy7Bit(content);
-    }
+	public override void Write(object content)
+	{
+		WriteBy7Bit(content);
+	}
 
-    public void WriteBy7Bit(object content)
-    {
-        var input = (string)content;
-        // 创建一个字符串缓冲区，每个UTF8字符额外占用4个字节
-        var stringBuffer = new byte[input.Length * 4];
-        // 将字符串写入缓冲区并获取大小
-        var size = UTF8.GetBytes(input, 0, input.Length, stringBuffer, 0);
-        // 写入字符串的长度
-        bufferWriter.Write7BitNumber(size);
-        // 写入字符串
-        bufferWriter.Write(stringBuffer[..size]);
-    }
+	public void WriteBy7Bit(object content)
+	{
+		string text = (string)content;
+		byte[] array = new byte[text.Length * 4];
+		int bytes = Encoding.UTF8.GetBytes(text, 0, text.Length, array, 0);
+		bufferWriter.Write7BitNumber(bytes);
+		bufferWriter.Write(array[..bytes]);
+	}
 
-    public void WriteByInt32(string input)
-    {
-        // 创建一个字符串缓冲区，每个UTF8字符额外占用4个字节
-        var stringBuffer = new byte[input.Length * 4];
-        // 将字符串写入缓冲区并获取大小
-        var size = UTF8.GetBytes(input, 0, input.Length, stringBuffer, 0);
-        // 写入字符串的长度
-        bufferWriter.WriteInt32(size);
-        // 写入字符串
-        bufferWriter.Write(stringBuffer, 0, size);
-    }
+	public void WriteByInt32(string input)
+	{
+		byte[] bytes = new byte[input.Length * 4];
+		int bytes2 = Encoding.UTF8.GetBytes(input, 0, input.Length, bytes, 0);
+		bufferWriter.WriteInt32(bytes2);
+		bufferWriter.Write(bytes, 0, bytes2);
+	}
 
-    public static void WriteValueBy7Bit(BufferWriter bufferWriter, object content)
-    {
-        var input = (string)content;
-        // 创建一个字符串缓冲区，每个UTF8字符额外占用4个字节
-        var stringBuffer = new byte[input.Length * 4];
-        // 将字符串写入缓冲区并获取大小
-        var size = UTF8.GetBytes(input, 0, input.Length, stringBuffer, 0);
-        // 写入字符串的长度
-        bufferWriter.Write7BitNumber(size);
-        // 写入字符串
-        bufferWriter.Write(stringBuffer[..size]);
-    }
+	public static void WriteValueBy7Bit(BufferWriter bufferWriter, object content)
+	{
+		string text = (string)content;
+		byte[] array = new byte[text.Length * 4];
+		int bytes = Encoding.UTF8.GetBytes(text, 0, text.Length, array, 0);
+		bufferWriter.Write7BitNumber(bytes);
+		bufferWriter.Write(array[..bytes]);
+	}
 
-
-    public override bool IsValueType()
-    {
-        return false;
-    }
+	public override bool IsValueType()
+	{
+		return false;
+	}
 }

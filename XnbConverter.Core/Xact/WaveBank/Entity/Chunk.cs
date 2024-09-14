@@ -1,7 +1,8 @@
-﻿namespace XnbConverter.Xact.WaveBank.Entity;
+namespace XnbConverter.Xact.WaveBank.Entity;
 
 public class Chunk
 {
-    public string Id; //fmt data seek
-    public uint Size;
+	public string Id;
+
+	public uint Size;
 }

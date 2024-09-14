@@ -9,77 +9,73 @@ namespace XnbConverter.Entity.Mono;
 
 public class Texture2D
 {
-    private static readonly List<Task> tasks = new();
+	private static readonly List<Task> tasks = new List<Task>();
 
-    [JsonIgnore] public byte[] Data;
-    public int Format;
-    public int Width;
-    public int Height;
-    public int MipCount;
-    public uint DataSize;
+	[JsonIgnore]
+	public byte[] Data;
 
-    /**
-     * 将Texture2D转换为PNG。
-     * @param {int} width
-     * @param {int} height
-     * @param {byte[]} buffer
-     * @returns {byte[]}
-     */
-    public void SaveAsPng(string path)
-    {
-        Task? task = Task.Run(async () =>
-        {
-            using var image = new Image<Rgba32>(Width, Height);
-            var index = -1;
-            for (var y = 0; y < Height; y++)
-            for (var x = 0; x < Width; x++)
-            {
-                var pixel = new Rgba32();
-                pixel.R = Data[++index];
-                pixel.G = Data[++index];
-                pixel.B = Data[++index];
-                pixel.A = Data[++index];
-                image[x, y] = pixel;
-            }
+	public int Format;
 
-            await image.SaveAsPngAsync(path);
-        });
-        if (task is not null)
-        {
-            tasks.Add(task);
-        }
-    }
+	public int Width;
 
-    /**
-     * 将PNG转换为Texture2D。
-     * @param {byte[]} data
-     * @returns {object}
-     */
-    public static Texture2D FromPng(string path)
-    {
-        var t2d = new Texture2D();
-        path = Path.GetFullPath(path);
-        using var image = Image.Load<Rgba32>(path);
-        t2d.Width = image.Width;
-        t2d.Height = image.Height;
-        t2d.Data = new byte[t2d.Width * t2d.Height * 4];
-        var index = -1;
-        for (var y = 0; y < t2d.Height; y++)
-        for (var x = 0; x < t2d.Width; x++)
-        {
-            var pixel = image[x, y];
-            t2d.Data[++index] = pixel.R;
-            t2d.Data[++index] = pixel.G;
-            t2d.Data[++index] = pixel.B;
-            t2d.Data[++index] = pixel.A;
-        }
+	public int Height;
 
-        return t2d;
-    }
+	public int MipCount;
 
-    public static void WaitAll()
-    {
-        Task.WaitAll(tasks.ToArray());
-        tasks.Clear();
-    }
+	public uint DataSize;
+
+	public void SaveAsPng(string path)
+	{
+		Task task = Task.Run(async delegate
+		{
+			using Image<Rgba32> image = new Image<Rgba32>(Width, Height);
+			int num = -1;
+			for (int i = 0; i < Height; i++)
+			{
+				for (int j = 0; j < Width; j++)
+				{
+					Rgba32 value = default(Rgba32);
+					value.R = Data[++num];
+					value.G = Data[++num];
+					value.B = Data[++num];
+					value.A = Data[++num];
+					image[j, i] = value;
+				}
+			}
+			await image.SaveAsPngAsync(path);
+		});
+		if (task != null)
+		{
+			tasks.Add(task);
+		}
+	}
+
+	public static Texture2D FromPng(string path)
+	{
+		Texture2D texture2D = new Texture2D();
+		path = Path.GetFullPath(path);
+		using Image<Rgba32> image = Image.Load<Rgba32>(path);
+		texture2D.Width = image.Width;
+		texture2D.Height = image.Height;
+		texture2D.Data = new byte[texture2D.Width * texture2D.Height * 4];
+		int num = -1;
+		for (int i = 0; i < texture2D.Height; i++)
+		{
+			for (int j = 0; j < texture2D.Width; j++)
+			{
+				Rgba32 rgba = image[j, i];
+				texture2D.Data[++num] = rgba.R;
+				texture2D.Data[++num] = rgba.G;
+				texture2D.Data[++num] = rgba.B;
+				texture2D.Data[++num] = rgba.A;
+			}
+		}
+		return texture2D;
+	}
+
+	public static void WaitAll()
+	{
+		Task.WaitAll(tasks.ToArray());
+		tasks.Clear();
+	}
 }

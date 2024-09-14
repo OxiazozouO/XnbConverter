@@ -1,43 +1,34 @@
-﻿using XnbConverter.Entity.Mono;
+using XnbConverter.Entity.Mono;
 
 namespace XnbConverter.Readers.Base.ValueReaders;
 
-/**
- * Vector2 Reader Vector2读取器
- * @class
- * @extends BaseReader
- */
 public class IntVector2Reader : BaseReader
 {
-    public override void Init(ReaderResolver readerResolver)
-    {
-        bufferReader = readerResolver.bufferReader;
-        bufferWriter = readerResolver.bufferWriter;
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		bufferReader = resolver.bufferReader;
+		bufferWriter = resolver.bufferWriter;
+	}
 
-    public override bool IsValueType()
-    {
-        return true;
-    }
+	public override bool IsValueType()
+	{
+		return true;
+	}
 
-    /**
-     * 从缓冲区读取Vector2。
-     * @param {BufferReader} buffer 缓冲区读取器
-     * @returns {object} Vector2对象
-     */
-    public override object Read()
-    {
-        var x = bufferReader.ReadInt32();
-        var y = bufferReader.ReadInt32();
+	public override object Read()
+	{
+		int x = bufferReader.ReadInt32();
+		int y = bufferReader.ReadInt32();
+		IntVector2 intVector = default(IntVector2);
+		intVector.X = x;
+		intVector.Y = y;
+		return intVector;
+	}
 
-        return new IntVector2 { X = x, Y = y };
-    }
-
-    public override void Write(object content)
-    {
-        var input = (IntVector2)content;
-
-        bufferWriter.WriteInt32(input.X);
-        bufferWriter.WriteInt32(input.Y);
-    }
+	public override void Write(object content)
+	{
+		IntVector2 intVector = (IntVector2)content;
+		bufferWriter.WriteInt32(intVector.X);
+		bufferWriter.WriteInt32(intVector.Y);
+	}
 }

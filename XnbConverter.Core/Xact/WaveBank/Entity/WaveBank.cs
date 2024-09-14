@@ -2,322 +2,240 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
+using XnbConverter.Configurations;
 using XnbConverter.Utilities;
 
 namespace XnbConverter.Xact.WaveBank.Entity;
 
 public class WaveBank
 {
-    public readonly WaveBankData Data = new();
-    public readonly List<WaveBankEntry> Entries = new();
+	public class Region
+	{
+		public uint Length;
 
+		public uint Offset;
+	}
 
-    public readonly WaveBankHeader Header = new();
+	public class WaveBankHeader
+	{
+		public readonly Region[] Segments = new Region[5]
+		{
+			new Region(),
+			new Region(),
+			new Region(),
+			new Region(),
+			new Region()
+		};
 
-    public class Region
-    {
-        public uint Length = 0; // Region length, in bytes
-        public uint Offset = 0; // Region offset, in bytes
-    }
+		public uint CompactFormat;
 
-    public class WaveBankHeader
-    {
-        public readonly Region[] Segments = new Region[(int)SegmentIndex.Count]
-        {
-            new(),
-            new(),
-            new(),
-            new(),
-            new()
-        }; // Segment lookup table
+		public string Signature;
 
-        public uint CompactFormat = 0;
-        public string Signature; // (uint32_t -> char[4]) File signature
-        public uint SkipHeaderVersion = 0;
-        public uint Version = 0; // Version of the tool that created the file
-    }
+		public uint SkipHeaderVersion;
 
-    public class WaveBankEntry
-    {
-        //
-        // Arbitrary fixed sizes
-        //
-        private const int XMA_STREAMS_MAX = 3; // enough for 5.1 channel audio
-        private const int XMA_CHANNELS_MAX = 6; // enough for 5.1 channel audio (cf. XAUDIOCHANNEL_SOURCEMAX)
-        public readonly Region LoopRegion = new(); // Region within the wave data that should loop
-        public readonly Region PlayRegion = new(); // Region within the wave data segment that contains this entry
-        [JsonIgnore] public byte[] Data;
-        public string? FileExt;
-        public string? FileName = null;
+		public uint Version;
+	}
 
-        public string? FilePath;
+	public class WaveBankEntry
+	{
+		private const int XMA_STREAMS_MAX = 3;
 
-        public uint FlagsAndDuration = 0; // dwFlags:4 and Duration:28
+		private const int XMA_CHANNELS_MAX = 6;
 
-        [JsonIgnore] public uint Format = 0; // Entry format
+		public readonly Region LoopRegion = new Region();
 
-        public string GetPath()
-        {
-            return FilePath + FileName + FileExt;
-        }
+		public readonly Region PlayRegion = new Region();
 
-        // XMA loop region
-        // Note: this is not the same memory layout as the XMA loop region
-        // passed to the XMA driver--it is more compact. The named values
-        // map correctly and there are enough bits to store the entire
-        // range of values that XMA considers valid, with one exception:
-        // valid values for nSubframeSkip are 1, 2, 3, or 4. In order to
-        // store this in two bits, XACT subtracts 1 from the value, then adds
-        // -------------------------------------------------------------
-        // public readonly XMALoopRegion[] XmaLoopRegions = new XMALoopRegion[XMA_STREAMS_MAX];
-        // -------------------------------------------------------------
-        // The last element in the union is an array that aliases the
-        // entire union so we can byte-reverse the whole thing.
-        // -------------------------------------------------------------
-        // Region[] LoopRegionAlias = new Region[XMA_STREAMS_MAX];
-        //-------------------------------------------------------------
-        // public WaveBankEntry()
-        // {
-        //     for (int i = 0; i < XmaLoopRegions.Length; i++)
-        //         XmaLoopRegions[i] = new XMALoopRegion();
-        //     
-        //     for (int i = 0; i < LoopRegionAlias.Length; i++)
-        //         LoopRegionAlias[i] = new Region();
-        // }
-        //-------------------------------------------------------------
-        // public class XMALoopRegion
-        // {
-        //     public uint StartOffset = 0; // loop start offset (in bits)
-        //
-        //     public uint nSubframeSkip_nSubframeEnd_dwEndOffset = 0;
-        //     //uint    SubframeSkip   : 2;    // needed by XMA decoder. Valid values for XMA are 1-4; XACT converts to 0-3 for storage. Add 1 to this value before passing to driver.
-        //     //uint    SubframeEnd    : 2;    // needed by XMA decoder
-        //     //uint    EndOffset     : 28;   // loop end offset (in bits)
-        // }
+		[JsonIgnore]
+		public byte[] Data;
 
-        public string SetFileExt(WaveBankFormats code)
-        {
-            switch (code)
-            {
-                case WaveBankFormats.Pcm:
-                    FileExt = ".wav";
-                    break;
-                case WaveBankFormats.Xma:
-                    FileExt = ".wav";
-                    break;
-                case WaveBankFormats.AdpcmMs:
-                    FileExt = ".wav";
-                    break;
-                case WaveBankFormats.Wma:
-                    FileExt = ".wma";
-                    break;
-                default:
-                    FileExt = ".bin";
-                    code = WaveBankFormats.Unknown;
-                    break;
-            }
+		public string? FileExt;
 
-            return code.ToString();
-        }
+		public string? FileName;
 
-        public void DecodeFormat(uint version, out WaveBankFormats code, out int channels, out int rate, out int align,
-            out int bits)
-        {
-            var fo = (int)Format;
-            switch (version)
-            {
-                case 1:
-                    // I'm not 100% sure if the following is correct
-                    // version 1:
-                    // 1 00000000 000101011000100010 0 001 0
-                    // | |         |                 | |   |
-                    // | |         |                 | |   FormatTag
-                    // | |         |                 | Channels
-                    // | |         |                 ???
-                    // | |         SamplesPerSec
-                    // | BlockAlign
-                    // BitsPerSample
-                    code = (WaveBankFormats)(fo & ((1 << 1) - 1));
-                    channels = (fo >> 1) & ((1 << 3) - 1);
-                    rate = (fo >> (1 + 3 + 1)) & ((1 << 18) - 1);
-                    align = (fo >> (1 + 3 + 1 + 18)) & ((1 << 8) - 1);
-                    bits = (fo >> (1 + 3 + 1 + 18 + 8)) & ((1 << 1) - 1);
-                    break;
-                // case 23:
-                //     // I'm not 100% sure if the following is correct
-                //     // version 23:
-                //     // 1000000000 001011101110000000 001 1
-                //     // | |        |                  |   |
-                //     // | |        |                  |   ???
-                //     // | |        |                  Channels?
-                //     // | |        SamplesPerSec
-                //     // | ???
-                //     // !!!UNKNOWN FORMAT!!!
-                //
-                //     codec = (fo >> (0))              & ((1 << 1)  - 1);
-                //     chans = (fo >> (1))              & ((1 << 3)  - 1);
-                //     rate  = (fo >> (1 + 3))          & ((1 << 18) - 1);
-                //     align = (fo >> (1 + 3 + 18))     & ((1 << 9)  - 1);
-                //     bits  = (fo >> (1 + 3 + 18 + 9)) & ((1 << 1)  - 1);
-                //     break;
-                default:
-                    // versions 2, 3, 37, 42, 43, 44 and so on, check WAVEBANKMINIWAVEFORMAT in xact3wb.h
-                    // 0 00000000 000111110100000000 010 01
-                    // | |        |                  |   |
-                    // | |        |                  |   FormatTag
-                    // | |        |                  Channels
-                    // | |        SamplesPerSec
-                    // | BlockAlign
-                    // BitsPerSample
-                    code = (WaveBankFormats)(fo & ((1 << 2) - 1));
-                    channels = (fo >> 2) & ((1 << 3) - 1);
-                    rate = (fo >> (2 + 3)) & ((1 << 18) - 1);
-                    align = (fo >> (2 + 3 + 18)) & ((1 << 8) - 1);
-                    bits = (fo >> (2 + 3 + 18 + 8)) & ((1 << 1) - 1);
-                    break;
-            }
+		public string? FilePath;
 
-            // this work-around is correct but I don't know what's the latest version that falls in this rule
-            if (version > 3) return;
-            if (code == WaveBankFormats.Xma)
-                code = WaveBankFormats.AdpcmMs;
-        }
-    }
+		public uint FlagsAndDuration;
 
-    public class WaveBankData
-    {
-        public uint Alignment; // Entry alignment, in bytes
-        public string BankName; // Bank friendly name// = new char[BANKNAME_LENGTH]
-        public uint BuildTime; // Build timestamp
-        public uint CompactFormat; // Format data for compact bank
-        public uint EntryCount; // Number of entries in the bank
-        public uint EntryMetaDataElementSize; // Size of each entry meta-data element, in bytes
-        public int EntryNameElementSize; // Size of each entry name element, in bytes
-        public Flags Flag; // Bank flags
+		[JsonIgnore]
+		public uint Format;
 
-        public void PrintLog()
-        {
-            if (!Helpers.Config.PInfo) return;
-            var flagsText = new StringBuilder();
-            if (0 != (Flag & Flags.Buffer)) flagsText.Append("in-memory, ");
-            if (0 != (Flag & Flags.Streaming)) flagsText.Append("streaming, ");
-            if (0 != (Flag & Flags.EntryNames)) flagsText.Append("bank+entry_names, ");
-            if (0 != (Flag & Flags.Compact)) flagsText.Append("compact_format, ");
-            if (0 != (Flag & Flags.SyncDisabled)) flagsText.Append("disabled_bank, ");
+		public string GetPath()
+		{
+			return FilePath + FileName + FileExt;
+		}
 
-            Log.Info(
-                Helpers.I18N["WaveBank.1"],
-                flagsText.ToString(), EntryCount, BankName, EntryMetaDataElementSize, EntryNameElementSize, Alignment
-            );
-            if (EntryMetaDataElementSize < 24)
-                Log.Info(Helpers.I18N["WaveBank.2"]);
-        }
-    }
+		public string SetFileExt(WaveBankFormats code)
+		{
+			switch (code)
+			{
+			case WaveBankFormats.Pcm:
+				FileExt = ".wav";
+				break;
+			case WaveBankFormats.Xma:
+				FileExt = ".wav";
+				break;
+			case WaveBankFormats.AdpcmMs:
+				FileExt = ".wav";
+				break;
+			case WaveBankFormats.Wma:
+				FileExt = ".wma";
+				break;
+			default:
+				FileExt = ".bin";
+				code = WaveBankFormats.Unknown;
+				break;
+			}
+			return code.ToString();
+		}
 
-    #region Constants
+		public void DecodeFormat(uint version, out WaveBankFormats code, out int channels, out int rate, out int align, out int bits)
+		{
+			int format = (int)Format;
+			if (version == 1)
+			{
+				code = (WaveBankFormats)(format & 1);
+				channels = (format >> 1) & 7;
+				rate = (format >> 5) & 0x3FFFF;
+				align = (format >> 23) & 0xFF;
+				bits = (format >> 31) & 1;
+			}
+			else
+			{
+				code = (WaveBankFormats)(format & 3);
+				channels = (format >> 2) & 7;
+				rate = (format >> 5) & 0x3FFFF;
+				align = (format >> 23) & 0xFF;
+				bits = (format >> 31) & 1;
+			}
+			if (version <= 3 && code == WaveBankFormats.Xma)
+			{
+				code = WaveBankFormats.AdpcmMs;
+			}
+		}
+	}
 
-    // from xact3wb.h
-    public const int AdpcmMiniWaveFormatBlockAlignConversionOffset = 22;
+	public class WaveBankData
+	{
+		public uint Alignment;
 
-    private const int HEADER_VERSION = 43; // Current wavebank file version
+		public string BankName;
 
-    public const int BankNameLength = 64; // Wave bank friendly name length, in characters
-    public const int EntryNameLength = 64; // Wave bank entry friendly name length, in characters
+		public uint BuildTime;
 
-    public const uint MaxDataSegmentSize = 0xFFFFFFFF; // Maximum wave bank data segment size, in bytes
+		public uint CompactFormat;
 
-    public const uint MaxCompactDataSegmentSize = 0x001FFFFF; // Maximum compact wave bank data segment size, in bytes
+		public uint EntryCount;
 
-    private const int BIT_DEPTH8 = 0x0; // 8-bit data (PCM only)
+		public uint EntryMetaDataElementSize;
 
-    private const int BIT_DEPTH16 = 0x1; // 16-bit data (PCM only)
+		public int EntryNameElementSize;
 
-    //
-    // DVD data sizes
-    //
-    private const int DVD_SECTOR_SIZE = 2048;
+		public Flags Flag;
 
-    private const int DVD_BLOCK_SIZE = DVD_SECTOR_SIZE * 16;
+		public void PrintLog()
+		{
+			if (ConfigHelper.PInfo)
+			{
+				StringBuilder stringBuilder = new StringBuilder();
+				if ((Flag & Flags.Buffer) != 0)
+				{
+					stringBuilder.Append("in-memory, ");
+				}
+				if ((Flag & Flags.Streaming) != 0)
+				{
+					stringBuilder.Append("streaming, ");
+				}
+				if ((Flag & Flags.EntryNames) != 0)
+				{
+					stringBuilder.Append("bank+entry_names, ");
+				}
+				if ((Flag & Flags.Compact) != 0)
+				{
+					stringBuilder.Append("compact_format, ");
+				}
+				if ((Flag & Flags.SyncDisabled) != 0)
+				{
+					stringBuilder.Append("disabled_bank, ");
+				}
+				Logger.Info(Error.WaveBank_1, stringBuilder.ToString(), EntryCount, BankName, EntryMetaDataElementSize, EntryNameElementSize, Alignment);
+				if (EntryMetaDataElementSize < 24)
+				{
+					Logger.Info(Error.WaveBank_2);
+				}
+			}
+		}
+	}
 
-    //
-    // Bank alignment presets
-    //
-    private const int ALIGNMENT_MIN = 4; // Minimum alignment
-    private const int ALIGNMENT_DVD = DVD_SECTOR_SIZE; // DVD-optimized alignment
+	[Flags]
+	public enum Flags : uint
+	{
+		Buffer = 0u,
+		Streaming = 1u,
+		TypeMask = 1u,
+		EntryNames = 0x10000u,
+		Compact = 0x20000u,
+		SyncDisabled = 0x40000u,
+		SeekTables = 0x80000u,
+		Mask = 0xF0000u
+	}
 
+	public enum WaveBankFormats
+	{
+		Pcm = 0,
+		Xma = 1,
+		AdpcmMs = 2,
+		Wma = 3,
+		Unknown = -1
+	}
 
-    private const int ENTRY_NAMES = 0x00010000; // bank includes entry names
-    private const int COMPACT = 0x00020000; // bank uses compact format
-    private const int SYNC_DISABLED = 0x00040000; // bank is disabled for audition sync
-    private const int SEEK_TABLES = 0x00080000; // bank includes seek tables
-    private const int MASK = 0x000F0000;
+	public enum SegmentIndex
+	{
+		BankData,
+		EntryMetaData,
+		SeekTables,
+		EntryNames,
+		EntryWaveData,
+		Count
+	}
 
+	public readonly WaveBankData Data = new WaveBankData();
 
-    //
-    // Bank flags
-    //
+	public readonly List<WaveBankEntry> Entries = new List<WaveBankEntry>();
 
-    // public static class Flags
-    // {
-    //     public const int Buffer = 0x00000000; // In-memory buffer
-    //     public const int Streaming = 0x00000001; // Streaming
-    //     public const int TypeMask = 0x00000001;
-    //     public const int EntryNames = 0x00010000; // Bank includes entry names
-    //     public const int Compact = 0x00020000; // Bank uses compact format
-    //     public const int SyncDisabled = 0x00040000; // Bank is disabled for audition sync
-    //     public const int SeekTables = 0x00080000; // Bank includes seek tables.
-    //     public const int Mask = 0x000F0000;
-    // }
+	public readonly WaveBankHeader Header = new WaveBankHeader();
 
-    //
-    // Entry flags
-    //
-    // public static class EntryFlags
-    // {
-    //     public const int ReadAhead = 0x00000001; // Enable stream read-ahead
-    //     public const int LoopCache = 0x00000002; // One or more looping sounds use this wave
-    //     public const int RemoveLoopTail = 0x00000004; // Remove data after the end of the loop region
-    //     public const int IgnoreLoop = 0x00000008; // Used internally when the loop region can't be used
-    //     public const int Mask = 0x00000008;
-    // }
+	public const int AdpcmMiniWaveFormatBlockAlignConversionOffset = 22;
 
-    [Flags]
-    public enum Flags : uint
-    {
-        Buffer = 0x00000000, // In-memory buffer
-        Streaming = 0x00000001, // Streaming
-        TypeMask = 0x00000001,
-        EntryNames = 0x00010000, // Bank includes entry names
-        Compact = 0x00020000, // Bank uses compact format
-        SyncDisabled = 0x00040000, // Bank is disabled for audition sync
-        SeekTables = 0x00080000, // Bank includes seek tables.
-        Mask = 0x000F0000
-    }
+	private const int HEADER_VERSION = 43;
 
-    //
-    // Entry wave format identifiers
-    //
-    public enum WaveBankFormats
-    {
-        Pcm = 0x0,
-        Xma = 0x1,
-        AdpcmMs = 0x2, ////microsoft adpcm
-        Wma = 0x3,
-        Unknown = -1
-    }
+	public const int BankNameLength = 64;
 
-    //
-    // Wave bank segment identifiers
-    //
-    public enum SegmentIndex
-    {
-        BankData = 0, // Bank data
-        EntryMetaData, // Entry meta-data
-        SeekTables, // Storage for seek tables for the encoded waves.
-        EntryNames, // Entry friendly names
-        EntryWaveData, // Entry wave data
-        Count
-    }
+	public const int EntryNameLength = 64;
 
-    #endregion
+	public const uint MaxDataSegmentSize = uint.MaxValue;
+
+	public const uint MaxCompactDataSegmentSize = 2097151u;
+
+	private const int BIT_DEPTH8 = 0;
+
+	private const int BIT_DEPTH16 = 1;
+
+	private const int DVD_SECTOR_SIZE = 2048;
+
+	private const int DVD_BLOCK_SIZE = 32768;
+
+	private const int ALIGNMENT_MIN = 4;
+
+	private const int ALIGNMENT_DVD = 2048;
+
+	private const int ENTRY_NAMES = 65536;
+
+	private const int COMPACT = 131072;
+
+	private const int SYNC_DISABLED = 262144;
+
+	private const int SEEK_TABLES = 524288;
+
+	private const int MASK = 983040;
 }

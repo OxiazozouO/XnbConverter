@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using XnbConverter;
+using XnbConverter.Configurations;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Reader;
@@ -16,7 +17,6 @@ public static class Program
 {
     public static void Main()
     {
-        Helpers.NativeMethods.Init();
         WaveBankReaderTest();
     }
 
@@ -57,8 +57,8 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Log.Error(Helpers.I18N["Program.10"]);
-            Log.Error(ex.ToString());
+            Logger.Error(Error.Program_8);
+            Logger.Error(ex.ToString());
         }
     }
 }

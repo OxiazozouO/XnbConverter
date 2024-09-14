@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+ 
+    <data name="XNB.1" xml:space="preserve">
+        <value>Буфер пуст</value>
+    </data>
+    <data name="XNB.2" xml:space="preserve">
+        <value>Недопустимое значение магического файла, ожидалось XNB, фактическое значение {0}</value>
+    </data>
+    <data name="XNB.3" xml:space="preserve">
+        <value>Файл XNB обрезан!</value>
+    </data>
+    <data name="XNB.4" xml:space="preserve">
+        <value>Неожиданный общий ресурс ({0}).</value>
+    </data>
+    <data name="XNB.5" xml:space="preserve">
+        <value>Недействительный объект!</value>
+    </data>
+    <data name="XNB.6" xml:space="preserve">
+        <value>Недействительный экспорт файла!</value>
+    </data>
+    <data name="XNB.7" xml:space="preserve">
+        <value>Неверный формат файла JSON: {0}</value>
+    </data>
+    <data name="XNB.8" xml:space="preserve">
+        <value>Файл {0} пустой.</value>
+    </data>
+    <data name="XNB.9" xml:space="preserve">
+        <value>У {0} отсутствует поле 'content'.</value>
+    </data>
+    <data name="XNB.10" xml:space="preserve">
+        <value>Чтение файла '{0}'...</value>
+    </data>
+    <data name="XNB.11" xml:space="preserve">
+        <value>Проверка файла XNB прошла успешно!</value>
+    </data>
+    <data name="XNB.12" xml:space="preserve">
+        <value>XNB файл успешно прочитан!</value>
+    </data>
+    <data name="XNB.13" xml:space="preserve">
+        <value>Экспорт {0} в процессе...</value>
+    </data>
+    <data name="XNB.14" xml:space="preserve">
+        <value>Найдено допустимое магическое значение XNB!</value>
+    </data>
+    <data name="XNB.15" xml:space="preserve">
+        <value>Целевая платформа: {0}</value>
+    </data>
+    <data name="XNB.16" xml:space="preserve">
+        <value>Версия формата XNB: XNA Game Studio 3.{0}</value>
+    </data>
+    <data name="XNB.17" xml:space="preserve">
+        <value>Сжатие: {0}</value>
+    </data>
+    <data name="XNB.18" xml:space="preserve">
+        <value>Размер файла: {0} байт.</value>
+    </data>
+    <data name="XNB.19" xml:space="preserve">
+        <value>Размер после разархивации: {0} байт.</value>
+    </data>
+    <data name="XNB.20" xml:space="preserve">
+        <value>Чтение с позиции байта: {0}</value>
+    </data>
+    <data name="XNB.21" xml:space="preserve">
+        <value>Количество читателей: {0}</value>
+    </data>
+    <data name="XNB.22" xml:space="preserve">
+        <value>Количество общих ресурсов: {0}</value>
+    </data>
+    <data name="XNB.23" xml:space="preserve">
+        <value>Обнаружена недопустимая целевая платформа {0}.</value>
+    </data>
+    <data name="XNB.24" xml:space="preserve">
+        <value>Неизвестная версия формата XNB {0}.</value>
+    </data>
+    <data name="Process.1" xml:space="preserve">
+        <value>Выходной файл сохранен: {0}</value>
+    </data>
+    <data name="Process.2" xml:space="preserve">
+        <value>Невозможно сохранить файл {0}!</value>
+    </data>
+    <data name="Process.3" xml:space="preserve">
+        <value>Имя файла: {0} {1}</value>
+    </data>
+    <data name="Process.4" xml:space="preserve">
+        <value>Имя файла: {0} {1} {2}</value>
+    </data>
+    <data name="Program.1" xml:space="preserve">
+        <value>[Опционально] Включить параллельное выполнение</value>
+    </data>
+    <data name="Program.2" xml:space="preserve">
+        <value>[Обязательно] Входной файл или папка</value>
+    </data>
+    <data name="Program.3" xml:space="preserve">
+        <value>[Обязательно] Папка для вывода</value>
+    </data>
+    <data name="Program.4" xml:space="preserve">
+        <value>Автоматическое упаковывание и распаковывание файлов XNB на основе ввода</value>
+    </data>
+    <data name="Program.5" xml:space="preserve">
+        <value>Распаковать</value>
+    </data>
+    <data name="Program.6" xml:space="preserve">
+        <value>Упаковать</value>
+    </data>
+    <data name="Program.7" xml:space="preserve">
+        <value>Неверная команда
+</value>
+    </data>
+    <data name="Program.8" xml:space="preserve">
+        <value>Поймать исключение:</value>
+    </data>
+    <data name="BufferReader.1" xml:space="preserve">
+        <value>'{0}' не найдено!</value>
+    </data>
+    <data name="BufferReader.2" xml:space="preserve">
+        <value>Поиск буфера вышел за пределы диапазона! {0} ~ {1}</value>
+    </data>
+    <data name="ReaderResolver.1" xml:space="preserve">
+        <value>Недопустимый индекс ридера {0}</value>
+    </data>
+    <data name="ReaderResolver.2" xml:space="preserve">
+        <value>Не удалось найти ридер, индекс: {0}</value>
+    </data>
+    <data name="FileUtils.1" xml:space="preserve">
+        <value>Недопустимый путь вывода {0}
+{1}</value>
+    </data>
+    <data name="FileUtils.2" xml:space="preserve">
+        <value>Недопустимый входной путь: {0}</value>
+    </data>
+    <data name="TypeReadHelper.1" xml:space="preserve">
+        <value>Непримененный тип: {0}
+{1}</value>
+    </data>
+    <data name="TypeReadHelper.2" xml:space="preserve">
+        <value>Произошла ошибка при получении считывателя! 
+ Пожалуйста, проверьте сборку: {0} 
+ Существует ли соответствующий путь к файлу DLL, или правильно ли путь записан в файл {1}. 
+ Файл DLL может быть {2}.dll 
+ Сообщение об ошибке: {3}</value>
+    </data>
+    <data name="TypeReadHelper.3" xml:space="preserve">
+        <value>Невыполненный тип: {0}</value>
+    </data>
+    <data name="TypeReadHelper.4" xml:space="preserve">
+        <value>Класс не загружен: {0}!</value>
+    </data>
+    <data name="TypeReadHelper.5" xml:space="preserve">
+        <value>{0} не существует, не удалось загрузить DLL, что может привести к неудачному анализу xnb, 
+ Пожалуйста, измените правильный путь к файлу на {1}</value>
+    </data>
+    <data name="SpriteFont.1" xml:space="preserve">
+        <value>Ошибка анализа файла</value>
+    </data>
+    <data name="EnumReader.1" xml:space="preserve">
+        <value>значение {0} не соответствует ни одному элементу перечисления.</value>
+    </data>
+    <data name="Texture2DReader.1" xml:space="preserve">
+        <value>Тип формата Texture2D ECT1 не реализован!</value>
+    </data>
+    <data name="Texture2DReader.2" xml:space="preserve">
+        <value>Найден нереализованный тип формата Texture2D ({0}).</value>
+    </data>
+    <data name="Texture2DReader.3" xml:space="preserve">
+        <value>Ширина изображения: {0}, Высота: {1}, Формат: {2}</value>
+    </data>
+    <data name="Texture2DReader.4" xml:space="preserve">
+        <value>Найден mipcount для {0}, будет использован только первый.</value>
+    </data>
+    <data name="LayerReader.1" xml:space="preserve">
+        <value>Максимальное значение i равно {0}, текущее значение {1}</value>
+    </data>
+    <data name="LayerReader.2" xml:space="preserve">
+        <value>Ошибка в данных плитки</value>
+    </data>
+    <data name="PropertieReader.1" xml:space="preserve">
+        <value>Неверный тип свойства карты: {0}</value>
+    </data>
+    <data name="TBin10Reader.1" xml:space="preserve">
+        <value>Xnb в настоящее время не поддерживает Tbin-карты с более чем {0} уровнями, в настоящее время {1} уровней</value>
+    </data>
+    <data name="TBin10Reader.2" xml:space="preserve">
+        <value>Неизвестная программа ошибка</value>
+    </data>
+    <data name="LZX.1" xml:space="preserve">
+        <value>Размер окна выходит за пределы допустимого диапазона!</value>
+    </data>
+    <data name="LZX.2" xml:space="preserve">
+        <value>Найден вызов Intel E8, недопустимый для файла XNB.</value>
+    </data>
+    <data name="LZX.3" xml:space="preserve">
+        <value>Обнаружен недопустимый тип блока: {0}</value>
+    </data>
+    <data name="LZX.4" xml:space="preserve">
+        <value>Невозможно выполнить вне рамки окна.</value>
+    </data>
+    <data name="LZX.5" xml:space="preserve">
+        <value>Переполнение! {0} {1} {2}</value>
+    </data>
+    <data name="LZX.6" xml:space="preserve">
+        <value>Указан недопустимый тип блока!</value>
+    </data>
+    <data name="LZX.7" xml:space="preserve">
+        <value>EOF достигнут, данные остаются.</value>
+    </data>
+    <data name="LZX.8" xml:space="preserve">
+        <value>Переполнение таблицы!</value>
+    </data>
+    <data name="LZX.9" xml:space="preserve">
+        <value>Переполнение таблицы во время декодирования.</value>
+    </data>
+    <data name="LZX.10" xml:space="preserve">
+        <value>Таблица декодирования не достигла маски таблицы.</value>
+    </data>
+    <data name="LZX.11" xml:space="preserve">
+        <value>Недопустимый размер при чтении сжатого содержимого.</value>
+    </data>
+    <data name="LZX.12" xml:space="preserve">
+        <value>Файл успешно разархивирован!</value>
+    </data>
+    <data name="LZX.13" xml:space="preserve">
+        <value>Дополнительные разряды: {0}</value>
+    </data>
+    <data name="LZX.14" xml:space="preserve">
+        <value>Базовый адрес: {0}</value>
+    </data>
+    <data name="LZX.15" xml:space="preserve">
+        <value>Intel: {0} = {1}</value>
+    </data>
+    <data name="LZX.16" xml:space="preserve">
+        <value>Тип блока: {0} = {1}</value>
+    </data>
+    <data name="LZX.17" xml:space="preserve">
+        <value>Оставшееся количество байтов блока: {0}</value>
+    </data>
+    <data name="LZX.18" xml:space="preserve">
+        <value>Позиция: {0}, Битовая маска: {1}, Маска таблицы: {2}</value>
+    </data>
+    <data name="LZX.19" xml:space="preserve">
+        <value>Количество бит: {0}, Битовая строка: {1}</value>
+    </data>
+    <data name="LZX.20" xml:space="preserve">
+        <value>Символ: {0}, Строка символов: {1}</value>
+    </data>
+    <data name="LZX.21" xml:space="preserve">
+        <value>--------Размер блока: {0}, Размер кадра: {1}</value>
+    </data>
+    <data name="AudioEngineReader.1" xml:space="preserve">
+        <value>Найдено недопустимое магическое значение, {0}</value>
+    </data>
+    <data name="AudioEngineReader.2" xml:space="preserve">
+        <value>Версия инструмента: {0}</value>
+    </data>
+    <data name="AudioEngineReader.3" xml:space="preserve">
+        <value>Версия формата: {0}</value>
+    </data>
+    <data name="AudioEngineReader.4" xml:space="preserve">
+        <value>Категория: {0}, Переменная: {1}</value>
+    </data>
+    <data name="AudioEngineReader.5" xml:space="preserve">
+        <value>RPC: {0}</value>
+    </data>
+    <data name="AudioEngineReader.6" xml:space="preserve">
+        <value>Предустановка DSP: {0}</value>
+    </data>
+    <data name="AudioEngineReader.7" xml:space="preserve">
+        <value>Параметры DSP: {0}</value>
+    </data>
+    <data name="AudioEngineReader.8" xml:space="preserve">
+        <value>Смещение категории: {0}</value>
+    </data>
+    <data name="AudioEngineReader.9" xml:space="preserve">
+        <value>Смещение переменной: {0}</value>
+    </data>
+    <data name="AudioEngineReader.10" xml:space="preserve">
+        <value>Смещение индекса имени категории: {0}</value>
+    </data>
+    <data name="AudioEngineReader.11" xml:space="preserve">
+        <value>Смещение индекса имени переменной: {0}</value>
+    </data>
+    <data name="AudioEngineReader.12" xml:space="preserve">
+        <value>Смещение имени категории: {0}</value>
+    </data>
+    <data name="AudioEngineReader.13" xml:space="preserve">
+        <value>Смещение имени переменной: {0}</value>
+    </data>
+    <data name="AudioEngineReader.14" xml:space="preserve">
+        <value>Смещение RPC: {0}</value>
+    </data>
+    <data name="AudioEngineReader.15" xml:space="preserve">
+        <value>Смещение предустановки DSP: {0}</value>
+    </data>
+    <data name="AudioEngineReader.16" xml:space="preserve">
+        <value>Смещение параметра DSP: {0}</value>
+    </data>
+    <data name="AudioEngineReader.17" xml:space="preserve">
+        <value>Категория: {0}</value>
+    </data>
+    <data name="AudioEngineReader.18" xml:space="preserve">
+        <value>Переменная: {0}</value>
+    </data>
+    <data name="AudioEngineReader.19" xml:space="preserve">
+        <value>Неподдерживаемый формат XGS!</value>
+    </data>
+    <data name="SoundBankReader.1" xml:space="preserve">
+        <value>CRC: {0}</value>
+    </data>
+    <data name="SoundBankReader.2" xml:space="preserve">
+        <value>Низкое время последнего изменения: {0}, Высокое время последнего изменения: {1}</value>
+    </data>
+    <data name="SoundBankReader.3" xml:space="preserve">
+        <value>Платформа: {0}</value>
+    </data>
+    <data name="SoundBankReader.4" xml:space="preserve">
+        <value>Простое количество подсказок: {0}</value>
+    </data>
+    <data name="SoundBankReader.5" xml:space="preserve">
+        <value>Сложное количество подсказок: {0}</value>
+    </data>
+    <data name="SoundBankReader.6" xml:space="preserve">
+        <value>Общее количество подсказок: {0}</value>
+    </data>
+    <data name="SoundBankReader.7" xml:space="preserve">
+        <value>Количество библиотек форм волн: {0}</value>
+    </data>
+    <data name="SoundBankReader.8" xml:space="preserve">
+        <value>Количество звуков: {0}</value>
+    </data>
+    <data name="SoundBankReader.9" xml:space="preserve">
+        <value>Длина таблицы имен кю: {0}</value>
+    </data>
+    <data name="SoundBankReader.10" xml:space="preserve">
+        <value>Смещение звука простой подсказки: {0}</value>
+    </data>
+    <data name="SoundBankReader.11" xml:space="preserve">
+        <value>Смещение звука сложной подсказки: {0}</value>
+    </data>
+    <data name="SoundBankReader.12" xml:space="preserve">
+        <value>Смещение имени звука: {0}</value>
+    </data>
+    <data name="SoundBankReader.13" xml:space="preserve">
+        <value>Смещение таблицы вариаций: {0}</value>
+    </data>
+    <data name="SoundBankReader.14" xml:space="preserve">
+        <value>Смещение таблицы имен библиотеки форм волн: {0}</value>
+    </data>
+    <data name="SoundBankReader.15" xml:space="preserve">
+        <value>Смещение таблицы хеш-имен звука: {0}</value>
+    </data>
+    <data name="SoundBankReader.16" xml:space="preserve">
+        <value>Смещение значения хеш-имени звука: {0}</value>
+    </data>
+    <data name="SoundBankReader.17" xml:space="preserve">
+        <value>Смещение звука: {0}</value>
+    </data>
+    <data name="SoundBankReader.18" xml:space="preserve">
+        <value>Имя: {0}</value>
+    </data>
+    <data name="SoundBankReader.19" xml:space="preserve">
+        <value>Волновые банки: {0}</value>
+    </data>
+    <data name="SoundBankReader.20" xml:space="preserve">
+        <value>Подсказки: {0}</value>
+    </data>
+    <data name="SoundBankReader.21" xml:space="preserve">
+        <value>Найдено {0}</value>
+    </data>
+    <data name="SoundBankReader.22" xml:space="preserve">
+        <value>Для {0} найдено {1} подсказок</value>
+    </data>
+    <data name="SoundBankReader.23" xml:space="preserve">
+        <value>Индекс WaveBank: {0}</value>
+    </data>
+    <data name="SoundBankReader.24" xml:space="preserve">
+        <value>Найдено {0} подсказок!</value>
+    </data>
+    <data name="SoundBankReader.25" xml:space="preserve">
+        <value>Неподдерживаемый формат SoundBank {0}.</value>
+    </data>
+    <data name="XactClipReader.1" xml:space="preserve">
+        <value>Смещение: {0}</value>
+    </data>
+    <data name="XactClipReader.2" xml:space="preserve">
+        <value>Трек: {0}</value>
+    </data>
+    <data name="XactClipReader.3" xml:space="preserve">
+        <value>Событие Воспроизведение Волна Тон Громкость Фильтр Вариация</value>
+    </data>
+    <data name="XactSoundReader.1" xml:space="preserve">
+        <value>Длина Дополнительных Данных: {0}</value>
+    </data>
+    <data name="XactSoundReader.2" xml:space="preserve">
+        <value>Индекс Трека: {0}</value>
+    </data>
+    <data name="FmtChunk.1" xml:space="preserve">
+        <value>Для SoundEffect поддерживаются только файлы wav в формате Pcm. Текущий формат: {0}</value>
+    </data>
+    <data name="FmtChunk.2" xml:space="preserve">
+        <value>Для Xact поддерживаются только файлы wav в форматах Pcm или AdpcmMs. Текущий формат: {0}</value>
+    </data>
+    <data name="FmtChunk.3" xml:space="preserve">
+        <value>Не поддерживаемый тип для игры!</value>
+    </data>
+    <data name="WaveBank.1" xml:space="preserve">
+        <value>- флаги   {0}- количество файлов    {1}- имя банка    {2}- размер метаданных элемента  {3}- размер имени элемента  {4}- выравнивание    {5}</value>
+    </data>
+    <data name="WaveBank.2" xml:space="preserve">
+        <value>- Размер элемента метаданных слишком мал</value>
+    </data>
+    <data name="FmtChunkReader.1" xml:space="preserve">
+        <value>Неверный формат WAV: {0}, должен быть fmt</value>
+    </data>
+    <data name="RIFFChunkReader.1" xml:space="preserve">
+        <value>Неверный формат WAV: {0}, должен быть RIFF</value>
+    </data>
+    <data name="RIFFChunkReader.2" xml:space="preserve">
+        <value>Неверный формат WAV: {0}, должен быть WAVE</value>
+    </data>
+    <data name="WaveBankReader.1" xml:space="preserve">
+        <value>- сигнатура: {0} большие/сетевые байты</value>
+    </data>
+    <data name="WaveBankReader.2" xml:space="preserve">
+        <value>- сигнатура: {0} малые/Intel порядок байтов</value>
+    </data>
+    <data name="WaveBankReader.3" xml:space="preserve">
+        <value>- версия: {0}</value>
+    </data>
+    <data name="WaveBankReader.4" xml:space="preserve">
+        <value>индекс  длина  формат  частота  каналы  битрейт  имя файла</value>
+    </data>
+    <data name="WaveBankReader.5" xml:space="preserve">
+        <value>смещение: {0}, формат: {1}, флаги: {2}, смещение области: {3}, длина области: {4}</value>
+    </data>   
+</root>

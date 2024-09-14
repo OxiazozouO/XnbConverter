@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using XnbConverter.Xact.AudioEngine.Entity;
@@ -12,102 +12,128 @@ namespace XnbConverter;
 
 public static class XACT
 {
-    public static List<WaveBank>? Load(List<(string, string)> files)
-    {
-        AudioEngine? audioEngine = null;
-        SoundBank? soundBank = null;
-        List<WaveBank> waveBanks = new();
-        foreach (var (input, output) in files)
-        {
-            var ext = Path.GetExtension(input);
-            switch (ext)
-            {
-                case ".xgs":
-                    audioEngine = AudioEngineReader.Read(input);
-                    break;
-                case ".xsb":
-                    soundBank = SoundBankReader.Read(input);
-                    break;
-                case ".xwb":
-                    var waveBank = WaveBankReader.Read(input);
-                    if (waveBank is not null)
-                    {
-                        var replace = output + "\\";
-                        foreach (var w in waveBank.Entries)
-                            w.FilePath = replace;
-                        waveBanks.Add(waveBank);
-                    }
+	public static List<WaveBank>? Load(List<(string, string)> files)
+	{
+		AudioEngine audioEngine = null;
+		SoundBank soundBank = null;
+		List<WaveBank> list = new List<WaveBank>();
+		foreach (var (path, text) in files)
+		{
+			switch (Path.GetExtension(path))
+			{
+			case ".xgs":
+				audioEngine = AudioEngineReader.Read(path);
+				break;
+			case ".xsb":
+				soundBank = SoundBankReader.Read(path);
+				break;
+			case ".xwb":
+			{
+				WaveBank waveBank = WaveBankReader.Read(path);
+				if (waveBank == null)
+				{
+					break;
+				}
+				string filePath = text + "\\";
+				foreach (WaveBank.WaveBankEntry entry in waveBank.Entries)
+				{
+					entry.FilePath = filePath;
+				}
+				list.Add(waveBank);
+				break;
+			}
+			}
+		}
+		if (list.Count == 0)
+		{
+			return null;
+		}
+		if (soundBank == null || audioEngine == null)
+		{
+			foreach (WaveBank item in list)
+			{
+				for (int i = 0; i < item.Entries.Count; i++)
+				{
+					item.Entries[i].FileName = $"{i:x8}";
+				}
+			}
+			return list;
+		}
+		int count = soundBank.WaveBankNames.Count;
+		WaveBank[] array = new WaveBank[count];
+		for (int j = 0; j < count; j++)
+		{
+			string text2 = soundBank.WaveBankNames[j];
+			foreach (WaveBank item2 in list)
+			{
+				if (item2.Data.BankName == text2)
+				{
+					array[j] = item2;
+				}
+			}
+		}
+		HashSet<(int, int, string)> hashSet = new HashSet<(int, int, string)>();
+		AudioCategory[] categories = audioEngine._categories;
+		string[] array2 = new string[categories.Length];
+		for (int k = 0; k < array2.Length; k++)
+		{
+			array2[k] = categories[k].name;
+		}
+		foreach (KeyValuePair<string, XactSound[]> sound in soundBank._sounds)
+		{
+			sound.Deconstruct(out var key, out var value);
+			string fileName = key;
+			XactSound[] array3 = value;
+			hashSet.Clear();
+			value = array3;
+			foreach (XactSound xactSound in value)
+			{
+				if (xactSound?.SoundClips != null && xactSound.SoundClips.Length != 0)
+				{
+					XactClip[] soundClips = xactSound.SoundClips;
+					foreach (XactClip xactClip in soundClips)
+					{
+						if (xactClip.WaveIndexs.Length == 1)
+						{
+							XactClip.WaveIndex waveIndex = xactClip.WaveIndexs[0];
+							hashSet.Add((waveIndex.WaveBankIndex, waveIndex.TrackIndex, array2[xactSound.CategoryId]));
+							continue;
+						}
+						throw new NotImplementedException();
+					}
+				}
+				else
+				{
+					hashSet.Add((xactSound.WaveBankIndex, xactSound.TrackIndex, array2[xactSound.CategoryId]));
+				}
+			}
+			int num = 0;
+			foreach (var item3 in hashSet)
+			{
+				WaveBank.WaveBankEntry waveBankEntry = array[item3.Item1].Entries[item3.Item2];
+				if (waveBankEntry.FileName == null)
+				{
+					waveBankEntry.FilePath = waveBankEntry.FilePath + item3.Item3 + "\\";
+					if (!Directory.Exists(waveBankEntry.FilePath))
+					{
+						Directory.CreateDirectory(waveBankEntry.FilePath);
+					}
+					waveBankEntry.FileName = fileName;
+					if (array3.Length > 1)
+					{
+						waveBankEntry.FileName = waveBankEntry.FileName + "_" + num++;
+					}
+				}
+			}
+		}
+		return list;
+	}
 
-                    break;
-            }
-        }
-
-        if (waveBanks.Count == 0) return null;
-        if (soundBank is null || audioEngine is null) //名字设定为整数
-        {
-            foreach (var waveBank in waveBanks)
-                for (var i = 0; i < waveBank.Entries.Count; i++)
-                    waveBank.Entries[i].FileName = $"{i:x8}";
-            return waveBanks;
-        }
-
-        var size = soundBank.WaveBankNames.Count;
-        var arr = new WaveBank?[size];
-        for (var index = 0; index < size; index++)
-        {
-            var name = soundBank.WaveBankNames[index];
-            foreach (var t in waveBanks)
-                if (t.Data.BankName == name)
-                    arr[index] = t;
-        }
-
-        var trackSet = new HashSet<(int, int, string)>();
-        // List<string> list = new List<string>();
-        var cs = audioEngine._categories;
-        var categoryName = new string[cs.Length];
-        for (var i = 0; i < categoryName.Length; i++) categoryName[i] = cs[i].name;
-
-        foreach (var (key, value) in soundBank._sounds)
-        {
-            trackSet.Clear();
-            foreach (var xactSound in value)
-                if (xactSound?.SoundClips is not null && xactSound.SoundClips.Length > 0)
-                    foreach (var xactClip in xactSound.SoundClips)
-                        if (xactClip.WaveIndexs.Length == 1)
-                        {
-                            var v = xactClip.WaveIndexs[0];
-                            trackSet.Add((v.WaveBankIndex, v.TrackIndex,
-                                    categoryName[xactSound.CategoryId]
-                                ));
-                        }
-                        else
-                        {
-                            throw new NotImplementedException();
-                        }
-                else
-                    trackSet.Add((xactSound.WaveBankIndex, xactSound.TrackIndex, categoryName[xactSound.CategoryId]));
-
-            var j = 0;
-            foreach (var track in trackSet)
-            {
-                var entre = arr[track.Item1].Entries[track.Item2];
-                if (entre.FileName != null)
-                    continue;
-                entre.FilePath += track.Item3 + "\\";
-                if (!Directory.Exists(entre.FilePath)) //如果不存在就创建文件夹
-                    Directory.CreateDirectory(entre.FilePath); //创建该文件夹
-                entre.FileName = key;
-                if (value.Length > 1)
-                    entre.FileName += "_" + j++;
-            }
-        }
-
-        return waveBanks;
-    }
-
-    public static void Save(this List<WaveBank> waveBanks)
-    {
-        foreach (var waveBank in waveBanks)
-            WaveBankReader.Save(waveBank);
-    }
+	public static void Save(this List<WaveBank> waveBanks)
+	{
+		foreach (WaveBank waveBank in waveBanks)
+		{
+			WaveBankReader.Save(waveBank);
+		}
+	}
 }

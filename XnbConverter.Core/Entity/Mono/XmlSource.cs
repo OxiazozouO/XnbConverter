@@ -1,6 +1,6 @@
-﻿namespace XnbConverter.Entity.Mono;
+namespace XnbConverter.Entity.Mono;
 
 public class XmlSource
 {
-    public string Data;
+	public string Data;
 }

@@ -1,39 +1,36 @@
-﻿using XnbConverter.Entity.Mono;
+using XnbConverter.Entity.Mono;
 
 namespace XnbConverter.Readers.Base.ValueReaders;
 
 public class Vector4Reader : BaseReader
 {
-    public override void Init(ReaderResolver readerResolver)
-    {
-        bufferReader = readerResolver.bufferReader;
-        bufferWriter = readerResolver.bufferWriter;
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		bufferReader = resolver.bufferReader;
+		bufferWriter = resolver.bufferWriter;
+	}
 
-    public override bool IsValueType()
-    {
-        return true;
-    }
+	public override bool IsValueType()
+	{
+		return true;
+	}
 
-    public override object Read()
-    {
-        var result = new Vector4();
+	public override object Read()
+	{
+		Vector4 vector = new Vector4();
+		vector.X = bufferReader.ReadSingle();
+		vector.Y = bufferReader.ReadSingle();
+		vector.Z = bufferReader.ReadSingle();
+		vector.W = bufferReader.ReadSingle();
+		return vector;
+	}
 
-        result.X = bufferReader.ReadSingle();
-        result.Y = bufferReader.ReadSingle();
-        result.Z = bufferReader.ReadSingle();
-        result.W = bufferReader.ReadSingle();
-
-        return result;
-    }
-
-    public override void Write(object content)
-    {
-        var input = (Vector4)content;
-
-        bufferWriter.WriteSingle(input.X);
-        bufferWriter.WriteSingle(input.Y);
-        bufferWriter.WriteSingle(input.Z);
-        bufferWriter.WriteSingle(input.W);
-    }
+	public override void Write(object content)
+	{
+		Vector4 vector = (Vector4)content;
+		bufferWriter.WriteSingle(vector.X);
+		bufferWriter.WriteSingle(vector.Y);
+		bufferWriter.WriteSingle(vector.Z);
+		bufferWriter.WriteSingle(vector.W);
+	}
 }

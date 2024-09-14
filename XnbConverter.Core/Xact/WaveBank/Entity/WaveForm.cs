@@ -1,9 +1,12 @@
-﻿namespace XnbConverter.Xact.WaveBank.Entity;
+namespace XnbConverter.Xact.WaveBank.Entity;
 
 public class WaveForm
 {
-    public DATAChunk dataChunk = new();
-    public FactChunk? factChunk = null;
-    public FmtChunk fmtChunk = new();
-    public RIFFChunk riffChunk = new();
+	public DATAChunk dataChunk = new DATAChunk();
+
+	public FactChunk? factChunk;
+
+	public FmtChunk fmtChunk = new FmtChunk();
+
+	public RIFFChunk riffChunk = new RIFFChunk();
 }

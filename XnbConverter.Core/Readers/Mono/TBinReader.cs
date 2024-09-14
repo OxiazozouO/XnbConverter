@@ -1,42 +1,34 @@
-﻿using System;
 using XnbConverter.Tbin.Entity;
 
 namespace XnbConverter.Readers.Mono;
 
-/**
- * TBin Reader
- * @class
- * @extends BaseReader
- */
 public class TBinReader : BaseReader
 {
-    public override void Init(ReaderResolver readerResolver)
-    {
-        bufferReader = readerResolver.bufferReader;
-        bufferWriter = readerResolver.bufferWriter;
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		bufferReader = resolver.bufferReader;
+		bufferWriter = resolver.bufferWriter;
+	}
 
-    public override TBin10 Read()
-    {
-        // 读取数据块的大小
-        var size = bufferReader.ReadInt32();
-        // 读取数据块
-        var data = bufferReader.Read(size);
+	public override object Read()
+	{
+		int count = bufferReader.ReadInt32();
+		byte[] data = bufferReader.Read(count);
+		return new TBin10
+		{
+			Data = data
+		};
+	}
 
-        // 返回数据
-        return new TBin10 { Data = data };
-    }
+	public override void Write(object input)
+	{
+		TBin10 tBin = (TBin10)input;
+		bufferWriter.WriteInt32(tBin.Data.Length);
+		bufferWriter.Write(tBin.Data);
+	}
 
-    public override void Write(object input)
-    {
-        var tbin = (TBin10)input;
-
-        bufferWriter.WriteInt32(tbin.Data.Length);
-        bufferWriter.Write(tbin.Data);
-    }
-
-    public override bool IsValueType()
-    {
-        return false;
-    }
+	public override bool IsValueType()
+	{
+		return false;
+	}
 }

@@ -1,81 +1,69 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace XnbConverter.Readers.Base;
 
-/**
- * Array Reader
- * @class
- * @extends BaseReader
- */
 public class ArrayReader<V> : BaseReader where V : new()
 {
-    private bool flag;
-    private int reader;
+	private bool flag;
 
-    public override void Init(ReaderResolver readerResolver)
-    {
-        base.Init(readerResolver);
-        Type tmp = typeof(V);
-        flag = tmp.IsValueType;
-        reader = readerResolver.GetIndex(tmp);
-    }
+	private int reader;
 
-    public override V[] Read()
-    {
-        // 读取数组中的元素数量
-        var size = bufferReader.ReadUInt32();
-        // 创建本地数组
-        List<V> array = new();
+	public override void Init(ReaderResolver resolver)
+	{
+		base.Init(resolver);
+		Type typeFromHandle = typeof(V);
+		flag = typeFromHandle.IsValueType;
+		reader = resolver.GetIndex(typeFromHandle);
+	}
 
-        // 循环size次读取数组元素
-        if (flag)
-            while (size --> 0)
-            {
-                // 从缓冲区获取值
-                var value = readerResolver.ReadValue(reader);
-                // 将值添加到本地数组
-                array.Add((V)value);
-            }
-        else
-            while (size --> 0)
-            {
-                // 从缓冲区获取值
-                var value = readerResolver.Read_Null(reader);
-                // 将值添加到本地数组
-                array.Add((V)value);
-            }
+	public override object Read()
+	{
+		uint num = bufferReader.ReadUInt32();
+		List<V> list = new List<V>();
+		if (flag)
+		{
+			while (num-- != 0)
+			{
+				object obj = readerResolver.ReadValue(reader);
+				list.Add((V)obj);
+			}
+		}
+		else
+		{
+			while (num-- != 0)
+			{
+				object obj2 = readerResolver.Read_Null(reader);
+				list.Add((V)obj2);
+			}
+		}
+		return list.ToArray();
+	}
 
-        // 返回数组
-        return array.ToArray();
-    }
+	public override void Write(object content)
+	{
+		V[] array = (V[])content;
+		bufferWriter.WriteUInt32((uint)array.Length);
+		if (flag)
+		{
+			V[] array2 = array;
+			foreach (V val in array2)
+			{
+				readerResolver.WriteValue(reader, val);
+			}
+		}
+		else
+		{
+			V[] array2 = array;
+			foreach (V val2 in array2)
+			{
+				readerResolver.Write_Null(reader, val2);
+			}
+		}
+	}
 
-    public override void Write(object content)
-    {
-        var input = (V[])content;
-
-        // 写入数组的元素数量
-        bufferWriter.WriteUInt32((uint)input.Length);
-
-        // 循环遍历数组以写入数组内容
-        if (flag)
-        {
-            foreach (var t in input)
-            {
-                readerResolver.WriteValue(reader, t);
-            }
-        }
-        else
-        {
-            foreach (var t in input)
-            {
-                readerResolver.Write_Null(reader, t);
-            }
-        }
-    }
-
-    public override bool IsValueType()
-    {
-        return false;
-    }
+	public override bool IsValueType()
+	{
+		return false;
+	}
 }

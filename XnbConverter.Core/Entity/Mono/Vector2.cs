@@ -1,11 +1,8 @@
-﻿namespace XnbConverter.Entity.Mono;
+namespace XnbConverter.Entity.Mono;
 
 public struct Vector2
 {
-    public float X,Y;
-}
+	public float X;
 
-public struct IntVector2
-{
-    public int X,Y;
+	public float Y;
 }

@@ -1,41 +1,50 @@
-﻿namespace XnbConverter.Readers.Base;
+namespace XnbConverter.Readers.Base;
 
 public class NullableReader<T, N> : BaseReader where T : BaseReader, new()
 {
-    private bool b;
-    private int reader;
+	private bool b;
 
-    public override void Init(ReaderResolver readerResolver)
-    {
-        base.Init(readerResolver);
-        reader = readerResolver.GetIndex(typeof(T));
-        b = new T().IsValueType();
-    }
+	private int reader;
 
-    public override object Read()
-    {
-        var hasValue = bufferReader.ReadBoolean();
-        return hasValue ? b ? readerResolver.ReadValue(reader) : readerResolver.Read_Null(reader) : null;
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		base.Init(resolver);
+		reader = resolver.GetIndex(typeof(T));
+		b = new T().IsValueType();
+	}
 
-    public override void Write(object input)
-    {
-        var c = input is not null;
+	public override object Read()
+	{
+		if (!bufferReader.ReadBoolean())
+		{
+			return null;
+		}
+		if (!b)
+		{
+			return readerResolver.Read_Null(reader);
+		}
+		return readerResolver.ReadValue(reader);
+	}
 
-        bufferWriter.WriteByte((byte)(c ? 1 : 0));
-        if (!c) return;
-        if (b)
-        {
-            readerResolver.WriteValue(reader, input);
-        }
-        else
-        {
-            readerResolver.Write(reader, input);
-        }
-    }
+	public override void Write(object input)
+	{
+		bool flag = input != null;
+		bufferWriter.WriteByte((byte)(flag ? 1u : 0u));
+		if (flag)
+		{
+			if (b)
+			{
+				readerResolver.WriteValue(reader, input);
+			}
+			else
+			{
+				readerResolver.Write(reader, input);
+			}
+		}
+	}
 
-    public override bool IsValueType()
-    {
-        return false;
-    }
+	public override bool IsValueType()
+	{
+		return false;
+	}
 }

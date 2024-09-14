@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using XnbConverter.Readers;
 using XnbConverter.Tbin.Entity;
 
@@ -6,35 +6,34 @@ namespace XnbConverter.Tbin.Readers;
 
 public class StaticTileReader : BaseReader
 {
-    private int propertieListReader;
+	private int propertieListReader;
 
-    public override void Init(ReaderResolver readerResolver)
-    {
-        base.Init(readerResolver);
-        propertieListReader = readerResolver.GetIndex(typeof(List<Propertie>));
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		base.Init(resolver);
+		propertieListReader = resolver.GetIndex(typeof(List<Propertie>));
+	}
 
-    public override bool IsValueType()
-    {
-        return true;
-    }
+	public override bool IsValueType()
+	{
+		return true;
+	}
 
-    public override object Read()
-    {
-        var result = new StaticTile();
-        result.TileIndex = bufferReader.ReadInt32();
-        result.BlendMode = bufferReader.ReadByte();
-        result.Properties = readerResolver.ReadValue<List<Propertie>>(propertieListReader);
+	public override object Read()
+	{
+		return new StaticTile
+		{
+			TileIndex = bufferReader.ReadInt32(),
+			BlendMode = bufferReader.ReadByte(),
+			Properties = readerResolver.ReadValue<List<Propertie>>(propertieListReader)
+		};
+	}
 
-        return result;
-    }
-
-    public override void Write(object content)
-    {
-        var input = (StaticTile)content;
-
-        bufferWriter.WriteInt32(input.TileIndex);
-        bufferWriter.WriteByte(input.BlendMode);
-        readerResolver.WriteValue(propertieListReader, input.Properties);
-    }
+	public override void Write(object content)
+	{
+		StaticTile staticTile = (StaticTile)content;
+		bufferWriter.WriteInt32(staticTile.TileIndex);
+		bufferWriter.WriteByte(staticTile.BlendMode);
+		readerResolver.WriteValue(propertieListReader, staticTile.Properties);
+	}
 }

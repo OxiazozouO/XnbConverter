@@ -1,87 +1,124 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace XnbConverter.Xact.SoundBank.Entity;
 
 public class SoundBank
 {
-    public const ushort SDBK_FORMAT_VERSION = 0x2B;
-    public Dictionary<string, XactSound[]> _sounds = new();
-    public List<SoundCue> Cues = new(); //Cue的集合
+	public class SoundBankHeader
+	{
+		public uint ComplexCuesOffset;
 
-    public float[] dedefaultProbability = new float [1] { 1.0f };
-    public SoundBankHeader Header = new();
-    public List<SoundEntry> SoundEntrys = new(); //声音资源的集合
+		public ushort Crc;
 
-    public List<string> WaveBankNames = new(); //Wave Bank的名称集合
-    // public Dictionary<string, float []> _probabilities = new Dictionary<string, float []> ();
+		public uint CueNameHashTableOffset;
 
+		public uint CueNameHashValsOffset;
 
-    public class SoundBankHeader
-    {
-        public uint ComplexCuesOffset; //复杂Cue的偏移量
-        public ushort Crc; //文件的校验码，用于验证文件的完整性和准确性。
-        public uint CueNameHashTableOffset; //Cue名称哈希表的偏移量
-        public uint CueNameHashValsOffset; //Cue名称哈希值的偏移量
-        public uint CueNamesOffset; //Cue名称的偏移量
-        public ushort CueNameTableLen; //Cue名称表的长度，表示Cue名称表的长度。
-        public ushort FormatVersion; //文件格式版本号
-        public uint LastModifiedHigh; //文件的最后修改时间的高位部分。
-        public uint LastModifiedLow; //文件的最后修改时间的低位部分。
-        public string Magic; //用于识别文件类型或标识。
-        public string Name; //SoundBank的名称
-        public ushort NumComplexCues; //复杂Cue的数量
-        public ushort NumSimpleCues; //简单Cue的数量
-        public ushort NumSounds; //声音资源的数量
-        public ushort NumTotalCues; //总Cue的数量
-        public byte NumWaveBanks; //Wave Bank的数量
-        public byte Platform; //声音文件的平台标识，表示声音文件适用的平台。
-        public uint SimpleCuesOffset; //简单Cue的偏移量
-        public uint SoundsOffset; //声音资源的偏移量
-        public ushort ToolVersion; //工具版本号
-        public List<byte[]> Unknowns = new(); //未知数据
-        public uint VariationTablesOffset; //变化表的偏移量
-        public uint WaveBankNameTableOffset; //Wave Bank名称表的偏移量
-    }
+		public uint CueNamesOffset;
 
-    public class SoundEntry
-    {
-        public byte Flags; //声音资源的标志，用于表示声音资源的属性或特征。
-        public uint SoundOffset; //声音资源的偏移量，表示声音资源数据在文件中的位置。
-    }
+		public ushort CueNameTableLen;
 
-    public class SoundCue
-    {
-        //Cue的变化集合
-        public List<CueVariation> CueVariations = new();
-        public ushort FadeInSec; //Cue的淡入时间
-        public ushort FadeOutSec; //Cue的淡出时间
-        public byte Flags; //Cue的标志，用于表示Cue的属性
-        public byte InstanceFlags; //实例标志
+		public ushort FormatVersion;
 
-        //Cue的实例限制
-        public byte InstanceLimit;
-        public ushort NumEntries; //Cue的条目数量
-        public XactSound Sound; //Cue关联的声音资源
-        public uint SoundOffset; //Cue关联的声音资源的偏移量
-        public uint TransitionTableOffset; //过渡表的偏移量
-        public List<byte[]> Unknowns = new();
+		public uint LastModifiedHigh;
 
-        public ushort VariationFlags; //变化标志
+		public uint LastModifiedLow;
 
-        public uint VariationTableOffset; //变化表的偏移量
+		public string Magic;
 
+		public string Name;
 
-        public class CueVariation //Cue的变化
-        {
-            public byte BWeightMax; //最大字节权重
-            public byte BWeightMin; //最小字节权重
-            public uint Flags; //Cue变化的标志，用于表示Cue变化的属性或特征。
-            public float FWeightMax; //最大浮点权重
-            public float FWeightMin; //最小浮点权重
+		public ushort NumComplexCues;
 
-            public uint SoundOffset; //Cue变化关联的声音资源的偏移量
-            public ushort TrackIndex; //轨道索引，表示Cue变化所在的轨道的索引。
-            public byte WaveBankIndex; //Wave Bank索引，表示Cue变化关联的Wave Bank的索引。
-        }
-    }
+		public ushort NumSimpleCues;
+
+		public ushort NumSounds;
+
+		public ushort NumTotalCues;
+
+		public byte NumWaveBanks;
+
+		public byte Platform;
+
+		public uint SimpleCuesOffset;
+
+		public uint SoundsOffset;
+
+		public ushort ToolVersion;
+
+		public List<byte[]> Unknowns = new List<byte[]>();
+
+		public uint VariationTablesOffset;
+
+		public uint WaveBankNameTableOffset;
+	}
+
+	public class SoundEntry
+	{
+		public byte Flags;
+
+		public uint SoundOffset;
+	}
+
+	public class SoundCue
+	{
+		public class CueVariation
+		{
+			public byte BWeightMax;
+
+			public byte BWeightMin;
+
+			public uint Flags;
+
+			public float FWeightMax;
+
+			public float FWeightMin;
+
+			public uint SoundOffset;
+
+			public ushort TrackIndex;
+
+			public byte WaveBankIndex;
+		}
+
+		public List<CueVariation> CueVariations = new List<CueVariation>();
+
+		public ushort FadeInSec;
+
+		public ushort FadeOutSec;
+
+		public byte Flags;
+
+		public byte InstanceFlags;
+
+		public byte InstanceLimit;
+
+		public ushort NumEntries;
+
+		public XactSound Sound;
+
+		public uint SoundOffset;
+
+		public uint TransitionTableOffset;
+
+		public List<byte[]> Unknowns = new List<byte[]>();
+
+		public ushort VariationFlags;
+
+		public uint VariationTableOffset;
+	}
+
+	public const ushort SDBK_FORMAT_VERSION = 43;
+
+	public Dictionary<string, XactSound[]> _sounds = new Dictionary<string, XactSound[]>();
+
+	public List<SoundCue> Cues = new List<SoundCue>();
+
+	public float[] dedefaultProbability = new float[1] { 1f };
+
+	public SoundBankHeader Header = new SoundBankHeader();
+
+	public List<SoundEntry> SoundEntrys = new List<SoundEntry>();
+
+	public List<string> WaveBankNames = new List<string>();
 }

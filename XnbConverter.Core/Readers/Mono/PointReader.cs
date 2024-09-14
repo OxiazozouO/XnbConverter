@@ -1,32 +1,35 @@
-﻿using XnbConverter.Entity.Mono;
+using XnbConverter.Entity.Mono;
+using Point = XnbConverter.Entity.Mono.Point;
 
 namespace XnbConverter.Readers.Mono;
 
 public class PointReader : BaseReader
 {
-    public override void Init(ReaderResolver readerResolver)
-    {
-        bufferReader = readerResolver.bufferReader;
-        bufferWriter = readerResolver.bufferWriter;
-    }
+	public override void Init(ReaderResolver resolver)
+	{
+		bufferReader = resolver.bufferReader;
+		bufferWriter = resolver.bufferWriter;
+	}
 
-    public override bool IsValueType()
-    {
-        return true;
-    }
-    
-    public override object Read()
-    {
-        var x = bufferReader.ReadInt32();
-        var y = bufferReader.ReadInt32();
-        return new Point { X = x, Y = y };
-    }
+	public override bool IsValueType()
+	{
+		return true;
+	}
 
-    public override void Write(object content)
-    {
-        var input = (Point)content;
+	public override object Read()
+	{
+		int x = bufferReader.ReadInt32();
+		int y = bufferReader.ReadInt32();
+		Point point = default(Point);
+		point.X = x;
+		point.Y = y;
+		return point;
+	}
 
-        bufferWriter.WriteInt32(input.X);
-        bufferWriter.WriteInt32(input.Y);
-    }
+	public override void Write(object content)
+	{
+		Point point = (Point)content;
+		bufferWriter.WriteInt32(point.X);
+		bufferWriter.WriteInt32(point.Y);
+	}
 }

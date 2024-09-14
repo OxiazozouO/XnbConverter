@@ -1,37 +1,40 @@
-﻿using System;
+using System;
 
 namespace Squish;
 
 public abstract class ColourFit : IDisposable
 {
-    private readonly bool _isDxt1;
-    protected ColourSet Colours;
+	private readonly bool _isDxt1;
 
-    protected ColourFit(ColourSet colours, bool isDxt1)
-    {
-        Colours = colours;
-        _isDxt1 = isDxt1;
-    }
+	protected ColourSet Colours;
 
-    public abstract void Dispose();
+	protected ColourFit(ColourSet colours, bool isDxt1)
+	{
+		Colours = colours;
+		_isDxt1 = isDxt1;
+	}
 
-    public abstract void Init();
+	public abstract void Dispose();
 
-    public void Compress(Span<byte> block)
-    {
-        if (_isDxt1)
-        {
-            Compress3(block);
+	public abstract void Init();
 
-            if (!Colours.IsTransparent) Compress4(block);
-        }
-        else
-        {
-            Compress4(block);
-        }
-    }
+	public void Compress(Span<byte> block)
+	{
+		if (_isDxt1)
+		{
+			Compress3(block);
+			if (!Colours.IsTransparent)
+			{
+				Compress4(block);
+			}
+		}
+		else
+		{
+			Compress4(block);
+		}
+	}
 
-    protected abstract void Compress3(Span<byte> block);
+	protected abstract void Compress3(Span<byte> block);
 
-    protected abstract void Compress4(Span<byte> block);
+	protected abstract void Compress4(Span<byte> block);
 }

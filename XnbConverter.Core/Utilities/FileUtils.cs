@@ -1,80 +1,104 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using Microsoft.Xna.Framework.Content;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using static System.IO.Directory;
-using static System.IO.File;
+using XnbConverter.Exceptions;
 
 namespace XnbConverter.Utilities;
 
 public static class FileUtils
 {
-
-    public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings()
+    public class IgnoreJsonIgnoreResolver : DefaultContractResolver
     {
-        Converters={new StringEnumConverter()},
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            JsonProperty jsonProperty = base.CreateProperty(member, memberSerialization);
+            if (member.GetCustomAttribute(typeof(ContentSerializerIgnoreAttribute)) != null)
+            {
+                jsonProperty.ShouldSerialize = (object _) => false;
+            }
+
+            return jsonProperty;
+        }
+    }
+
+    public static readonly JsonSerializerSettings Settings = new()
+    {
+        Converters = { new StringEnumConverter() },
         ContractResolver = new IgnoreJsonIgnoreResolver(),
         Formatting = Formatting.Indented
     };
-    
-    /**
-     * 用于在具有输入/输出的路径上行走以进行处理
-     * @param {Function} fn
-     * @param {String} input
-     * @param {String} output
-     * @param {Function} cb
-     */
+
     public static Dictionary<string, List<(string, string)>> BuildFiles(string? input, string? output)
     {
-        if (Path.GetExtension(output) is not "") //输出的不为文件夹
+        if (Path.GetExtension(output) != "")
+        {
             output = Path.GetDirectoryName(output);
+        }
 
         try
         {
-            if (!Directory.Exists(output)) //如果不存在就创建文件夹
-                Directory.CreateDirectory(output); //创建该文件夹
+            if (!Directory.Exists(output))
+            {
+                Directory.CreateDirectory(output);
+            }
         }
         catch (Exception ex)
         {
-            throw new XnbError(Helpers.I18N["FileUtils.1"], output, ex.Message);
+            throw new XnbError(Error.FileUtils_1, output, ex.Message);
         }
 
-        //文件+文件夹 获取文件数组  保证输出文件夹存在，构建输出的文件路径数组
-        //文件夹+文件夹 获取文件数组  保证输出文件夹存在，构建输出的文件路径数组
-        //获取指定扩展名对应的文件
-
-        string[] files;
-        if (Directory.Exists(input)) //为文件夹且存在
-            files = GetFiles(input, "*.*", SearchOption.AllDirectories);
-        else if (File.Exists(input))
-            files = new[] { input };
-        else //无效路径
-            throw new XnbError(Helpers.I18N["FileUtils.2"], Path.GetFullPath(input));
-        //构建输出路径
-        Dictionary<string, List<(string, string)>> map = new();
-        foreach (var file in files)
+        string[] array;
+        if (Directory.Exists(input))
         {
-            string fileName = Path.GetFileNameWithoutExtension(file);
-            string ext = Path.GetExtension(file);
-            string secondaryPath = file[input.Length..^(fileName.Length + ext.Length)];
-            string path = output + secondaryPath;
-            if (!map.ContainsKey(ext)) map[ext] = new List<(string, string)>();
-            map[ext].Add((file, path + fileName));
+            array = Directory.GetFiles(input, "*.*", SearchOption.AllDirectories);
+        }
+        else
+        {
+            if (!File.Exists(input))
+            {
+                throw new XnbError(Error.FileUtils_2, Path.GetFullPath(input));
+            }
+
+            array = new string[1] { input };
         }
 
-        return map;
+        Dictionary<string, List<(string, string)>> dictionary = new Dictionary<string, List<(string, string)>>();
+        string[] array2 = array;
+        foreach (string text in array2)
+        {
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(text);
+            string extension = Path.GetExtension(text);
+            string text2 = text;
+            int length = input.Length;
+            int num = fileNameWithoutExtension.Length + extension.Length;
+            string text3 = text2.Substring(length, text2.Length - num - length);
+            string text4 = output + text3;
+            if (!dictionary.ContainsKey(extension))
+            {
+                dictionary[extension] = new List<(string, string)>();
+            }
+
+            dictionary[extension].Add((text, text4 + fileNameWithoutExtension));
+        }
+
+        return dictionary;
     }
 
-    /**
-     * 如果不存在就创建文件夹
-     */
     public static void CreateDirectory(this List<(string, string)> list)
     {
-        foreach (var value in list)
+        foreach (var item in list)
         {
-            var path = Path.GetDirectoryName(value.Item2);
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            string directoryName = Path.GetDirectoryName(item.Item2);
+            if (!Directory.Exists(directoryName))
+            {
+                Directory.CreateDirectory(directoryName);
+            }
         }
     }
 
@@ -83,39 +107,80 @@ public static class FileUtils
         string text = JsonConvert.SerializeObject(data, Settings);
         if (isFileOrd)
         {
-            text = text.Replace(@"\\", @"\").Replace(@"\n", "\n");
+            text = text.Replace("\\\\", "\\").Replace("\\n", "\n");
         }
 
-        WriteAllText(path, text);
+        File.WriteAllText(path, text);
     }
 
     public static T ToEntity<T>(this string path, bool isFileOrd = false)
     {
         if (!File.Exists(path))
-            throw new FileLoadException($"文件{path}不存在！");
-        var json = ReadAllText(path);
+        {
+            throw new FileLoadException("文件" + path + "不存在！");
+        }
+
+        string text = File.ReadAllText(path);
         if (isFileOrd)
         {
-            json = json.Replace(@"\", @"\\").Replace(@"\n", @"\\n");
+            text = text.Replace("\\", "\\\\").Replace("\\n", "\\\\n");
         }
 
-        return JsonConvert.DeserializeObject<T>(json,Settings) ??
-               throw new FileLoadException("读取json失败！");
-    }
-    
-    public class IgnoreJsonIgnoreResolver : DefaultContractResolver
-    {
-        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        T val = JsonConvert.DeserializeObject<T>(text, Settings);
+        if (val == null)
         {
-            var property = base.CreateProperty(member, memberSerialization);
-
-            if (member.GetCustomAttribute<ContentSerializerIgnoreAttribute>() != null)
-            {
-                property.ShouldSerialize = _ => false;
-            }
-
-            return property;
+            throw new FileLoadException("读取json失败！");
         }
+
+        return val;
     }
-    
+
+
+    public static T ToEntity<T>(this Stream stream, bool isFileOrd = false)
+    {
+        string text = "";
+        using (StreamReader streamReader =
+               new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
+        {
+            text = streamReader.ReadToEnd();
+        }
+
+        if (isFileOrd)
+        {
+            text = text.Replace("\\", "\\\\").Replace("\\n", "\\\\n");
+        }
+
+        T val = JsonConvert.DeserializeObject<T>(text, Settings);
+        if (val == null)
+        {
+            throw new FileLoadException("读取json失败！");
+        }
+
+        return val;
+    }
+
+    public static string RandomName =>
+        new StringBuilder().Append(DateTime.UtcNow.ToString("yyyyMMddHHmmssfff"))
+            .Append(Guid.NewGuid().ToString().Replace("-", "")).ToString();
+
+    public static string FileSize(long size)
+    {
+        return size switch
+        {
+            < 1048576L and >= 1024 => $"{size / 1024L:F2} KB",
+            < 1048576L => size + " B",
+            < 1073741824L => $"{size / 1048576L:F2} MB",
+            _ => $"{size / 1073741824L:F2} MB"
+        };
+    }
+
+    public static string UpdateTime(DateTime t) =>
+        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            .AddMilliseconds(t.Ticks)
+            .ToString("yyyy/M/d H:m");
+
+    public static string UpdateTime(long t) =>
+        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            .AddMilliseconds(t)
+            .ToString("yyyy/M/d H:m");
 }

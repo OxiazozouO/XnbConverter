@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
@@ -6,126 +6,109 @@ namespace Squish;
 
 public class ColourSet : IDisposable
 {
-    private readonly bool IsDxt1;
+	private readonly bool IsDxt1;
 
-    private readonly int[] Remap = Pool.RentNewInt(16);
-    private readonly bool WeightByAlpha;
-    public int Count;
+	private readonly int[] Remap = Pool.RentNewInt(16);
 
-    public bool IsTransparent;
+	private readonly bool WeightByAlpha;
 
-    public Vector3[] Points = Pool.RentVector3(16);
+	public int Count;
 
-    public float[] Weights = Pool.RentFloat(16);
+	public bool IsTransparent;
 
-    public ColourSet(bool isDxt1, bool weightByAlpha)
-    {
-        IsDxt1 = isDxt1;
-        WeightByAlpha = weightByAlpha;
-    }
+	public Vector3[] Points = Pool.RentVector3(16);
 
-    public void Dispose()
-    {
-        Pool.Return(Weights);
-        Pool.Return(Remap);
-        Pool.Return(Points);
-    }
+	public float[] Weights = Pool.RentFloat(16);
 
-    public void Init(ReadOnlySpan<byte> rgba, int mask)
-    {
-        Weights.AsSpan().Fill(0.0f);
-        Remap.AsSpan().Fill(0);
-        Count = 0;
-        IsTransparent = false;
-        // create the minimal set
-        for (int i = 0, i4; i < 16; ++i)
-        {
-            i4 = i * 4;
-            // check this pixel is enabled
-            var bit = 1 << i;
+	public ColourSet(bool isDxt1, bool weightByAlpha)
+	{
+		IsDxt1 = isDxt1;
+		WeightByAlpha = weightByAlpha;
+	}
 
-            if ((mask & bit) == 0)
-            {
-                Remap[i] = -1;
-                continue;
-            }
+	public void Dispose()
+	{
+		Pool.Return(Weights);
+		Pool.Return(Remap);
+		Pool.Return(Points);
+	}
 
-            // check for transparent pixels when using dxt1
-            if (IsDxt1 && rgba[i4 + 3] < 128)
-            {
-                Remap[i] = -1;
-                IsTransparent = true;
-                continue;
-            }
+	public void Init(ReadOnlySpan<byte> rgba, int mask)
+	{
+		Weights.AsSpan().Fill(0f);
+		Remap.AsSpan().Fill(0);
+		Count = 0;
+		IsTransparent = false;
+		for (int i = 0; i < 16; i++)
+		{
+			int num = i * 4;
+			int num2 = 1 << i;
+			if ((mask & num2) == 0)
+			{
+				Remap[i] = -1;
+				continue;
+			}
+			if (IsDxt1 && rgba[num + 3] < 128)
+			{
+				Remap[i] = -1;
+				IsTransparent = true;
+				continue;
+			}
+			int num3 = 0;
+			while (true)
+			{
+				int num4 = num3 * 4;
+				if (num3 == i)
+				{
+					Points[Count].X = (float)(int)rgba[num] / 255f;
+					Points[Count].Y = (float)(int)rgba[num + 1] / 255f;
+					Points[Count].Z = (float)(int)rgba[num + 2] / 255f;
+					float num5 = (float)(rgba[num + 3] + 1) / 256f;
+					Weights[Count] = (WeightByAlpha ? num5 : 1f);
+					Remap[i] = Count;
+					Count++;
+					break;
+				}
+				int num6 = 1 << num3;
+				if ((mask & num6) != 0 && rgba[num] == rgba[num4] && rgba[num + 1] == rgba[num4 + 1] && rgba[num + 2] == rgba[num4 + 2] && (rgba[num4 + 3] >= 128 || !IsDxt1))
+				{
+					int num7 = Remap[num3];
+					float num8 = (WeightByAlpha ? ((float)(rgba[num + 3] + 1) / 256f) : 1f);
+					Weights[num7] += num8;
+					Remap[i] = num7;
+					break;
+				}
+				num3++;
+			}
+		}
+		for (int j = 0; j < Count; j++)
+		{
+			Weights[j] = (float)Math.Sqrt(Weights[j]);
+		}
+		for (int k = Count; k < 16; k++)
+		{
+			Points[k].Clear();
+		}
+	}
 
-            // loop over previous points for a match
-            for (int j = 0, j4;; ++j)
-            {
-                j4 = j * 4;
-                // allocate a new point
-                if (j == i)
-                {
-                    // normalise coordinates to [0,1]
-                    Points[Count].X = rgba[i4 + 0] / 255.0f;
-                    Points[Count].Y = rgba[i4 + 1] / 255.0f;
-                    Points[Count].Z = rgba[i4 + 2] / 255.0f;
-                    // ensure there is always non-zero weight even for zero alpha
-                    var w = (rgba[i4 + 3] + 1) / 256.0f;
+	public byte[] RemapIndices(byte[] source)
+	{
+		byte[] array = Pool.RentByte(16);
+		for (int i = 0; i < 16; i++)
+		{
+			int num = Remap[i];
+			array[i] = (byte)((num == -1) ? 3 : source[num]);
+		}
+		return array;
+	}
 
-                    // add the point
-                    Weights[Count] = WeightByAlpha ? w : 1.0f;
-                    Remap[i] = Count;
-                    ++Count;
-
-                    break;
-                }
-
-                // check for a match
-                var oldBit = 1 << j;
-                var match = (mask & oldBit) != 0
-                            && rgba[i4] == rgba[j4]
-                            && rgba[i4 + 1] == rgba[j4 + 1]
-                            && rgba[i4 + 2] == rgba[j4 + 2]
-                            && !(rgba[j4 + 3] < 128 && IsDxt1);
-
-                if (!match) continue;
-                // get the index of the match
-                var index = Remap[j];
-
-                // ensure there is always non-zero weight even for zero alpha
-                var f = WeightByAlpha ? (rgba[i4 + 3] + 1) / 256.0f : 1.0f;
-
-                // map to this point and increase the weight
-                Weights[index] += f;
-                Remap[i] = index;
-                break;
-            }
-        }
-
-        // square root the weights
-        for (var i = 0; i < Count; ++i) Weights[i] = (float)Math.Sqrt(Weights[i]);
-
-        for (var i = Count; i < 16; i++) Points[i].Clear();
-    }
-
-    public byte[] RemapIndices(byte[] source)
-    {
-        var target = Pool.RentByte(16);
-        for (var i = 0; i < 16; ++i)
-        {
-            var j = Remap[i];
-            target[i] = j == -1 ? (byte)3 : source[j];
-        }
-
-        return target;
-    }
-
-    public byte[] RemapIndices(byte source)
-    {
-        var target = Pool.RentByte(16);
-        for (var i = 0; i < 16; ++i)
-            target[i] = Remap[i] == -1 ? (byte)3 : source;
-
-        return target;
-    }
+	public byte[] RemapIndices(byte source)
+	{
+		byte[] array = Pool.RentByte(16);
+		for (int i = 0; i < 16; i++)
+		{
+			array[i] = (byte)((Remap[i] == -1) ? 3 : source);
+		}
+		return array;
+	}
 }

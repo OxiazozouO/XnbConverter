@@ -18,9 +18,8 @@ public class Program
         List<TBin10> list = new();
         foreach (var s in paths)
         {
-            var tbin = new TBin10();
             var tr = TBin10Reader.Create(File.ReadAllBytes(s));
-            tbin = tr.Read();
+            var tbin = tr.Read<TBin10>() ?? new TBin10();
             tbin.RemoveTileSheetsExtension();
             tbin.RemoveNullProperties();
             tbin.RemovePropertiesStr();
@@ -50,9 +49,8 @@ public class Program
     public static void Test_2()
     {
         var path = @"D:\1\SVE\Maps\"; //    D:\.XnbConverter\unpacked\Maps\
-        var tbin = new TBin10();
         var tr = TBin10Reader.Create(File.ReadAllBytes(Path.Combine(path, "Farm.tbin")));
-        tbin = tr.Read();
+        var tbin = tr.Read<TBin10>() ?? new TBin10();
 
         tr.Save(tbin, Path.Combine(path, "Highlands_1.tbin"));
     }
@@ -63,10 +61,10 @@ public class Program
         foreach (var file in Directory.GetFiles(path, "*.tbin", SearchOption.AllDirectories))
         {
             var tr = TBin10Reader.Create(File.ReadAllBytes(file));
-            var tbin = tr.Read().RemoveRedundancyTiles(path)
+            var tbin = tr.Read<TBin10>()?.RemoveRedundancyTiles(path)
                 .ConsolidateNullTileSheets()
                 .FindAndSetLight();
-            tr.Save(tbin, file);
+            if (tbin is not null) tr.Save(tbin, file);
         }
 
         // var tr = TBin10Reader.Create(File.ReadAllBytes(Path.Combine(path,"FarmHouse2_marriage.tbin")));

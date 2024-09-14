@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string"/>
+                            <xsd:attribute name="type" type="xsd:string"/>
+                            <xsd:attribute name="mimetype" type="xsd:string"/>
+                            <xsd:attribute ref="xml:space"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string"/>
+                            <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+                            <xsd:attribute ref="xml:space"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+ 
+    <data name="XNB.1" xml:space="preserve">
+        <value>A puffer üres</value>
+    </data>
+    <data name="XNB.2" xml:space="preserve">
+        <value>Érvénytelen fájl-mágikus érték, várt XNB, tényleges érték {0}</value>
+    </data>
+    <data name="XNB.3" xml:space="preserve">
+        <value>Az XNB fájl levágva!</value>
+    </data>
+    <data name="XNB.4" xml:space="preserve">
+        <value>Váratlan megosztott erőforrás ({0}).</value>
+    </data>
+    <data name="XNB.5" xml:space="preserve">
+        <value>Érvénytelen objektum!</value>
+    </data>
+    <data name="XNB.6" xml:space="preserve">
+        <value>Érvénytelen fájlekimenet!</value>
+    </data>
+    <data name="XNB.7" xml:space="preserve">
+        <value>Érvénytelen JSON fájlformátum: {0}</value>
+    </data>
+    <data name="XNB.8" xml:space="preserve">
+        <value>{0} fájl üres.</value>
+    </data>
+    <data name="XNB.9" xml:space="preserve">
+        <value>{0}-nak hiányzik a 'content' mező.</value>
+    </data>
+    <data name="XNB.10" xml:space="preserve">
+        <value>'{0}' fájl olvasása...</value>
+    </data>
+    <data name="XNB.11" xml:space="preserve">
+        <value>XNB fájl ellenőrzése sikeres!</value>
+    </data>
+    <data name="XNB.12" xml:space="preserve">
+        <value>XNB fájl sikeresen olvasva!</value>
+    </data>
+    <data name="XNB.13" xml:space="preserve">
+        <value>{0} exportálása folyamatban...</value>
+    </data>
+    <data name="XNB.14" xml:space="preserve">
+        <value>Érvényes XNB mágikus érték megtalálva!</value>
+    </data>
+    <data name="XNB.15" xml:space="preserve">
+        <value>Célplatform: {0}</value>
+    </data>
+    <data name="XNB.16" xml:space="preserve">
+        <value>XNB formátum verzió: XNA Game Studio 3.{0}</value>
+    </data>
+    <data name="XNB.17" xml:space="preserve">
+        <value>Tömörítés: {0}</value>
+    </data>
+    <data name="XNB.18" xml:space="preserve">
+        <value>Fájlméret: {0} bájt.</value>
+    </data>
+    <data name="XNB.19" xml:space="preserve">
+        <value>Kicsomagolt méret: {0} bájt.</value>
+    </data>
+    <data name="XNB.20" xml:space="preserve">
+        <value>Olvasás bájt pozícióból: {0}</value>
+    </data>
+    <data name="XNB.21" xml:space="preserve">
+        <value>Olvasók száma: {0}</value>
+    </data>
+    <data name="XNB.22" xml:space="preserve">
+        <value>Megosztott erőforrások száma: {0}</value>
+    </data>
+    <data name="XNB.23" xml:space="preserve">
+        <value>Érvénytelen célplatform található {0}.</value>
+    </data>
+    <data name="XNB.24" xml:space="preserve">
+        <value>Ismeretlen XNB formátum verzió {0}.</value>
+    </data>
+    <data name="Process.1" xml:space="preserve">
+        <value>Kimeneti fájl mentve: {0}</value>
+    </data>
+    <data name="Process.2" xml:space="preserve">
+        <value>{0} fájl nem menthető!</value>
+    </data>
+    <data name="Process.3" xml:space="preserve">
+        <value>Fájlnév: {0} {1}</value>
+    </data>
+    <data name="Process.4" xml:space="preserve">
+        <value>Fájlnév: {0} {1} {2}</value>
+    </data>
+    <data name="Program.1" xml:space="preserve">
+        <value>[Opcionális] Párhuzamos végrehajtás engedélyezése</value>
+    </data>
+    <data name="Program.2" xml:space="preserve">
+        <value>[Kötelező] Bemeneti fájl vagy mappa</value>
+    </data>
+    <data name="Program.3" xml:space="preserve">
+        <value>[Kötelező] Kimeneti mappa</value>
+    </data>
+    <data name="Program.4" xml:space="preserve">
+        <value>XNB fájlok automatikus csomagolása és kicsomagolása a bemenet alapján</value>
+    </data>
+    <data name="Program.5" xml:space="preserve">
+        <value>Kicsomagolás</value>
+    </data>
+    <data name="Program.6" xml:space="preserve">
+        <value>Csomagolás</value>
+    </data>
+    <data name="Program.7" xml:space="preserve">
+        <value>Rossz parancs
+</value>
+    </data>
+    <data name="Program.8" xml:space="preserve">
+        <value>Kivétel elkapása:</value>
+    </data>
+    <data name="BufferReader.1" xml:space="preserve">
+        <value>'{0}' nem található!</value>
+    </data>
+    <data name="BufferReader.2" xml:space="preserve">
+        <value>Pufferkeresés kívül esik a tartományon! {0} ~ {1}</value>
+    </data>
+    <data name="ReaderResolver.1" xml:space="preserve">
+        <value>Érvénytelen olvasó index {0}</value>
+    </data>
+    <data name="ReaderResolver.2" xml:space="preserve">
+        <value>Olvasó nem található, index: {0}</value>
+    </data>
+    <data name="FileUtils.1" xml:space="preserve">
+        <value>Érvénytelen kimeneti útvonal {0}
+{1}</value>
+    </data>
+    <data name="FileUtils.2" xml:space="preserve">
+        <value>Érvénytelen bemeneti útvonal: {0}</value>
+    </data>
+    <data name="TypeReadHelper.1" xml:space="preserve">
+        <value>Megvalósítatlan típus: {0}
+{1}</value>
+    </data>
+    <data name="TypeReadHelper.2" xml:space="preserve">
+        <value>Hiba történt az olvasó beszerzése közben! 
+ Kérjük, ellenőrizze az összeszerelést: {0} 
+ Hogy a megfelelő DLL-fájl elérési útja létezik-e, vagy hogy a {1} fájlba a helyes útvonal van-e írva. 
+ A DLL-fájl lehet {2}.dll 
+ Hibajelzés: {3}</value>
+    </data>
+    <data name="TypeReadHelper.3" xml:space="preserve">
+        <value>Megvalósítatlan típus: {0}</value>
+    </data>
+    <data name="TypeReadHelper.4" xml:space="preserve">
+        <value>Nem betöltött osztály: {0}!</value>
+    </data>
+    <data name="TypeReadHelper.5" xml:space="preserve">
+        <value>{0} nem létezik, a DLL betöltése sikertelen volt, ami sikertelen xnb elemzéshez vezethet, 
+ Kérjük, módosítsa a helyes fájlutat {1}-re</value>
+    </data>
+    <data name="SpriteFont.1" xml:space="preserve">
+        <value>Fájl elemzése sikertelen</value>
+    </data>
+    <data name="EnumReader.1" xml:space="preserve">
+        <value>az érték {0} nem felel meg egyetlen enumerációs taghoz sem.</value>
+    </data>
+    <data name="Texture2DReader.1" xml:space="preserve">
+        <value>A Texture2D formátumú ECT1 típus nincs implementálva!</value>
+    </data>
+    <data name="Texture2DReader.2" xml:space="preserve">
+        <value>Nem implementált Texture2D formátumtípus található ({0}).</value>
+    </data>
+    <data name="Texture2DReader.3" xml:space="preserve">
+        <value>Kép szélessége: {0}, Magasság: {1}, Formátum: {2}</value>
+    </data>
+    <data name="Texture2DReader.4" xml:space="preserve">
+        <value>{0} mip-számító található, csak az első lesz használatban.</value>
+    </data>
+    <data name="LayerReader.1" xml:space="preserve">
+        <value>i maximális értéke {0}, jelenlegi értéke {1}</value>
+    </data>
+    <data name="LayerReader.2" xml:space="preserve">
+        <value>Csempe adatok hibásak</value>
+    </data>
+    <data name="PropertieReader.1" xml:space="preserve">
+        <value>Hibás térkép tulajdonság típus: {0}</value>
+    </data>
+    <data name="TBin10Reader.1" xml:space="preserve">
+        <value>Az Xnb jelenleg nem támogatja a {0} rétegnél több Tbin térképet, jelenleg {1} réteg</value>
+    </data>
+    <data name="TBin10Reader.2" xml:space="preserve">
+        <value>Ismeretlen programhiba</value>
+    </data>
+    <data name="LZX.1" xml:space="preserve">
+        <value>Az ablak mérete túllépi a határokat!</value>
+    </data>
+    <data name="LZX.2" xml:space="preserve">
+        <value>Intel E8 hívás észlelve, érvénytelen XNB fájlra.</value>
+    </data>
+    <data name="LZX.3" xml:space="preserve">
+        <value>Érvénytelen blokk típus észlelve: {0}</value>
+    </data>
+    <data name="LZX.4" xml:space="preserve">
+        <value>Nem lehet futtatni az ablakkereten kívül.</value>
+    </data>
+    <data name="LZX.5" xml:space="preserve">
+        <value>Túlcsordulás! {0} {1} {2}</value>
+    </data>
+    <data name="LZX.6" xml:space="preserve">
+        <value>Érvénytelen blok típus megadva!</value>
+    </data>
+    <data name="LZX.7" xml:space="preserve">
+        <value>EOF elérve, még adat maradt.</value>
+    </data>
+    <data name="LZX.8" xml:space="preserve">
+        <value>Táblakiszivárgás!</value>
+    </data>
+    <data name="LZX.9" xml:space="preserve">
+        <value>Táblakiszivárgás a dekódolás közben.</value>
+    </data>
+    <data name="LZX.10" xml:space="preserve">
+        <value>A dekódoló tábla nem érte el a táblamaszkot.</value>
+    </data>
+    <data name="LZX.11" xml:space="preserve">
+        <value>Érvénytelen méret a tömörített tartalom olvasásakor.</value>
+    </data>
+    <data name="LZX.12" xml:space="preserve">
+        <value>Fájl sikeresen kicsomagolva!</value>
+    </data>
+    <data name="LZX.13" xml:space="preserve">
+        <value>További számjegyek: {0}</value>
+    </data>
+    <data name="LZX.14" xml:space="preserve">
+        <value>Pozíciós alap: {0}</value>
+    </data>
+    <data name="LZX.15" xml:space="preserve">
+        <value>Intel: {0} = {1}</value>
+    </data>
+    <data name="LZX.16" xml:space="preserve">
+        <value>Blokk típusa: {0} = {1}</value>
+    </data>
+    <data name="LZX.17" xml:space="preserve">
+        <value>Hátralévő blokk bájtok száma: {0}</value>
+    </data>
+    <data name="LZX.18" xml:space="preserve">
+        <value>Pozíció: {0}, Bitmaszk: {1}, Táblázat maszk: {2}</value>
+    </data>
+    <data name="LZX.19" xml:space="preserve">
+        <value>Bit száma: {0}, Bit karakterlánc: {1}</value>
+    </data>
+    <data name="LZX.20" xml:space="preserve">
+        <value>Szimbólum: {0}, Szimbólumkarakterlánc: {1}</value>
+    </data>
+    <data name="LZX.21" xml:space="preserve">
+        <value>--------Blokk mérete: {0}, Keret mérete: {1}</value>
+    </data>
+    <data name="AudioEngineReader.1" xml:space="preserve">
+        <value>Érvénytelen varázsló érték található, {0}</value>
+    </data>
+    <data name="AudioEngineReader.2" xml:space="preserve">
+        <value>Eszköz verzió: {0}</value>
+    </data>
+    <data name="AudioEngineReader.3" xml:space="preserve">
+        <value>Formátum verzió: {0}</value>
+    </data>
+    <data name="AudioEngineReader.4" xml:space="preserve">
+        <value>Kategória: {0}, Változó: {1}</value>
+    </data>
+    <data name="AudioEngineReader.5" xml:space="preserve">
+        <value>RPC: {0}</value>
+    </data>
+    <data name="AudioEngineReader.6" xml:space="preserve">
+        <value>DSP előbeállítás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.7" xml:space="preserve">
+        <value>DSP paraméterek: {0}</value>
+    </data>
+    <data name="AudioEngineReader.8" xml:space="preserve">
+        <value>Kategória eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.9" xml:space="preserve">
+        <value>Változó eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.10" xml:space="preserve">
+        <value>Kategórianév index eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.11" xml:space="preserve">
+        <value>Változónév index eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.12" xml:space="preserve">
+        <value>Kategória név eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.13" xml:space="preserve">
+        <value>Változónév eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.14" xml:space="preserve">
+        <value>RPC eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.15" xml:space="preserve">
+        <value>DSP előbeállítás eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.16" xml:space="preserve">
+        <value>DSP paraméter eltolás: {0}</value>
+    </data>
+    <data name="AudioEngineReader.17" xml:space="preserve">
+        <value>Kategória: {0}</value>
+    </data>
+    <data name="AudioEngineReader.18" xml:space="preserve">
+        <value>Változó: {0}</value>
+    </data>
+    <data name="AudioEngineReader.19" xml:space="preserve">
+        <value>Nem támogatott XGS formátum!</value>
+    </data>
+    <data name="SoundBankReader.1" xml:space="preserve">
+        <value>CRC: {0}</value>
+    </data>
+    <data name="SoundBankReader.2" xml:space="preserve">
+        <value>Utolsó módosítás alacsony része: {0}, Utolsó módosítás magas része: {1}</value>
+    </data>
+    <data name="SoundBankReader.3" xml:space="preserve">
+        <value>Platform: {0}</value>
+    </data>
+    <data name="SoundBankReader.4" xml:space="preserve">
+        <value>Egyszerű jelzések száma: {0}</value>
+    </data>
+    <data name="SoundBankReader.5" xml:space="preserve">
+        <value>Komplex jelzések száma: {0}</value>
+    </data>
+    <data name="SoundBankReader.6" xml:space="preserve">
+        <value>Összes jelzés száma: {0}</value>
+    </data>
+    <data name="SoundBankReader.7" xml:space="preserve">
+        <value>Hullámforma könyvtárak száma: {0}</value>
+    </data>
+    <data name="SoundBankReader.8" xml:space="preserve">
+        <value>Hangok száma: {0}</value>
+    </data>
+    <data name="SoundBankReader.9" xml:space="preserve">
+        <value>Cue névtábla hossza: {0}</value>
+    </data>
+    <data name="SoundBankReader.10" xml:space="preserve">
+        <value>Egyszerű jelzés hangeltolás: {0}</value>
+    </data>
+    <data name="SoundBankReader.11" xml:space="preserve">
+        <value>Komplex jelzés hangeltolás: {0}</value>
+    </data>
+    <data name="SoundBankReader.12" xml:space="preserve">
+        <value>Hangnév eltolása: {0}</value>
+    </data>
+    <data name="SoundBankReader.13" xml:space="preserve">
+        <value>Variáció tábla eltolása: {0}</value>
+    </data>
+    <data name="SoundBankReader.14" xml:space="preserve">
+        <value>Hullámforma könyvtár neve tábla eltolása: {0}</value>
+    </data>
+    <data name="SoundBankReader.15" xml:space="preserve">
+        <value>Hangnév hash tábla eltolása: {0}</value>
+    </data>
+    <data name="SoundBankReader.16" xml:space="preserve">
+        <value>Hangnév hash érték eltolása: {0}</value>
+    </data>
+    <data name="SoundBankReader.17" xml:space="preserve">
+        <value>Hang eltolása: {0}</value>
+    </data>
+    <data name="SoundBankReader.18" xml:space="preserve">
+        <value>Név: {0}</value>
+    </data>
+    <data name="SoundBankReader.19" xml:space="preserve">
+        <value>Hullám bankok: {0}</value>
+    </data>
+    <data name="SoundBankReader.20" xml:space="preserve">
+        <value>Jelzések: {0}</value>
+    </data>
+    <data name="SoundBankReader.21" xml:space="preserve">
+        <value>Talált {0}</value>
+    </data>
+    <data name="SoundBankReader.22" xml:space="preserve">
+        <value>{0} talált {1} jelzéseket</value>
+    </data>
+    <data name="SoundBankReader.23" xml:space="preserve">
+        <value>WaveBank Index: {0}</value>
+    </data>
+    <data name="SoundBankReader.24" xml:space="preserve">
+        <value>{0} hangjelzés találva!</value>
+    </data>
+    <data name="SoundBankReader.25" xml:space="preserve">
+        <value>Nem támogatott SoundBank formátum {0}.</value>
+    </data>
+    <data name="XactClipReader.1" xml:space="preserve">
+        <value>Eltolás: {0}</value>
+    </data>
+    <data name="XactClipReader.2" xml:space="preserve">
+        <value>Sáv: {0}</value>
+    </data>
+    <data name="XactClipReader.3" xml:space="preserve">
+        <value>Esemény Lejátszás Hullám Hangmagasság Hangerő Szűrő Variáció</value>
+    </data>
+    <data name="XactSoundReader.1" xml:space="preserve">
+        <value>Extra Adat Hossz: {0}</value>
+    </data>
+    <data name="XactSoundReader.2" xml:space="preserve">
+        <value>Sávindex: {0}</value>
+    </data>
+    <data name="FmtChunk.1" xml:space="preserve">
+        <value>A SoundEffect csak PCM formátumú wav fájlokat támogat, jelenlegi formátum: {0}</value>
+    </data>
+    <data name="FmtChunk.2" xml:space="preserve">
+        <value>Az Xact esetében csak PCM vagy AdpcmMs formátumú wav fájlok támogatottak. Jelenlegi formátum: {0}</value>
+    </data>
+    <data name="FmtChunk.3" xml:space="preserve">
+        <value>Nem támogatott játékfájltípus!</value>
+    </data>
+    <data name="WaveBank.1" xml:space="preserve">
+        <value>- zászlók   {0}- fájlok száma    {1}- bank neve    {2}- bejegyzés meta mérete  {3}- bejegyzés név mérete  {4}- igazítás    {5}</value>
+    </data>
+    <data name="WaveBank.2" xml:space="preserve">
+        <value>- A meta adatelem mérete kicsi</value>
+    </data>
+    <data name="FmtChunkReader.1" xml:space="preserve">
+        <value>Érvénytelen WAV formátum: {0}, fmt kellene legyen</value>
+    </data>
+    <data name="RIFFChunkReader.1" xml:space="preserve">
+        <value>Érvénytelen WAV formátum: {0}, RIFF kellene legyen</value>
+    </data>
+    <data name="RIFFChunkReader.2" xml:space="preserve">
+        <value>Érvénytelen wav formátum: {0}, WAVE kellene legyen</value>
+    </data>
+    <data name="WaveBankReader.1" xml:space="preserve">
+        <value>- aláírás: {0} nagy/hálózati byte-sorrend értékek</value>
+    </data>
+    <data name="WaveBankReader.2" xml:space="preserve">
+        <value>- aláírás: {0} kis/intel byte-sorrend értékek</value>
+    </data>
+    <data name="WaveBankReader.3" xml:space="preserve">
+        <value>- verzió: {0}</value>
+    </data>
+    <data name="WaveBankReader.4" xml:space="preserve">
+        <value>Szám Méret Formátum Mintaátmérő Kanalok Bitmélység Kimeneti elérési út</value>
+    </data>
+    <data name="WaveBankReader.5" xml:space="preserve">
+        <value>eltolás : {0}, formátum : {1}, zászlók : {2}, régió eltolása : {3}, régió hossza : {4}</value>
+    </data>
+    <data name="WaveBankReader.6" xml:space="preserve">
+        <value>- Szegmens: {0}    Eltolás {1}    Hossz: {2} ({3})</value>
+    </data>
+</root>

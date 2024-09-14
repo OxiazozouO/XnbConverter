@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_margin="2px"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:descendantFocusability="blocksDescendants">
+
+    <LinearLayout
+            android:layout_marginLeft="6dp"
+            android:id="@+id/id_item_layout"
+            android:layout_alignParentLeft="true"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+        <ImageView
+                android:id="@+id/id_item_icon"
+                android:src="@mipmap/appicon"
+                android:layout_width="72dp"
+                android:layout_height="72dp"/>
+
+        <LinearLayout
+                android:layout_marginLeft="2dp"
+                android:layout_centerVertical="true"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:longClickable="false"
+                    android:clickable="false"
+                    android:id="@+id/id_item_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:text="dfenvsc.xnb"
+                    android:ellipsize="none"
+                    android:inputType="textMultiLine"
+                    android:singleLine="false"
+                    android:textColor="#FFFFFF"/>
+
+            <LinearLayout
+                    android:id="@+id/id_item_date_and_size"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                <TextView
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:longClickable="false"
+                        android:clickable="false"
+                        android:layout_marginRight="6dp"
+                        android:id="@+id/id_item_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12dp"
+                        android:text="2024/3/3"
+                        android:ellipsize="none"
+                        android:inputType="textMultiLine"
+                        android:singleLine="false"
+                        android:textColor="#FFFFFF"/>
+
+                <TextView
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:longClickable="false"
+                        android:clickable="false"
+                        android:id="@+id/id_item_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12dp"
+                        android:text="10 MB"
+                        android:ellipsize="none"
+                        android:inputType="textMultiLine"
+                        android:singleLine="false"
+                        android:textColor="#FFFFFF"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <CheckBox
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:longClickable="false"
+            android:clickable="false"
+            android:visibility="gone"
+            android:id="@+id/id_item_checkbox"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</RelativeLayout>

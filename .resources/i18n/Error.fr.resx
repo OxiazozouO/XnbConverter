@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+ 
+    <data name="XNB.1" xml:space="preserve">
+        <value>Le tampon est vide</value>
+    </data>
+    <data name="XNB.2" xml:space="preserve">
+        <value>Valeur magique de fichier non valide, attendu XNB, valeur réelle est {0}</value>
+    </data>
+    <data name="XNB.3" xml:space="preserve">
+        <value>Le fichier XNB a été tronqué !</value>
+    </data>
+    <data name="XNB.4" xml:space="preserve">
+        <value>Ressource partagée inattendue ({0}).</value>
+    </data>
+    <data name="XNB.5" xml:space="preserve">
+        <value>Objet invalide!</value>
+    </data>
+    <data name="XNB.6" xml:space="preserve">
+        <value>Exportation de fichier invalide!</value>
+    </data>
+    <data name="XNB.7" xml:space="preserve">
+        <value>Format de fichier JSON invalide : {0}</value>
+    </data>
+    <data name="XNB.8" xml:space="preserve">
+        <value>Le fichier {0} est vide.</value>
+    </data>
+    <data name="XNB.9" xml:space="preserve">
+        <value>{0} manque le champ 'content'.</value>
+    </data>
+    <data name="XNB.10" xml:space="preserve">
+        <value>Lecture du fichier '{0}'...</value>
+    </data>
+    <data name="XNB.11" xml:space="preserve">
+        <value>Validation du fichier XNB réussie !</value>
+    </data>
+    <data name="XNB.12" xml:space="preserve">
+        <value>Fichier XNB lu avec succès !</value>
+    </data>
+    <data name="XNB.13" xml:space="preserve">
+        <value>En train d'exporter {0}...</value>
+    </data>
+    <data name="XNB.14" xml:space="preserve">
+        <value>Valeur magique XNB valide trouvée !</value>
+    </data>
+    <data name="XNB.15" xml:space="preserve">
+        <value>Plateforme cible : {0}</value>
+    </data>
+    <data name="XNB.16" xml:space="preserve">
+        <value>Version du format XNB : XNA Game Studio 3.{0}</value>
+    </data>
+    <data name="XNB.17" xml:space="preserve">
+        <value>Compression : {0}</value>
+    </data>
+    <data name="XNB.18" xml:space="preserve">
+        <value>Taille du fichier : {0} octets.</value>
+    </data>
+    <data name="XNB.19" xml:space="preserve">
+        <value>Taille après décompression : {0} octets.</value>
+    </data>
+    <data name="XNB.20" xml:space="preserve">
+        <value>Lecture à partir de la position d'octets : {0}</value>
+    </data>
+    <data name="XNB.21" xml:space="preserve">
+        <value>Nombre de lecteurs : {0}</value>
+    </data>
+    <data name="XNB.22" xml:space="preserve">
+        <value>Nombre de ressources partagées : {0}</value>
+    </data>
+    <data name="XNB.23" xml:space="preserve">
+        <value>Plateforme cible invalide trouvée {0}.</value>
+    </data>
+    <data name="XNB.24" xml:space="preserve">
+        <value>Version inconnue du format XNB {0}.</value>
+    </data>
+    <data name="Process.1" xml:space="preserve">
+        <value>Fichier de sortie enregistré : {0}</value>
+    </data>
+    <data name="Process.2" xml:space="preserve">
+        <value>Le fichier {0} ne peut pas être enregistré !</value>
+    </data>
+    <data name="Process.3" xml:space="preserve">
+        <value>Nom du fichier : {0} {1}</value>
+    </data>
+    <data name="Process.4" xml:space="preserve">
+        <value>Nom du fichier : {0} {1} {2}</value>
+    </data>
+    <data name="Program.1" xml:space="preserve">
+        <value>[Optionnel] Activer la concurrence</value>
+    </data>
+    <data name="Program.2" xml:space="preserve">
+        <value>[Requis] Fichier ou dossier d'entrée</value>
+    </data>
+    <data name="Program.3" xml:space="preserve">
+        <value>[Requis] Dossier de sortie</value>
+    </data>
+    <data name="Program.4" xml:space="preserve">
+        <value>Emballer et déballer automatiquement les fichiers XNB en fonction de l'entrée</value>
+    </data>
+    <data name="Program.5" xml:space="preserve">
+        <value>Déballer</value>
+    </data>
+    <data name="Program.6" xml:space="preserve">
+        <value>Emballer</value>
+    </data>
+    <data name="Program.7" xml:space="preserve">
+        <value>Commande incorrecte
+</value>
+    </data>
+    <data name="Program.8" xml:space="preserve">
+        <value>Capturer une exception :</value>
+    </data>
+    <data name="BufferReader.1" xml:space="preserve">
+        <value>'{0}' non trouvé !</value>
+    </data>
+    <data name="BufferReader.2" xml:space="preserve">
+        <value>Recherche de tampon hors limites ! {0} ~ {1}</value>
+    </data>
+    <data name="ReaderResolver.1" xml:space="preserve">
+        <value>Index de lecteur invalide {0}</value>
+    </data>
+    <data name="ReaderResolver.2" xml:space="preserve">
+        <value>Lecteur introuvable, index : {0}</value>
+    </data>
+    <data name="FileUtils.1" xml:space="preserve">
+        <value>Chemin de sortie invalide {0}
+{1}</value>
+    </data>
+    <data name="FileUtils.2" xml:space="preserve">
+        <value>Chemin d'entrée invalide : {0}</value>
+    </data>
+    <data name="TypeReadHelper.1" xml:space="preserve">
+        <value>Type non implémenté : {0}
+{1}</value>
+    </data>
+    <data name="TypeReadHelper.2" xml:space="preserve">
+        <value>Erreur lors de l'obtention du lecteur ! 
+ Veuillez vérifier l'assembly : {0} 
+ Si le chemin du fichier DLL correspondant existe, ou si le chemin est correctement écrit dans le fichier {1}. 
+ Le fichier DLL peut être {2}.dll 
+ Message d'erreur : {3}</value>
+    </data>
+    <data name="TypeReadHelper.3" xml:space="preserve">
+        <value>Type non implémenté : {0}</value>
+    </data>
+    <data name="TypeReadHelper.4" xml:space="preserve">
+        <value>Classe non chargée : {0}!</value>
+    </data>
+    <data name="TypeReadHelper.5" xml:space="preserve">
+        <value>{0} n'existe pas, le chargement de la DLL a échoué, ce qui peut entraîner une analyse xnb non réussie, 
+ Veuillez modifier le chemin de fichier correct vers {1}</value>
+    </data>
+    <data name="SpriteFont.1" xml:space="preserve">
+        <value>Échec de l'analyse du fichier</value>
+    </data>
+    <data name="EnumReader.1" xml:space="preserve">
+        <value>la valeur {0} ne correspond à aucun membre de l'énumération.</value>
+    </data>
+    <data name="Texture2DReader.1" xml:space="preserve">
+        <value>Type de format Texture2D ECT1 non implémenté !</value>
+    </data>
+    <data name="Texture2DReader.2" xml:space="preserve">
+        <value>Type de format Texture2D non implémenté trouvé ({0}).</value>
+    </data>
+    <data name="Texture2DReader.3" xml:space="preserve">
+        <value>Largeur de l'image : {0}, Hauteur : {1}, Format : {2}</value>
+    </data>
+    <data name="Texture2DReader.4" xml:space="preserve">
+        <value>Trouvé mipcount de {0}, seul le premier sera utilisé.</value>
+    </data>
+    <data name="LayerReader.1" xml:space="preserve">
+        <value>La valeur maximale de i est {0}, la valeur actuelle est {1}</value>
+    </data>
+    <data name="LayerReader.2" xml:space="preserve">
+        <value>Erreur de données de tuile</value>
+    </data>
+    <data name="PropertieReader.1" xml:space="preserve">
+        <value>Type de propriété de carte incorrect : {0}</value>
+    </data>
+    <data name="TBin10Reader.1" xml:space="preserve">
+        <value>Xnb ne prend pas en charge les cartes Tbin de plus de {0} couches, actuellement {1} couches</value>
+    </data>
+    <data name="TBin10Reader.2" xml:space="preserve">
+        <value>Erreur de programme inconnue</value>
+    </data>
+    <data name="LZX.1" xml:space="preserve">
+        <value>Taille de la fenêtre hors limites !</value>
+    </data>
+    <data name="LZX.2" xml:space="preserve">
+        <value>Appel Intel E8 trouvé, invalide pour le fichier XNB.</value>
+    </data>
+    <data name="LZX.3" xml:space="preserve">
+        <value>Type de bloc non valide trouvé : {0}</value>
+    </data>
+    <data name="LZX.4" xml:space="preserve">
+        <value>Impossible de s'exécuter en dehors du cadre de la fenêtre.</value>
+    </data>
+    <data name="LZX.5" xml:space="preserve">
+        <value>Dépassement ! {0} {1} {2}</value>
+    </data>
+    <data name="LZX.6" xml:space="preserve">
+        <value>Type de bloc spécifié invalide !</value>
+    </data>
+    <data name="LZX.7" xml:space="preserve">
+        <value>EOF atteint, des données restent.</value>
+    </data>
+    <data name="LZX.8" xml:space="preserve">
+        <value>Débordement de tableau !</value>
+    </data>
+    <data name="LZX.9" xml:space="preserve">
+        <value>Débordement de tableau pendant le décodage.</value>
+    </data>
+    <data name="LZX.10" xml:space="preserve">
+        <value>La table de décodage n'a pas atteint la masque de tableau.</value>
+    </data>
+    <data name="LZX.11" xml:space="preserve">
+        <value>Taille non valide lors de la lecture du contenu compressé.</value>
+    </data>
+    <data name="LZX.12" xml:space="preserve">
+        <value>Fichier décompressé avec succès !</value>
+    </data>
+    <data name="LZX.13" xml:space="preserve">
+        <value>Chiffres supplémentaires : {0}</value>
+    </data>
+    <data name="LZX.14" xml:space="preserve">
+        <value>Base de position : {0}</value>
+    </data>
+    <data name="LZX.15" xml:space="preserve">
+        <value>Intel: {0} = {1}</value>
+    </data>
+    <data name="LZX.16" xml:space="preserve">
+        <value>Type de bloc : {0} = {1}</value>
+    </data>
+    <data name="LZX.17" xml:space="preserve">
+        <value>Nombre d'octets de bloc restants : {0}</value>
+    </data>
+    <data name="LZX.18" xml:space="preserve">
+        <value>Position : {0}, Masque de bits : {1}, Masque de table : {2}</value>
+    </data>
+    <data name="LZX.19" xml:space="preserve">
+        <value>Nombre de bits : {0}, Chaîne de bits : {1}</value>
+    </data>
+    <data name="LZX.20" xml:space="preserve">
+        <value>Symbole : {0}, Chaîne de symboles : {1}</value>
+    </data>
+    <data name="LZX.21" xml:space="preserve">
+        <value>--------Taille du bloc : {0}, Taille du cadre : {1}</value>
+    </data>
+    <data name="AudioEngineReader.1" xml:space="preserve">
+        <value>Valeur magique invalide trouvée, {0}</value>
+    </data>
+    <data name="AudioEngineReader.2" xml:space="preserve">
+        <value>Version de l'outil : {0}</value>
+    </data>
+    <data name="AudioEngineReader.3" xml:space="preserve">
+        <value>Version du format : {0}</value>
+    </data>
+    <data name="AudioEngineReader.4" xml:space="preserve">
+        <value>Catégorie : {0}, Variable : {1}</value>
+    </data>
+    <data name="AudioEngineReader.5" xml:space="preserve">
+        <value>RPC : {0}</value>
+    </data>
+    <data name="AudioEngineReader.6" xml:space="preserve">
+        <value>Préréglage DSP : {0}</value>
+    </data>
+    <data name="AudioEngineReader.7" xml:space="preserve">
+        <value>Paramètres DSP : {0}</value>
+    </data>
+    <data name="AudioEngineReader.8" xml:space="preserve">
+        <value>Décalage de catégorie: {0}</value>
+    </data>
+    <data name="AudioEngineReader.9" xml:space="preserve">
+        <value>Décalage de variable: {0}</value>
+    </data>
+    <data name="AudioEngineReader.10" xml:space="preserve">
+        <value>Décalage d'index de nom de catégorie: {0}</value>
+    </data>
+    <data name="AudioEngineReader.11" xml:space="preserve">
+        <value>Décalage d'index de nom de variable: {0}</value>
+    </data>
+    <data name="AudioEngineReader.12" xml:space="preserve">
+        <value>Décalage de nom de catégorie: {0}</value>
+    </data>
+    <data name="AudioEngineReader.13" xml:space="preserve">
+        <value>Décalage de nom de variable: {0}</value>
+    </data>
+    <data name="AudioEngineReader.14" xml:space="preserve">
+        <value>Décalage de RPC: {0}</value>
+    </data>
+    <data name="AudioEngineReader.15" xml:space="preserve">
+        <value>Décalage de préréglage DSP: {0}</value>
+    </data>
+    <data name="AudioEngineReader.16" xml:space="preserve">
+        <value>Décalage de paramètre DSP: {0}</value>
+    </data>
+    <data name="AudioEngineReader.17" xml:space="preserve">
+        <value>Catégorie: {0}</value>
+    </data>
+    <data name="AudioEngineReader.18" xml:space="preserve">
+        <value>Variable: {0}</value>
+    </data>
+    <data name="AudioEngineReader.19" xml:space="preserve">
+        <value>Format XGS non pris en charge !</value>
+    </data>
+    <data name="SoundBankReader.1" xml:space="preserve">
+        <value>CRC : {0}</value>
+    </data>
+    <data name="SoundBankReader.2" xml:space="preserve">
+        <value>Dernière modification basse : {0}, Dernière modification haute : {1}</value>
+    </data>
+    <data name="SoundBankReader.3" xml:space="preserve">
+        <value>Plateforme : {0}</value>
+    </data>
+    <data name="SoundBankReader.4" xml:space="preserve">
+        <value>Nombre d'indices simples : {0}</value>
+    </data>
+    <data name="SoundBankReader.5" xml:space="preserve">
+        <value>Nombre d'indices complexes : {0}</value>
+    </data>
+    <data name="SoundBankReader.6" xml:space="preserve">
+        <value>Nombre total d'indices : {0}</value>
+    </data>
+    <data name="SoundBankReader.7" xml:space="preserve">
+        <value>Nombre de bibliothèques de formes d'onde : {0}</value>
+    </data>
+    <data name="SoundBankReader.8" xml:space="preserve">
+        <value>Nombre de sons : {0}</value>
+    </data>
+    <data name="SoundBankReader.9" xml:space="preserve">
+        <value>Longueur de la table des noms de cue : {0}</value>
+    </data>
+    <data name="SoundBankReader.10" xml:space="preserve">
+        <value>Décalage de son d'indice simple : {0}</value>
+    </data>
+    <data name="SoundBankReader.11" xml:space="preserve">
+        <value>Décalage de son d'indice complexe : {0}</value>
+    </data>
+    <data name="SoundBankReader.12" xml:space="preserve">
+        <value>Décalage de nom de son: {0}</value>
+    </data>
+    <data name="SoundBankReader.13" xml:space="preserve">
+        <value>Décalage de la table de variation: {0}</value>
+    </data>
+    <data name="SoundBankReader.14" xml:space="preserve">
+        <value>Décalage de la table des noms de la bibliothèque de formes d'onde: {0}</value>
+    </data>
+    <data name="SoundBankReader.15" xml:space="preserve">
+        <value>Décalage de la table de hachage du nom de son: {0}</value>
+    </data>
+    <data name="SoundBankReader.16" xml:space="preserve">
+        <value>Décalage de la valeur de hachage du nom de son: {0}</value>
+    </data>
+    <data name="SoundBankReader.17" xml:space="preserve">
+        <value>Décalage du son: {0}</value>
+    </data>
+    <data name="SoundBankReader.18" xml:space="preserve">
+        <value>Nom: {0}</value>
+    </data>
+    <data name="SoundBankReader.19" xml:space="preserve">
+        <value>Banques de formes d'onde : {0}</value>
+    </data>
+    <data name="SoundBankReader.20" xml:space="preserve">
+        <value>Indices : {0}</value>
+    </data>
+    <data name="SoundBankReader.21" xml:space="preserve">
+        <value>{0} trouvé</value>
+    </data>
+    <data name="SoundBankReader.22" xml:space="preserve">
+        <value>{1} indices trouvés pour {0}</value>
+    </data>
+    <data name="SoundBankReader.23" xml:space="preserve">
+        <value>Index de WaveBank : {0}</value>
+    </data>
+    <data name="SoundBankReader.24" xml:space="preserve">
+        <value>Trouvé {0} indices !</value>
+    </data>
+    <data name="SoundBankReader.25" xml:space="preserve">
+        <value>Format de SoundBank non pris en charge {0}.</value>
+    </data>
+    <data name="XactClipReader.1" xml:space="preserve">
+        <value>Décalage : {0}</value>
+    </data>
+    <data name="XactClipReader.2" xml:space="preserve">
+        <value>Piste : {0}</value>
+    </data>
+    <data name="XactClipReader.3" xml:space="preserve">
+        <value>Événement Lecture Onde Hauteur Volume Filtre Variation</value>
+    </data>
+    <data name="XactSoundReader.1" xml:space="preserve">
+        <value>Longueur des Données Supplémentaires : {0}</value>
+    </data>
+    <data name="XactSoundReader.2" xml:space="preserve">
+        <value>Index de Piste : {0}</value>
+    </data>
+    <data name="FmtChunk.1" xml:space="preserve">
+        <value>Pour SoundEffect, seuls les fichiers wav au format Pcm sont pris en charge. Le format actuel est {0}</value>
+    </data>
+    <data name="FmtChunk.2" xml:space="preserve">
+        <value>Pour Xact, seuls les fichiers wav au format Pcm ou AdpcmMs sont pris en charge. Le format actuel est {0}</value>
+    </data>
+    <data name="FmtChunk.3" xml:space="preserve">
+        <value>Ce n'est pas un type pris en charge par le jeu !</value>
+    </data>
+    <data name="WaveBank.1" xml:space="preserve">
+        <value>- drapeaux   {0}- nombre de fichiers    {1}- nom de la banque    {2}- taille des métadonnées d'entrée  {3}- taille du nom de l'entrée  {4}- alignement    {5}</value>
+    </data>
+    <data name="WaveBank.2" xml:space="preserve">
+        <value>- La taille de l'élément de métadonnées est petite</value>
+    </data>
+    <data name="FmtChunkReader.1" xml:space="preserve">
+        <value>Format WAV invalide : {0}, devrait être fmt</value>
+    </data>
+    <data name="RIFFChunkReader.1" xml:space="preserve">
+        <value>Format WAV invalide : {0}, devrait être RIFF</value>
+    </data>
+    <data name="RIFFChunkReader.2" xml:space="preserve">
+        <value>Format wav invalide : {0}, devrait être WAVE</value>
+    </data>
+    <data name="WaveBankReader.1" xml:space="preserve">
+        <value>- signature : {0} grands/octets valeurs réseau</value>
+    </data>
+    <data name="WaveBankReader.2" xml:space="preserve">
+        <value>- signature : {0} petits/octets valeurs Intel</value>
+    </data>
+    <data name="WaveBankReader.3" xml:space="preserve">
+        <value>- version : {0}</value>
+    </data>
+    <data name="WaveBankReader.4" xml:space="preserve">
+        <value>index   longueur   format   fréquence  canaux  débit  nom de fichier</value>
+    </data>
+    <data name="WaveBankReader.5" xml:space="preserve">
+        <value>décalage : {0}, format : {1}, drapeaux : {2}, décalage de région : {3}, longueur de région : {4}</value>
+    </data>   
+</root>
