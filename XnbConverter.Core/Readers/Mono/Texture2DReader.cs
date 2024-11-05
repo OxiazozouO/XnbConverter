@@ -28,10 +28,10 @@ public class Texture2DReader : BaseReader
             Logger.Warn(Error.Texture2DReader_4, texture2D.MipCount);
         }
 
-        if (texture2D.Width * texture2D.Height * 4 != texture2D.DataSize)
+        if ((decimal)texture2D.Width * texture2D.Height * 4 > Int32.MaxValue)
         {
             throw new Texture2DReaderError(Error.Texture2DReader_5, texture2D.Width, texture2D.Height,
-                texture2D.DataSize / 4);
+                texture2D.DataSize);
         }
 
         SquishFlags squishFlags = texture2D.Format switch
