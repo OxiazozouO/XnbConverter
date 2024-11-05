@@ -962,6 +962,15 @@ namespace XnbConverter {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The dimension represented by the width and height of the Texture2D does not match the data size. Current width: {0}, height: {1}, data size: {2}.
+        /// </summary>
+        public static string Texture2DReader_5 {
+            get {
+                return ResourceManager.GetString("Texture2DReader.5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unimplemented type: {0}
         ///{1}.
         /// </summary>

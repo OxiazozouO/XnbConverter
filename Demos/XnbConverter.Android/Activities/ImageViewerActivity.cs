@@ -9,7 +9,6 @@ public class ImageViewerActivity : Activity
 {
     private ActivityImageViewerHolder holder;
 
-
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);

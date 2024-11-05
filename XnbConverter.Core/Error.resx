@@ -231,6 +231,9 @@
     <data name="Texture2DReader.4" xml:space="preserve">
         <value>Found mipcount for {0}, only the first will be used.</value>
     </data>
+    <data name="Texture2DReader.5" xml:space="preserve">
+        <value>The dimension represented by the width and height of the Texture2D does not match the data size. Current width: {0}, height: {1}, data size: {2}</value>
+    </data>
     <data name="LayerReader.1" xml:space="preserve">
         <value>Max value of i is {0}, current value is {1}</value>
     </data>

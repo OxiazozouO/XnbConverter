@@ -231,6 +231,9 @@
     <data name="Texture2DReader.4" xml:space="preserve">
         <value>找到 {0} 的 mipcount，将只使用第一个。</value>
     </data>
+    <data name="Texture2DReader.5" xml:space="preserve">
+        <value>纹理2D宽度和高度所表示的维度与数据大小不匹配错误，当前 宽度：{0}，高度：{1}，数据大小：{2}</value>
+    </data>
     <data name="LayerReader.1" xml:space="preserve">
         <value>i 的最大值为 {0}，当前值为 {1}</value>
     </data>

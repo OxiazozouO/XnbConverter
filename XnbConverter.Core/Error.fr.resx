@@ -498,4 +498,7 @@
     <data name="WaveBankReader.6" xml:space="preserve">
         <value>- Segment : {0}    Décalage {1}    Longueur : {2} ({3})</value>
     </data>
+    <data name="Texture2DReader.5" xml:space="preserve">
+        <value>La dimension représentée par la largeur et la hauteur de la Texture2D ne correspond pas à la taille des données. Largeur actuelle : {0}, hauteur : {1}, taille des données : {2}</value>
+    </data>
 </root>

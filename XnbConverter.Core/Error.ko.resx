@@ -498,4 +498,7 @@
     <data name="WaveBankReader.6" xml:space="preserve">
         <value>- 세그먼트: {0}    오프셋{1}    길이: {2}({3})</value>
     </data>
+    <data name="Texture2DReader.5" xml:space="preserve">
+        <value>Texture2D의 너비와 높이로 표현된 차원과 데이터 크기가 일치하지 않습니다. 현재 너비: {0}, 높이: {1}, 데이터 크기: {2}</value>
+    </data>
 </root>

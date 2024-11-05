@@ -498,4 +498,7 @@
     <data name="WaveBankReader.6" xml:space="preserve">
         <value>- セグメント：{0}    オフセット {1}    長さ：{2}（{3}）</value>
     </data>
+    <data name="Texture2DReader.5" xml:space="preserve">
+        <value>Texture2D の幅と高さで表される次元とデータサイズが一致しません。現在の幅: {0}、高さ: {1}、データサイズ: {2}</value>
+    </data>
 </root>

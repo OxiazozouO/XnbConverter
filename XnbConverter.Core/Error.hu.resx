@@ -498,4 +498,7 @@
     <data name="WaveBankReader.6" xml:space="preserve">
         <value>- Szegmens: {0}    Eltolás {1}    Hossz: {2} ({3})</value>
     </data>
+    <data name="Texture2DReader.5" xml:space="preserve">
+        <value>A Texture2D szélessége és magassága által reprezentált dimenzió nem egyezik meg az adattaggal. Jelenlegi szélesség: {0}, magasság: {1}, adattag mérete: {2}</value>
+    </data>
 </root>

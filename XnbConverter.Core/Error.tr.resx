@@ -498,4 +498,7 @@
     <data name="WaveBankReader.6" xml:space="preserve">
         <value>- Bölüm: {0}    Ofset {1}    Uzunluk: {2} ({3})</value>
     </data>
+    <data name="Texture2DReader.5" xml:space="preserve">
+        <value>Texture2D'nin genişliği ve yüksekliği tarafından temsil edilen boyut, veri boyutuyla eşleşmiyor. Mevcut genişlik: {0}, yükseklik: {1}, veri boyutu: {2}</value>
+    </data>
 </root>

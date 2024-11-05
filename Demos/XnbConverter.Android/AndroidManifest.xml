@@ -10,7 +10,7 @@
             android:roundIcon="@mipmap/appicon_round"
             android:supportsRtl="true">
         <activity
-                android:name="com.example.actionbartest.MainActivity"
+                android:name=".MainActivity"
                 android:logo="@mipmap/appicon"
                 android:screenOrientation="portrait">
         </activity>

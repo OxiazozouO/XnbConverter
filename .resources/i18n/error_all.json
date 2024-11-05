@@ -1,17 +1,31 @@
 {
   "WaveBankReader.4": {
-    ".zh-CN":  " 编号        大小     格式 采样率  声道 位深度 输出路径",
-    ".default":"Number  Size  Format  SamplingRate  Channels  BitDepth  Output   Path",
-    ".de-DE":  "Nummer Größe Format Abtastrate Kanäle Bit-Tiefe Ausgabe-Pfad",
-    ".es-ES":  "Número Tamaño Formato Tasa de muestreo Canales Profundidad de bits Ruta de salida",
-    ".fr-FR":  "Numéro Taille Format Taux d'échantillonnage Canaux Profondeur en bits Chemin de sortie",
-    ".hu-HU":  "Szám Méret Formátum Mintaátmérő Kanalok Bitmélység Kimeneti elérési út",
-    ".it-IT":  "Numero Dimensione Formato Frequenza di campionamento Canali Profondità in bit Percorso di output",
-    ".ja-JP":  "番号 サイズ フォーマット サンプリングレート チャンネル ビット深度 出力パス",
-    ".ko-KR":  "번호 크기 포맷 샘플링률 채널 비트 깊이 출력 경로",
-    ".pt-BR":  "Número Tamanho Formato Taxa de amostragem Canais Profundidade em bits Caminho de saída",
-    ".ru-RU":  "Номер Размер Формат Частота дискретизации Каналы Глубина битов Путь вывода",
-    ".tr-TR":  "Numara Boyut Format Örnekleme hızı Kanallar Bit derinliği Çıkış yolu"
+    ".zh-CN": " 编号        大小     格式 采样率  声道 位深度 输出路径",
+    ".default": "Number  Size  Format  SamplingRate  Channels  BitDepth  Output   Path",
+    ".de-DE": "Nummer Größe Format Abtastrate Kanäle Bit-Tiefe Ausgabe-Pfad",
+    ".es-ES": "Número Tamaño Formato Tasa de muestreo Canales Profundidad de bits Ruta de salida",
+    ".fr-FR": "Numéro Taille Format Taux d'échantillonnage Canaux Profondeur en bits Chemin de sortie",
+    ".hu-HU": "Szám Méret Formátum Mintaátmérő Kanalok Bitmélység Kimeneti elérési út",
+    ".it-IT": "Numero Dimensione Formato Frequenza di campionamento Canali Profondità in bit Percorso di output",
+    ".ja-JP": "番号 サイズ フォーマット サンプリングレート チャンネル ビット深度 出力パス",
+    ".ko-KR": "번호 크기 포맷 샘플링률 채널 비트 깊이 출력 경로",
+    ".pt-BR": "Número Tamanho Formato Taxa de amostragem Canais Profundidade em bits Caminho de saída",
+    ".ru-RU": "Номер Размер Формат Частота дискретизации Каналы Глубина битов Путь вывода",
+    ".tr-TR": "Numara Boyut Format Örnekleme hızı Kanallar Bit derinliği Çıkış yolu"
+  },
+  "Texture2DReader.5": {
+    ".zh-CN": "纹理2D宽度和高度所表示的维度与数据大小不匹配错误，当前 宽度：{0}，高度：{1}，数据大小：{2}",
+    ".default": "The dimension represented by the width and height of the Texture2D does not match the data size. Current width: {0}, height: {1}, data size: {2}",
+    ".de-DE": "Die durch die Breite und Höhe der Texture2D dargestellte Dimension stimmt nicht überein mit der Datagröße. Aktuelle Breite: {0}, Höhe: {1}, Datagröße: {2}",
+    ".es-ES": "La dimensión representada por el ancho y el alto de la Texture2D no coincide con el tamaño de los datos. Ancho actual: {0}, alto: {1}, tamaño de datos: {2}",
+    ".fr-FR": "La dimension représentée par la largeur et la hauteur de la Texture2D ne correspond pas à la taille des données. Largeur actuelle : {0}, hauteur : {1}, taille des données : {2}",
+    ".hu-HU": "A Texture2D szélessége és magassága által reprezentált dimenzió nem egyezik meg az adattaggal. Jelenlegi szélesség: {0}, magasság: {1}, adattag mérete: {2}",
+    ".it-IT": "La dimensione rappresentata dalla larghezza e dall'altezza della Texture2D non corrisponde alla dimensione dei dati. Larghezza attuale: {0}, altezza: {1}, dimensione dati: {2}",
+    ".ja-JP": "Texture2D の幅と高さで表される次元とデータサイズが一致しません。現在の幅: {0}、高さ: {1}、データサイズ: {2}",
+    ".ko-KR": "Texture2D의 너비와 높이로 표현된 차원과 데이터 크기가 일치하지 않습니다. 현재 너비: {0}, 높이: {1}, 데이터 크기: {2}",
+    ".pt-BR": "A dimensão representada pela largura e altura da Texture2D não corresponde ao tamanho dos dados. Largura atual: {0}, altura: {1}, tamanho dos dados: {2}",
+    ".ru-RU": "Размерность, представленная шириной и высотой Texture2D, не соответствует размеру данных. Текущая ширина: {0}, высота: {1}, размер данных: {2}",
+    ".tr-TR": "Texture2D'nin genişliği ve yüksekliği tarafından temsil edilen boyut, veri boyutuyla eşleşmiyor. Mevcut genişlik: {0}, yükseklik: {1}, veri boyutu: {2}"
   },
   "XNB.1": {
     ".zh-CN": "缓冲区为空",
