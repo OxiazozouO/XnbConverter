@@ -113,6 +113,9 @@ public static class FileUtils
         File.WriteAllText(path, text);
     }
 
+    public static string ToJson(this object data) =>
+        JsonConvert.SerializeObject(data, Settings);
+
     public static T ToEntity<T>(this string path, bool isFileOrd = false)
     {
         if (!File.Exists(path))
@@ -183,4 +186,11 @@ public static class FileUtils
         new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             .AddMilliseconds(t)
             .ToString("yyyy/M/d H:m");
+
+    public static FileStream CreateDirectoryAndFile(string filePath)
+    {
+        string directoryPath = Path.GetDirectoryName(filePath);
+        Directory.CreateDirectory(directoryPath);
+        return File.Create(filePath);
+    }
 }

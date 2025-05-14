@@ -11,7 +11,6 @@ using XnbConverter.Readers.Base;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Tbin.Readers;
 using XnbConverter.Utilities;
-using XnbConverter.Utilities.LZX;
 using XnbConverter.Xact;
 
 namespace XnbConverter;
@@ -201,7 +200,7 @@ public class XNB : IDisposable
             if (Lzx)
             {
                 int compressedTodo = (int)(num - 14);
-                LZX.Decompress(bufferReader, compressedTodo, num2);
+                Utilities.Lzx.Decompress(bufferReader, compressedTodo, num2);
             }
             else if (Lz4)
             {
