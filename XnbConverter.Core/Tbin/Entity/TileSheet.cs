@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using XnbConverter.Entity.Mono;
 
 namespace XnbConverter.Tbin.Entity;

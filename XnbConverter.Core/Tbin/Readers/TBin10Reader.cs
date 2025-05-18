@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Exceptions;
 using XnbConverter.Readers;

@@ -149,7 +149,7 @@ public class Lzx : IDisposable
             20 => 42,
             _ => window << 1,
         };
-        _state.R0 = (_state.R1 = (_state.R2 = 1u));
+        _state.R0 = _state.R1 = _state.R2 = 1u;
         _state.MainElements = (ushort)(256 + (num << 3));
         _state.HeaderRead = false;
         _state.BlockRemaining = 0u;
@@ -265,10 +265,10 @@ public class Lzx : IDisposable
                                 num9 = (int)(PositionBase[num9] - 2);
                                 if (num10 <= 3)
                                 {
-                                    num9 = ((num10 == 3)
-                                        ? (num9 + (int)ReadHuffSymbol(bufferReader, _state.AlignedTable,
-                                            _state.AlignedLen, 8u, 7u))
-                                        : ((num10 <= 0) ? 1 : (num9 + (int)bufferReader.ReadLzxBits((byte)num10))));
+                                    num9 = num10 == 3
+                                        ? num9 + (int)ReadHuffSymbol(bufferReader, _state.AlignedTable,
+                                            _state.AlignedLen, 8u, 7u)
+                                        : num10 <= 0 ? 1 : num9 + (int)bufferReader.ReadLzxBits((byte)num10);
                                 }
                                 else
                                 {
@@ -451,7 +451,7 @@ public class Lzx : IDisposable
         }
 
         bufferReader.Align();
-        int num15 = (int)((_state.WindowPos == 0) ? _state.WindowSize : _state.WindowPos);
+        int num15 = (int)(_state.WindowPos == 0 ? _state.WindowSize : _state.WindowPos);
         num15 -= frameSize;
         _state.Window
             .AsSpan(num15, frameSize)
@@ -586,7 +586,7 @@ public class Lzx : IDisposable
                         int num11 = (int)(num8 << 1);
                         num = Math.Max(num, num11 + 2);
                         ushort num12;
-                        array[num11 + 1] = (num12 = ushort.MaxValue);
+                        array[num11 + 1] = num12 = ushort.MaxValue;
                         array[num11] = num12;
                         array[num10] = (ushort)num8++;
                     }
@@ -629,7 +629,7 @@ public class Lzx : IDisposable
             {
                 num3 >>= 1;
                 num2 <<= 1;
-                num2 |= (((num & num3) != 0) ? 1u : 0u);
+                num2 |= (num & num3) != 0 ? 1u : 0u;
                 if (num3 == 0)
                 {
                     return 0u;

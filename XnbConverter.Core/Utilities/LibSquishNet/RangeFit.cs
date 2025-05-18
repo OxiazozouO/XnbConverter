@@ -1,4 +1,3 @@
-using System;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
@@ -30,9 +29,9 @@ public class RangeFit : ColourFit
 		Vector3 v = Sym3x3.ExtractIndicesFromPackedBytes(count, points, Colours.Weights);
 		if (count > 0)
 		{
-			m_start = (m_end = points[0]);
+			m_start = m_end = points[0];
 			float num;
-			float num2 = (num = points[0].Dot(v));
+			float num2 = num = points[0].Dot(v);
 			for (int i = 1; i < count; i++)
 			{
 				float num3 = points[i].Dot(v);

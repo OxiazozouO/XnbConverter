@@ -1,7 +1,5 @@
-using System;
 using XnbConverter.Exceptions;
 using XnbConverter.Readers;
-using XnbConverter.Utilities;
 using XnbConverter.Xact.WaveBank.Entity;
 
 namespace XnbConverter.Xact.WaveBank.Reader;

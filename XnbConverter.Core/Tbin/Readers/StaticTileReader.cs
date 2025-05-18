@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using XnbConverter.Readers;
 using XnbConverter.Tbin.Entity;
 

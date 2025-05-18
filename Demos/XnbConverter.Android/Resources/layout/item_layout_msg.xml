@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        android:id="@+id/id_msg_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/shape_label7_bg"
+        android:layout_gravity="center_horizontal"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ImageView
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="24dp"
+            android:id="@+id/id_msg_img"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"/>
+
+    <TextView
+            android:id="@+id/id_msg_menu_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="用户名"
+            android:textColor="#FFFFFF"
+            android:textSize="15dp"/>
+</LinearLayout>

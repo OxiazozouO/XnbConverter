@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using LZ4PCL;
 using Newtonsoft.Json;
 using XnbConverter.Configurations;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Exceptions;
 using XnbConverter.Readers;
-using XnbConverter.Readers.Base;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Tbin.Readers;
 using XnbConverter.Utilities;
@@ -77,25 +73,6 @@ public class XNB : IDisposable
 
             return num + 100;
         }
-    }
-
-    public static class Ext
-    {
-        public const string DEF = ".bin";
-
-        public const string JSON = ".json";
-
-        public const string TEXTURE_2D = ".png";
-
-        public const string EFFECT = ".cso";
-
-        public const string TBIN = ".tbin";
-
-        public const string BM_FONT = ".xml";
-
-        public const string SPRITE_FONT = ".json .png";
-
-        public const string SOUND_EFFECT = ".json .wav";
     }
 
     public const int XnbCompressedPrologueSize = 14;
@@ -331,7 +308,7 @@ public class XNB : IDisposable
             TargetTags target = xnbConfig.Header.Target;
             byte formatVersion = xnbConfig.Header.FormatVersion;
             _AnalysisFlag();
-            bool flag = ((target == TargetTags.Android || target == TargetTags.Ios) ? true : false);
+            bool flag = target == TargetTags.Android || target == TargetTags.Ios ? true : false;
             if (flag)
             {
                 xnbConfig.Header.CompressedFlag |= CompressedMasks.Lz4;
@@ -535,7 +512,7 @@ public class XNB : IDisposable
                     {
                         if (data is XmlSource xmlSource)
                         {
-                            return num + (xmlSource.Data.Length + 200);
+                            return num + xmlSource.Data.Length + 200;
                         }
 
                         return 10485760;

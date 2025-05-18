@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace XnbConverter.Readers.Base;
 
 public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, new() where TV : BaseReader, new()
@@ -27,8 +25,8 @@ public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, 
 		uint num = bufferReader.ReadUInt32();
 		while (num-- != 0)
 		{
-			object obj = (_bK ? ((object)readerResolver.ReadValue<K>(_keyReader)) : readerResolver.Read(_keyReader));
-			object obj2 = (_bV ? ((object)readerResolver.ReadValue<V>(_valueReader)) : readerResolver.Read(_valueReader));
+			object obj = _bK ? (object)readerResolver.ReadValue<K>(_keyReader) : readerResolver.Read(_keyReader);
+			object obj2 = _bV ? (object)readerResolver.ReadValue<V>(_valueReader) : readerResolver.Read(_valueReader);
 			dictionary.Add((K)obj, (V)obj2);
 		}
 		return dictionary;

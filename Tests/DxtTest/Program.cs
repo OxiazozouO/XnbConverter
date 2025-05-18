@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Squish;
+﻿using Squish;
 
 namespace DxtTest;
 

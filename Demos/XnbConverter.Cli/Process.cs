@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 using XnbConverter.Configurations;
 using XnbConverter.Utilities;
 
@@ -48,7 +43,7 @@ public static class Process
     private static void Details()
     {
         Logger.Message("成功: {0}\n失败: {1}\n——————————————————————————", _success, _fail);
-        _success = (_fail = 0);
+        _success = _fail = 0;
     }
 
     public static void Unpack(string input, string output)

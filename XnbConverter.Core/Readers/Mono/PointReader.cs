@@ -1,4 +1,3 @@
-using XnbConverter.Entity.Mono;
 using Point = XnbConverter.Entity.Mono.Point;
 
 namespace XnbConverter.Readers.Mono;

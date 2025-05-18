@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Text;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Exceptions;
 using XnbConverter.Readers;
-using XnbConverter.Readers.Base;
 using XnbConverter.Tbin.Entity;
-using XnbConverter.Utilities;
 using StringReader = XnbConverter.Readers.Base.StringReader;
 
 namespace XnbConverter.Tbin.Readers;

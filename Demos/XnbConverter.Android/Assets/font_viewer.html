@@ -1,0 +1,450 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        option {
+            background-color: #f9f9f9;
+            color: #26a69a;
+        }
+
+        #preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-left: 20px;
+        }
+
+        ::-webkit-input-placeholder {
+            color: #f2f2f2;
+        }
+
+        #upload-font {
+            background-color: #4db6ac;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        #upload-font:hover {
+            background-color: #26a69a;
+        }
+
+        .font-preview:not(:last-child) {
+            border-bottom: 1px solid #4db6ac;
+        }
+
+        #pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 15px;
+            padding-left: 20px;
+            background-color: #e0f2f1;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .character-box {
+            border: 1px solid #388e3c;
+            border-radius: 10px;
+            width: 100px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+            text-align: center;
+            background: linear-gradient(to bottom, #f1f8e9, #e8f5e9);
+            transition: all 0.2s ease;
+        }
+
+        .character-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .character {
+            font-size: 30px;
+            font-family: 'Roboto', sans-serif;
+            color: #000000;
+            margin-bottom: 5px;
+        }
+
+        .unicode {
+            font-size: 12px;
+            font-family: 'Roboto', sans-serif;
+            color: #777;
+        }
+
+        .highlight {
+            border: 2px solid #12dc1c;
+            background-color: #fffacd;
+            box-shadow: 0 0 10px rgba(3, 162, 13, 0.55);
+            animation: glow 0.5s ease infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 10px rgba(16, 101, 21, 0.75);
+            }
+
+            to {
+                box-shadow: 0 0 20px #106515;
+            }
+        }
+
+        .active {
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+            padding-left: 8px;
+            padding-right: 8px;
+            border: 2px solid #023d37;
+            border-radius: 5px;
+            background-color: #26a69a;
+            height: 24px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #page-select {
+            width: 150px;
+            background-color: #4db6ac;
+        }
+
+        #page-select,
+        #font-select,
+        #upload-font,
+        #text-input,
+        #search-input,
+        #prev-page,
+        #next-page {
+            border: 2px solid #023d37;
+            border-radius: 5px;
+            background-color: #4db6ac;
+            margin-right: 10px;
+            color: white;
+            height: 26px;
+        }
+
+        #page-select:hover,
+        #font-select:hover,
+        #upload-font:hover,
+        #text-input:hover,
+        #search-input:hover,
+        #prev-page:hover,
+        #next-page:hover {
+            border: 2px solid #023d37;
+            border-radius: 5px;
+            background-color: #26a69a;
+            height: 26px;
+        }
+    </style>
+</head>
+<body>
+<input type="file" id="font-file" style="display: none;" multiple>
+<button id="upload-font">上传字体文件</button>
+<select id="font-select">
+    <option value="Arial">Arial</option>
+    <option value="Times New Roman">Times New Roman</option>
+    <option value="Courier New">Courier New</option>
+    <option value="Verdana">Verdana</option>
+</select>
+<input type="text" id="text-input" placeholder="输入文字" value="Hello, World!"><br><br>
+<div id="preview-container"></div>
+<div id="pagination">
+    <button id="prev-page">上一页</button>
+    <select id="page-select"></select>
+    <button id="next-page">下一页</button>
+</div>
+<div id="page-buttons"></div>
+<input type="text" id="search-input" placeholder="搜索字符 / unicode / 字符串">
+<div id="character-container" style="display: flex; flex-wrap: wrap;"></div>
+<script>
+    let FV = {};
+    FV.allCharacters = [];
+    FV.font = "Arial";
+    FV.charactersPerPage = 102;
+    FV.currentPage = 1;
+    FV.isSearchResultShown = false;
+
+    // 字体查看相关元素获取
+    let fontSelect = document.getElementById('font-select');
+    let textInput = document.getElementById('text-input');
+    let uploadFont = document.getElementById('upload-font');
+    let fontFile = document.getElementById('font-file');
+    let container = document.getElementById('preview-container');
+    // 字符查看相关元素获取
+    const containerForCharacterViewer = document.getElementById("character-container");
+    const pageSelect = document.getElementById("page-select");
+    const searchInput = document.getElementById("search-input");
+    const nextPage = document.getElementById("next-page");
+    const prevPage = document.getElementById("prev-page");
+    const pageButtonsDiv = document.getElementById("page-buttons");
+
+    // 生成所有字符
+    for (let i = 0; i <= 0xFFFF; i++) {
+        let char = String.fromCharCode(i);
+        FV.allCharacters.push({
+            character: char,
+            unicode: i
+        });
+    }
+
+    FV.totalPages = Math.ceil(FV.allCharacters.length / FV.charactersPerPage);
+
+    //[{name,type,base64},{name,type,base64}]
+    FV.LoadFontsFromBase64 = function (fonts) {
+        fonts.forEach((name, type, base64) => {
+            const font = new FontFace(`${name}`, `url(data:font/${type};base64,${base64})`);
+            font.load().then(function (loadedFont) {
+                document.fonts.add(loadedFont);
+                const newOption = document.createElement('option');
+                newOption.textContent = `${name}`;
+                newOption.value = `${name}`;
+                fontSelect.appendChild(newOption);
+                updatePreview();
+                updateCharacterViewerFont();
+            }).catch(function (error) {
+                console.error('字体加载失败:', error);
+            });
+        });
+    }
+
+    function displayPage(page) {
+        const startIndex = (page - 1) * FV.charactersPerPage;
+        const endIndex = startIndex + FV.charactersPerPage;
+        containerForCharacterViewer.innerHTML = "";
+        let htmlStr = '';
+        for (let i = startIndex; i < endIndex && i < FV.allCharacters.length; i++) {
+            let charObj = FV.allCharacters[i];
+            htmlStr += `<div class="character-box">
+                            <div class="character" style="font-family:${FV.font}">${charObj.character}</div>
+                            <div class="unicode">U+${charObj.unicode.toString(16).toUpperCase().padStart(4, '0')}</div>
+                        </div>`;
+        }
+        containerForCharacterViewer.innerHTML = htmlStr;
+    }
+
+    function populatePageSelect() {
+        for (let i = 0; i < FV.totalPages; i++) {
+            let start = i * FV.charactersPerPage;
+            let end = Math.min((i + 1) * FV.charactersPerPage - 1, FV.allCharacters.length - 1);
+            let option = document.createElement("option");
+            option.value = i + 1;
+            option.text = `${start}-${end}`;
+            pageSelect.add(option);
+        }
+        pageSelect.addEventListener("change", () => {
+            goToPage(parseInt(pageSelect.value));
+        });
+    }
+
+    function updatePageButtons() {
+        pageButtonsDiv.innerHTML = "";
+        let startButton, endButton;
+        if (FV.totalPages <= 10) {
+            startButton = 1;
+            endButton = FV.totalPages;
+        } else {
+            if (FV.currentPage <= 5) {
+                startButton = 1;
+                endButton = 10;
+            } else if (FV.currentPage >= FV.totalPages - 4) {
+                startButton = FV.totalPages - 9;
+                endButton = FV.totalPages;
+            } else {
+                startButton = FV.currentPage - 4;
+                endButton = FV.currentPage + 5;
+            }
+        }
+        for (let i = startButton; i <= endButton; i++) {
+            let button = document.createElement("button");
+            button.textContent = i;
+            if (i === FV.currentPage) {
+                button.classList.add("active");
+            }
+            button.addEventListener("click", () => {
+                goToPage(i);
+            });
+            pageButtonsDiv.appendChild(button);
+        }
+    }
+
+    function goToPage(page, isSearchResult = true) {
+        if (page <= FV.totalPages && page > 0) {
+            FV.currentPage = page;
+            displayPage(FV.currentPage);
+            updatePageButtons();
+            pageSelect.value = FV.currentPage;
+            if (isSearchResult)
+                searchInput.value = '';
+        }
+    }
+
+    function goToPrevPage() {
+        goToPage(FV.currentPage - 1);
+    }
+
+    function goToNextPage() {
+        goToPage(FV.currentPage + 1);
+    }
+
+    function searchCharacter() {
+        const searchValue = searchInput.value;
+        containerForCharacterViewer.innerHTML = "";
+        let found = false;
+        let htmlStr = '';
+        let unicodeRegex = /^(\\u|u)([0-9a-fA-F]{4})$/;
+        let match = searchValue.match(unicodeRegex);
+        if (match) {
+            try {
+                let code = parseInt(match[2], 16);
+                let char = String.fromCharCode(code);
+                found = searchAndHighlight(char);
+            } catch (e) {
+                console.error("Invalid Unicode code: ", searchValue);
+            }
+        } else if (searchValue.length === 1) {
+            found = searchAndHighlight(searchValue);
+        } else if (searchValue.length > 1) {
+            for (let i = 0; i < searchValue.length; i++) {
+                let char = searchValue[i];
+                let foundChar = false;
+                for (let j = 0; j < FV.allCharacters.length; j++) {
+                    if (FV.allCharacters[j].character === char) {
+                        foundChar = true;
+                        let charObj = FV.allCharacters[j];
+                        let charBox = createCharacterBox(charObj.character, charObj.unicode, FV.font);
+                        containerForCharacterViewer.appendChild(charBox);
+                        break;
+                    }
+                }
+                if (!foundChar) {
+                    let charBox = createCharacterBox(char, null, FV.font);
+                    containerForCharacterViewer.appendChild(charBox);
+                }
+            }
+        }
+
+        function searchAndHighlight(searchChar) {
+            for (let i = 0; i < FV.allCharacters.length; i++) {
+                let charObj = FV.allCharacters[i];
+                if (charObj.character === searchChar) {
+                    FV.isSearchResultShown = true;
+                    let page = Math.floor(i / FV.charactersPerPage) + 1;
+                    goToPage(page, false);
+                    let startIndex = (page - 1) * FV.charactersPerPage;
+                    let indexInPage = i - startIndex;
+                    let charBoxes = containerForCharacterViewer.children;
+                    let targetCharBox = charBoxes[indexInPage];
+                    targetCharBox.classList.add("highlight");
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function createCharacterBox(character, unicode, font) {
+            let unicodeText = '';
+            if (unicode) {
+                unicodeText = "U+" + unicode.toString(16).toUpperCase().padStart(4, '0');
+            } else {
+                unicodeText = "未找到对应 Unicode 码";
+            }
+            let charBox = `<div class="character-box">
+                               <div class="character" style="font-family:${font}">${character}</div>
+                               <div class="unicode">${unicodeText}</div>
+                           </div>`;
+            let div = document.createElement('div');
+            div.innerHTML = charBox;
+            return div.firstChild;
+        }
+    }
+
+    function updatePreview() {
+        const selectedFont = fontSelect.value;
+        let inputText = textInput.value;
+        if (inputText === '') inputText = 'Hello World!';
+        font = selectedFont;
+        const sizes = [12, 18, 24, 30, 36, 42, 48];
+        let previewHtml = '';
+        container.innerHTML = '';
+        sizes.forEach(size => {
+            previewHtml += '<div class="font-preview" style="font-family: ' + selectedFont + '; font-size: ' + size + 'px;">' + inputText + '</div>';
+        });
+        container.innerHTML = previewHtml;
+    }
+
+    function updateCharacterViewerFont() {
+        displayPage(FV.currentPage);
+        if (FV.isSearchResultShown) {
+            searchCharacter();
+        }
+    }
+
+    fontSelect.addEventListener('change', function () {
+        updatePreview();
+        updateCharacterViewerFont();
+    });
+    textInput.addEventListener('input', updatePreview);
+    uploadFont.addEventListener('click', function () {
+        fontFile.click();
+    });
+    fontFile.addEventListener('change', function (event) {
+        const files = event.target.files;
+        let firstFontLoaded = false;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const font = new FontFace(file.name.split('.')[0], e.target.result);
+                font.load().then(function (loadedFont) {
+                    document.fonts.add(loadedFont);
+                    const newOption = document.createElement('option');
+                    newOption.textContent = file.name;
+                    newOption.value = file.name.split('.')[0];
+                    fontSelect.appendChild(newOption);
+                    if (!firstFontLoaded) {
+                        fontSelect.value = newOption.value;
+                        firstFontLoaded = true;
+                    }
+                    updatePreview();
+                    updateCharacterViewerFont();
+                }).catch(function (error) {
+                    console.error('字体加载失败:', error);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    });
+
+
+    nextPage.addEventListener("click", goToNextPage);
+    prevPage.addEventListener("click", goToPrevPage);
+    searchInput.addEventListener("input", () => {
+        const currentValue = searchInput.value;
+        if (currentValue === "") {
+            if (FV.isSearchResultShown) {
+                let charBoxes = containerForCharacterViewer.querySelectorAll('.character-box');
+                charBoxes.forEach((box) => {
+                    box.classList.remove("highlight");
+                });
+                FV.isSearchResultShown = false;
+            }
+        } else {
+            searchCharacter();
+        }
+    });
+
+    populatePageSelect();
+    displayPage(1);
+    updatePageButtons();
+    updatePreview();
+</script>
+</body>
+
+</html>

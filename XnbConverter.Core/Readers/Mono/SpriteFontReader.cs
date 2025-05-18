@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using XnbConverter.Entity.Mono;
+﻿using XnbConverter.Entity.Mono;
 using XnbConverter.Readers.Base;
 using XnbConverter.Readers.Base.ValueReaders;
 using Rectangle = XnbConverter.Entity.Mono.Rectangle;

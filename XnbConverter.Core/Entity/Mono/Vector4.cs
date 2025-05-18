@@ -18,7 +18,7 @@ public struct Vector4
 
 	public Vector4()
 	{
-		X = (Y = (Z = (W = 0f)));
+		X = Y = Z = W = 0f;
 	}
 
 	public Vector4(float x, float y, float z, float w)
@@ -136,6 +136,6 @@ public struct Vector4
 
 	public void Fill(float f)
 	{
-		X = (Y = (Z = (W = f)));
+		X = Y = Z = W = f;
 	}
 }

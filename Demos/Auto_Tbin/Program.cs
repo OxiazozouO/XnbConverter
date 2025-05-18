@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Auto_Tbin;
+﻿using Auto_Tbin;
 using XnbConverter.Tbin.Entity;
 using XnbConverter.Tbin.Readers;
 

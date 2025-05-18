@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace XnbConverter.Readers.Base;
 
 public class ArrayReader<V> : BaseReader where V : new()

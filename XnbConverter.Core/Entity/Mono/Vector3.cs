@@ -28,7 +28,7 @@ public struct Vector3
 
 	public Vector3()
 	{
-		X = (Y = (Z = 0f));
+		X = Y = Z = 0f;
 	}
 
 	public Vector3 Clamp(float min, float max)
@@ -120,6 +120,6 @@ public struct Vector3
 
 	public void Fill(float f)
 	{
-		X = (Y = (Z = f));
+		X = Y = Z = f;
 	}
 }

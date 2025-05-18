@@ -1,5 +1,3 @@
-using System;
-
 namespace Squish;
 
 public abstract class ColourFit : IDisposable

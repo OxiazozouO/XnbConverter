@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:id="@+id/id_file_view_main"
+            android:layout_marginLeft="6dp"
+            android:layout_alignParentLeft="true"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+        <ImageView
+                android:id="@+id/id_file_view_icon"
+                android:src="@mipmap/appicon"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:scaleType="centerCrop"/>
+
+        <LinearLayout
+                android:layout_marginLeft="2dp"
+                android:layout_centerVertical="true"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <TextView
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:longClickable="false"
+                    android:clickable="false"
+                    android:id="@+id/id_file_view_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:text="dfenvsc.xnb"
+                    android:ellipsize="none"
+                    android:inputType="textMultiLine"
+                    android:singleLine="false"
+                    android:textColor="#000000"/>
+
+            <LinearLayout
+                    android:id="@+id/id_file_view_date_and_size"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+
+                <TextView
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:longClickable="false"
+                        android:clickable="false"
+                        android:layout_marginRight="6dp"
+                        android:id="@+id/id_file_view_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12dp"
+                        android:text="2024/3/3"
+                        android:ellipsize="none"
+                        android:inputType="textMultiLine"
+                        android:singleLine="false"
+                        android:textColor="#000000"/>
+
+                <TextView
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:longClickable="false"
+                        android:clickable="false"
+                        android:id="@+id/id_file_view_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12dp"
+                        android:text="10 MB"
+                        android:ellipsize="none"
+                        android:inputType="textMultiLine"
+                        android:singleLine="false"
+                        android:textColor="#000000"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <CheckBox
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:longClickable="false"
+            android:clickable="false"
+            android:layout_gravity="right|center_vertical"
+            android:id="@+id/id_file_view_check"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</FrameLayout>

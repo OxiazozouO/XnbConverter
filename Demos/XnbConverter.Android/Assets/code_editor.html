@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8"/>
+    <!--codemirror必须引入的-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/codemirror.min.js"></script>
+    <!--引入css文件，用以支持主题-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/theme/mdn-like.css" rel="stylesheet"/>
+    <!--对光标所在行和选中区域高亮-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/addon/selection/active-line.js"></script>
+    <!--javascript代码高亮-->
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/mode/javascript/javascript.min.js"></script>
+    <!--xml代码高亮-->
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/mode/xml/xml.min.js"></script>
+    <!--java代码高亮-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/mode/clike/clike.min.js"></script>
+
+    <!--支持代码折叠-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/addon/fold/foldgutter.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/addon/fold/foldcode.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/addon/fold/foldgutter.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/addon/fold/brace-fold.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.3/addon/fold/comment-fold.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #editor {
+            height: 100%;
+            width: 100%;
+        }
+
+        .CodeMirror {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+    </style>
+</head>
+
+<body>
+<div>
+    <textarea class="form-control" id="editor" name="code"></textarea>
+</div>
+
+<script>
+    //根据DOM元素的id构造出一个编辑器
+    let CE = CodeMirror.fromTextArea(document.getElementById("editor"), {
+        mode: "application/xml",
+        lineNumbers: true,  //显示行号
+        theme: "mdn-like",   //设置主题
+        lineWrapping: false, //false则超过宽带会显示水平滚动条，true不会显示
+        foldGutter: true,   //代码是否可折叠
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        matchBrackets: true,    //括号匹配
+        indentWithTabs: true,  //前 N*tabSize 个空格是否应替换为 N 个制表符
+        smartIndent: true,   //上下文相关缩进（即是否缩进与之前的行相同）
+        autofocus: true,
+        styleActiveLine: true, //光标所在行高亮
+    });
+
+    CE.SetMode = function (mode) {
+        //"application/text"
+        //"application/xml"
+        //"text/x-javascript"
+        //"text/x-java"
+        CE.setOption('mode', mode);
+    }
+
+    CE.Undo = function () {
+        CE.undo();
+    }
+    CE.Redo = function () {
+        CE.redo();
+    }
+
+    CE.SetCode = function (text) {
+        CE.setValue(text);
+    }
+
+    CE.GetCode = function () {
+        let value = CE.getValue();
+        window.location.href = "callback://" + value;
+    }
+</script>
+</body>
+</html>

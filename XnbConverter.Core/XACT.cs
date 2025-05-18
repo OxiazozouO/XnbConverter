@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using XnbConverter.Xact.AudioEngine.Entity;
 using XnbConverter.Xact.AudioEngine.Reader;
 using XnbConverter.Xact.SoundBank.Entity;

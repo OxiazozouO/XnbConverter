@@ -1,5 +1,4 @@
-﻿using System;
-using XnbConverter.Utilities;
+﻿using XnbConverter.Utilities;
 
 namespace Squish;
 
@@ -93,14 +92,14 @@ public class Squish : IDisposable
 	public int GetStorageRequirements()
 	{
 		int num = (Width + 3) / 4 * ((Height + 3) / 4);
-		int num2 = (boolFlag.isDxt1 ? 8 : 16);
+		int num2 = boolFlag.isDxt1 ? 8 : 16;
 		return num * num2;
 	}
 
 	public void DecompressImage(Span<byte> rgba, ReadOnlySpan<byte> blocks)
 	{
 		int num = 0;
-		int num2 = (boolFlag.isDxt1 ? 8 : 16);
+		int num2 = boolFlag.isDxt1 ? 8 : 16;
 		byte[] array = Pool.RentByte(64);
 		Span<byte> rgba2 = array.AsSpan();
 		for (int i = 0; i < Height; i += 4)
@@ -213,7 +212,7 @@ public class Squish : IDisposable
 	public void CompressImage(ReadOnlySpan<byte> rgba, Span<byte> blocks)
 	{
 		int num = 0;
-		int num2 = (boolFlag.isDxt1 ? 8 : 16);
+		int num2 = boolFlag.isDxt1 ? 8 : 16;
 		byte[] array = Pool.RentByte(64);
 		Span<byte> span = array.AsSpan();
 		for (int i = 0; i < Height; i += 4)
@@ -256,7 +255,7 @@ public class Squish : IDisposable
 			num += 8;
 		}
 		Colours.Init(rgba, mask);
-		ColourFit colourFit = ((Colours.Count == 1) ? singleColourFit : ((!boolFlag.isColourRangeFit && Colours.Count != 0) ? ((ColourFit)clusterFit) : ((ColourFit)rangeFit)));
+		ColourFit colourFit = Colours.Count == 1 ? singleColourFit : !boolFlag.isColourRangeFit && Colours.Count != 0 ? (ColourFit)clusterFit : (ColourFit)rangeFit;
 		colourFit.Init();
 		ref Span<byte> reference = ref block;
 		int num2 = num;

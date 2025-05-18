@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using XnbConverter.Readers;
+﻿using XnbConverter.Readers;
 using XnbConverter.Utilities;
 
 namespace XnbConverter.Configurations;

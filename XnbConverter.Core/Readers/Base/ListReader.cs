@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace XnbConverter.Readers.Base;
 
 public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()

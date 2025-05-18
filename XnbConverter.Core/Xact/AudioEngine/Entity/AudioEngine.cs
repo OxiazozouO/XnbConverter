@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace XnbConverter.Xact.AudioEngine.Entity;
 
 public class AudioEngine

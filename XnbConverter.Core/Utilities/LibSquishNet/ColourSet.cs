@@ -1,4 +1,3 @@
-using System;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
@@ -64,7 +63,7 @@ public class ColourSet : IDisposable
 					Points[Count].Y = (float)(int)rgba[num + 1] / 255f;
 					Points[Count].Z = (float)(int)rgba[num + 2] / 255f;
 					float num5 = (float)(rgba[num + 3] + 1) / 256f;
-					Weights[Count] = (WeightByAlpha ? num5 : 1f);
+					Weights[Count] = WeightByAlpha ? num5 : 1f;
 					Remap[i] = Count;
 					Count++;
 					break;
@@ -73,7 +72,7 @@ public class ColourSet : IDisposable
 				if ((mask & num6) != 0 && rgba[num] == rgba[num4] && rgba[num + 1] == rgba[num4 + 1] && rgba[num + 2] == rgba[num4 + 2] && (rgba[num4 + 3] >= 128 || !IsDxt1))
 				{
 					int num7 = Remap[num3];
-					float num8 = (WeightByAlpha ? ((float)(rgba[num + 3] + 1) / 256f) : 1f);
+					float num8 = WeightByAlpha ? (float)(rgba[num + 3] + 1) / 256f : 1f;
 					Weights[num7] += num8;
 					Remap[i] = num7;
 					break;
@@ -97,7 +96,7 @@ public class ColourSet : IDisposable
 		for (int i = 0; i < 16; i++)
 		{
 			int num = Remap[i];
-			array[i] = (byte)((num == -1) ? 3 : source[num]);
+			array[i] = (byte)(num == -1 ? 3 : source[num]);
 		}
 		return array;
 	}
@@ -107,7 +106,7 @@ public class ColourSet : IDisposable
 		byte[] array = Pool.RentByte(16);
 		for (int i = 0; i < 16; i++)
 		{
-			array[i] = (byte)((Remap[i] == -1) ? 3 : source);
+			array[i] = (byte)(Remap[i] == -1 ? 3 : source);
 		}
 		return array;
 	}

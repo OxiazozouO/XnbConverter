@@ -1,6 +1,4 @@
-using System;
 using XnbConverter.Exceptions;
-using XnbConverter.Utilities;
 
 namespace XnbConverter.Xact.WaveBank.Entity;
 
@@ -81,7 +79,7 @@ public class FmtChunk
 		case "All":
 		{
 			AudioFormats fmtTag = FmtTag;
-			bool flag = (((uint)(fmtTag - 1) <= 2u || fmtTag == AudioFormats.Ima4) ? true : false);
+			bool flag = (uint)(fmtTag - 1) <= 2u || fmtTag == AudioFormats.Ima4 ? true : false;
 			flag2 = flag;
 			if (!flag2)
 			{

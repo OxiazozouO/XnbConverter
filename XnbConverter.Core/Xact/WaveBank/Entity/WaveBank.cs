@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 using XnbConverter.Configurations;
-using XnbConverter.Utilities;
 
 namespace XnbConverter.Xact.WaveBank.Entity;
 

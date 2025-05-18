@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using XnbConverter.Exceptions;
-using XnbConverter.Utilities;
 
 namespace XnbConverter.Readers;
 

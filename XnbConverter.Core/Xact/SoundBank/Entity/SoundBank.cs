@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace XnbConverter.Xact.SoundBank.Entity;
 
 public class SoundBank

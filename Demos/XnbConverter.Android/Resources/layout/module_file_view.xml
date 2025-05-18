@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_card_border_ash"
+        android:orientation="vertical">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:layout_width="match_parent"
+            android:id="@+id/id_file_view_swipe"
+            android:layout_height="match_parent">
+
+        <ListView
+                android:id="@+id/id_file_view_list_view"
+                android:scrollbars="none"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:descendantFocusability="beforeDescendants"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</LinearLayout>

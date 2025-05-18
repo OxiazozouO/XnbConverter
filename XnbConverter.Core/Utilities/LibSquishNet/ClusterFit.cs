@@ -1,4 +1,3 @@
-using System;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
@@ -29,7 +28,7 @@ public class ClusterFit : ColourFit
 	public ClusterFit(ColourSet colours, bool isDxt1, bool isColourIterativeClusterFit)
 		: base(colours, isDxt1)
 	{
-		IterationCount = ((!isColourIterativeClusterFit) ? 1 : 8);
+		IterationCount = !isColourIterativeClusterFit ? 1 : 8;
 	}
 
 	public override void Init()
@@ -166,8 +165,8 @@ public class ClusterFit : ColourFit
 			Vector4 vector4 = new Vector4(0f);
 			for (int i = 0; i < count; i++)
 			{
-				Vector4 vector5 = ((i == 0) ? PointsWeights[0] : new Vector4(0f));
-				int num5 = ((i == 0) ? 1 : i);
+				Vector4 vector5 = i == 0 ? PointsWeights[0] : new Vector4(0f);
+				int num5 = i == 0 ? 1 : i;
 				while (true)
 				{
 					Vector4 vector6 = XsumWsum - vector5 - vector4;

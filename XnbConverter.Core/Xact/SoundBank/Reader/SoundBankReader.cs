@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using XnbConverter.Configurations;
 using XnbConverter.Exceptions;
 using XnbConverter.Readers;
-using XnbConverter.Utilities;
 using XnbConverter.Xact.SoundBank.Entity;
 
 namespace XnbConverter.Xact.SoundBank.Reader;

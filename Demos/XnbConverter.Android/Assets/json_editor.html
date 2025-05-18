@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.10.3/jsoneditor.min.css">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #editor {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="editor"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/9.10.3/jsoneditor.min.js"></script>
+<script>
+    let JE = new JSONEditor(document.getElementById("editor"), {
+        mode: 'code',
+        modes: ['code', 'tree', 'text', 'form', 'view']
+    });
+    JE.Init = function (str) {
+        try {
+            var parse = JSON.parse(str);
+            JE.set(parse);
+            JE.setMode('code');
+            JE.expandAll();
+        } catch (error) {
+        }
+    };
+
+    JE.Text = function () {
+        let json = JSON.stringify(JE.get(), null, 4);
+        window.location.href = "callback://" + json;
+    };
+</script>
+</body>
+</html>

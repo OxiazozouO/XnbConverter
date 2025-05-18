@@ -1,5 +1,4 @@
 ﻿using XnbConverter.Entity.Mono;
-using XnbConverter.Readers.Base;
 using StringReader = XnbConverter.Readers.Base.StringReader;
 
 namespace XnbConverter.Readers.Mono;

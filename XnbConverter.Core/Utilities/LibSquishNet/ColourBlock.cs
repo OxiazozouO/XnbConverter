@@ -1,4 +1,3 @@
-using System;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 
@@ -131,7 +130,7 @@ public static class ColourBlock
 			}
 		}
 		colour[11] = byte.MaxValue;
-		colour[15] = (byte)((!isDxt1 || num > num2) ? 255u : 0u);
+		colour[15] = (byte)(!isDxt1 || num > num2 ? 255u : 0u);
 		byte[] array2 = Pool.RentByte(16);
 		int k = 4;
 		int num7 = -1;

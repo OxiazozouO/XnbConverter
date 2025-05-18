@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using XnbConverter.Configurations;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
-using XnbConverter.Xact.WaveBank.Entity;
 using static XnbConverter.Xact.WaveBank.Entity.WaveBank;
 
 namespace XnbConverter.Xact.WaveBank.Reader;

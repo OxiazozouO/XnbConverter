@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using XnbConverter.Cli.Configurations;
 using XnbConverter.Configurations;
 using XnbConverter.Entity.Mono;
-using XnbConverter.Utilities;
 
 namespace XnbConverter.Cli;
 
@@ -79,7 +74,7 @@ public static class Program
                     ["version"] = new Option(OptionType.Help)
                 }
             };
-            Instance._next["auto"]._next = (Instance._next["unpack"]._next = (Instance._next["pack"]._next = next));
+            Instance._next["auto"]._next = Instance._next["unpack"]._next = Instance._next["pack"]._next = next;
             AssemblyName name = Assembly.GetExecutingAssembly().GetName();
             string text = name.Name + " v" + name.Version;
             Instance._next["version"].Value = text;

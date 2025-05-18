@@ -1,4 +1,3 @@
-using System;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
 

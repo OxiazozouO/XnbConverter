@@ -1,4 +1,3 @@
-using System;
 using XnbConverter.Readers;
 using XnbConverter.Xact.AudioEngine.Entity;
 

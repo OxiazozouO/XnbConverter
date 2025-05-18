@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using XnbConverter.Exceptions;
 using XnbConverter.Utilities;
 

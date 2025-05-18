@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using XnbConverter;
 using XnbConverter.Configurations;
 using XnbConverter.Readers;
