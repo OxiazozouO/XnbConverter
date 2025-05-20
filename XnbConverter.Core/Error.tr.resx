@@ -167,11 +167,18 @@
         <value>Paketle</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>Geçersiz komut
-</value>
+        <value>Geçersiz komut</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>İstisnayı Yakala:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+Proje adresi: {2}
+Yazar e-posta: {3}</value>  
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>Yeni bir versiyon tespit edildi: {0}, lütfen indirmek için linke tıklayın: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}' bulunamadı!</value>

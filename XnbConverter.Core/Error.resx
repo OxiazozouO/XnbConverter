@@ -167,11 +167,18 @@
         <value>Pack</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>bad command
-</value>
+        <value>bad command</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>Catch Exception:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+Project URL: {2}
+Author Email: {3}</value>  
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>New version detected: {0}, please click the link to download: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}' not found!</value>

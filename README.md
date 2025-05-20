@@ -13,7 +13,7 @@
 
 创建者：oxiaozouo by [1714050472@qq.com](1714050472@qq.com)
 版本：1.1.0-alpha
-语言：C# .NET 7
+语言：C# .NET 9
 
 ## 支持的转码内容
 

@@ -167,11 +167,18 @@
         <value>Empacotar</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>Comando inválido
-</value>
+        <value>Comando inválido</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>Capturar exceção:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+Endereço do projeto: {2}
+Email do autor: {3}</value>  
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>Versão nova detectada: {0}, clique no link para baixar: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}' não encontrado!</value>

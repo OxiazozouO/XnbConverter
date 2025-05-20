@@ -63,7 +63,7 @@
             PublicKeyToken=b77a5c561934e089
         </value>
     </resheader>
- 
+
     <data name="XNB.1" xml:space="preserve">
         <value>A puffer üres</value>
     </data>
@@ -167,11 +167,18 @@
         <value>Csomagolás</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>Rossz parancs
-</value>
+        <value>Rossz parancs</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>Kivétel elkapása:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+Projekt címe: {2}
+Szerző e-mail címe: {3}</value> 
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>Új verzió detektálva: {0}, kattintson a hivatkozásra letölthezni: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}' nem található!</value>

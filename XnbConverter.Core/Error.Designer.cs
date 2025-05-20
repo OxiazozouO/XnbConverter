@@ -565,6 +565,15 @@ namespace XnbConverter {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New version detected: {0}, please click the link to download: {1}.
+        /// </summary>
+        public static string Program_10 {
+            get {
+                return ResourceManager.GetString("Program.10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [Required] Input file or folder.
         /// </summary>
         public static string Program_2 {
@@ -610,8 +619,7 @@ namespace XnbConverter {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to bad command
-        ///.
+        ///   Looks up a localized string similar to bad command.
         /// </summary>
         public static string Program_7 {
             get {
@@ -625,6 +633,17 @@ namespace XnbConverter {
         public static string Program_8 {
             get {
                 return ResourceManager.GetString("Program.8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} v{1}
+        ///Project URL: {2}
+        ///Author Email: {3}.
+        /// </summary>
+        public static string Program_9 {
+            get {
+                return ResourceManager.GetString("Program.9", resourceCulture);
             }
         }
         

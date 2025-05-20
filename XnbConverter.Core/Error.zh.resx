@@ -167,11 +167,18 @@
         <value>打包</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>错误命令
-</value>
+        <value>错误命令</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>捕获异常:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} 版本{1}
+项目地址：{2}
+作者邮箱：{3}</value>  
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>检测到新版本: {0}，请点击链接下载: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}'不存在！</value>

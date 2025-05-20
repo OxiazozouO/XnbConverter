@@ -63,7 +63,7 @@
             PublicKeyToken=b77a5c561934e089
         </value>
     </resheader>
- 
+
     <data name="XNB.1" xml:space="preserve">
         <value>バッファが空です</value>
     </data>
@@ -167,11 +167,18 @@
         <value>パック</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>無効なコマンド
-</value>
+        <value>無効なコマンド</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>例外をキャッチ:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+プロジェクトアドレス：{2}
+作者メール：{3}</value>  
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>新しいバージョンが検出されました: {0}、ダウンロードするにはリンクをクリックしてください: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}' が見つかりません！</value>

@@ -63,7 +63,7 @@
             PublicKeyToken=b77a5c561934e089
         </value>
     </resheader>
- 
+
     <data name="XNB.1" xml:space="preserve">
         <value>버퍼가 비어 있습니다</value>
     </data>
@@ -167,11 +167,18 @@
         <value>패킹</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>잘못된 명령
-</value>
+        <value>잘못된 명령</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>예외 잡기:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+프로젝트 주소: {2}
+작성자 이메일: {3}</value>
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>새 버전이 감지되었습니다: {0}, 다운로드하려면 링크를 클릭하세요: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}'을(를) 찾을 수 없습니다!</value>

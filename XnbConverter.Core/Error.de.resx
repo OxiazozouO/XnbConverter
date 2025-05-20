@@ -63,7 +63,7 @@
             PublicKeyToken=b77a5c561934e089
         </value>
     </resheader>
- 
+
     <data name="XNB.1" xml:space="preserve">
         <value>Puffer ist leer</value>
     </data>
@@ -167,11 +167,18 @@
         <value>Packen</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>Ungültiger Befehl
-</value>
+        <value>Ungültiger Befehl</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>Fange Ausnahme:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+Projektadresse: {2}
+Autoren-Email: {3}</value>  
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>Neue Version entdeckt: {0}, klicken Sie bitte auf den Link, um herunterzuladen: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}' nicht gefunden!</value>

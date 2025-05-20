@@ -63,7 +63,7 @@
             PublicKeyToken=b77a5c561934e089
         </value>
     </resheader>
- 
+
     <data name="XNB.1" xml:space="preserve">
         <value>El búfer está vacío</value>
     </data>
@@ -167,11 +167,18 @@
         <value>Empaquetar</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>Comando incorrecto
-</value>
+        <value>Comando incorrecto</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>Capturar excepción:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+Dirección del proyecto: {2}
+Correo electrónico del autor: {3}</value>  
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>Se detectó una nueva versión: {0}, haga clic en el enlace para descargar: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>¡'{0}' no encontrado!</value>

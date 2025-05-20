@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using XnbConverter.Cli.Configurations;
 using XnbConverter.Configurations;
 using XnbConverter.Entity.Mono;
@@ -35,7 +37,7 @@ public static class Program
 
         private object? Value
         {
-            get { return _value; }
+            get => _value;
             set
             {
                 _value = value;
@@ -76,13 +78,15 @@ public static class Program
             };
             Instance._next["auto"]._next = Instance._next["unpack"]._next = Instance._next["pack"]._next = next;
             AssemblyName name = Assembly.GetExecutingAssembly().GetName();
-            string text = name.Name + " v" + name.Version;
+            string text = string.Format(Error.Program_9, name.Name, name.Version,
+                "https://github.com/OxiazozouO/XnbConverter",
+                "171405047@qq.com");
             Instance._next["version"].Value = text;
             Instance._next["version"].SetHelpText(text);
             BuildI18N();
         }
 
-        public static void BuildI18N()
+        private static void BuildI18N()
         {
             Option option = Instance._next["auto"];
             option._next["c"].SetHelpText(Error.Program_1);
@@ -130,7 +134,22 @@ public static class Program
                 stringBuilder.Append(option2._helpText).AppendLine();
             }
 
-            var s = "    packed                                   unpacked\n    \u251c\u25001.xnb                                  \u251c\u25001.config\n    \u251c\u25002.xnb                                  \u251c\u25001.png\n    \u251c\u25003.xnb           unpack.bat             \u251c\u25002.config\n    \u251c\u2500folder1      \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500>          \u251c\u25002.tbin\n    \u2502  \u251c\u25004.xnb                               \u251c\u25003.config\n    \u2502  \u251c\u25005.xnb                               \u251c\u25003.json\n    \u2502  \u251c\u25006.xnb                               \u251c\u25003.png\n    \u2502  \u2514\u25007.xnb                               \u251c\u2500folder1\n    \u251c\u2500folder3          pack.bat              \u2502  \u251c\u25004.config\n    \u2514\u2500...          <\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500          \u2502  \u251c\u25004.xml\n      \u251c\u25008.xnb                                \u2502  \u251c\u25005.config\n      \u251c\u25009.xnb                                \u2502  ...\n      \u2514\u250010.xnb                               ...";
+            var s = @"
+    packed                                   unpacked
+    ├─1.xnb                                  ├─1.config
+    ├─2.xnb                                  ├─1.png
+    ├─3.xnb           unpack.bat             ├─2.config
+    ├─folder1      ───────────────>          ├─2.tbin
+    │  ├─4.xnb                               ├─3.config
+    │  ├─5.xnb                               ├─3.json
+    │  ├─6.xnb                               ├─3.png
+    │  └─7.xnb                               ├─folder1
+    ├─folder3          pack.bat              │  ├─4.config
+    └─...          <───────────────          │  ├─4.xml
+      ├─8.xnb                                │  ├─5.config
+      ├─9.xnb                                │  ...
+      └─10.xnb                               ...
+";
             Instance._helpText = stringBuilder.Append(s).ToString();
         }
 
@@ -272,7 +291,7 @@ public static class Program
 
                 if (value._next == Instance._next["auto"]._next)
                 {
-                    string[] array = new string[2] { "i", "o" };
+                    string[] array = { "i", "o" };
                     foreach (string key in array)
                     {
                         Option option = value._next[key];
@@ -309,11 +328,42 @@ public static class Program
         }
 
         ReckonByTime("help");
+        UpdateByGitHub("v1.0");
         while (true)
         {
-            Console.Write("->");
             ReckonByTime(Console.ReadLine());
         }
+    }
+
+    private static void UpdateByGitHub(string v)
+    {
+        Task.Run(async () =>
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(2);
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
+                var res = await httpClient.GetStringAsync(
+                    "https://api.github.com/repos/OxiazozouO/XnbConverter/releases/latest");
+                var data = JsonConvert.DeserializeObject<JObject>(res);
+                var name = data["name"]?.ToString();
+                var url = data["html_url"]?.ToString();
+
+                if (name != v && url != null)
+                {
+                    Logger.Warn(Error.Program_10, name, url);
+                    System.Diagnostics.Process.Start(url);
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            Console.Write("->");
+        });
     }
 
     private static void test()

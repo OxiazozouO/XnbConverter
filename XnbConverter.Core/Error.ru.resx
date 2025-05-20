@@ -167,11 +167,18 @@
         <value>Упаковать</value>
     </data>
     <data name="Program.7" xml:space="preserve">
-        <value>Неверная команда
-</value>
+        <value>Неверная команда</value>
     </data>
     <data name="Program.8" xml:space="preserve">
         <value>Поймать исключение:</value>
+    </data>
+    <data name="Program.9" xml:space="preserve">
+        <value>{0} v{1}
+Адрес проекта: {2}
+ электронная почта автора: {3}</value>  
+    </data>
+    <data name="Program.10" xml:space="preserve">
+        <value>Обнаружена новая версия: {0}, пожалуйста, нажмите на ссылку для загрузки: {1}</value>  
     </data>
     <data name="BufferReader.1" xml:space="preserve">
         <value>'{0}' не найдено!</value>
