@@ -135,7 +135,7 @@ public class TBin10Reader : BaseReader
 
 	public void Save(TBin10 input, string path)
 	{
-		bufferWriter.Buffer = Pool.RentByte(10485760);
+		bufferWriter.Buffer = Pool.RentByte(Pool.LongSize);
 		Write(input);
 		File.WriteAllBytes(path, bufferWriter.Buffer[..bufferWriter.BytePosition]);
 		Pool.Return(bufferWriter.Buffer);

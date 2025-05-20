@@ -5,9 +5,9 @@
 
 ## 性能对比
 
-| 工具     | XnbConverter | [StardewXnbHack](https://github.com/Pathoschild/StardewXnbHack) | [xnbcli](https://github.com/LeonBlade/xnbcli/) | [XNBExtract](https://community.playstarbound.com/threads/110976) |
-| -------- |--------------| ------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------ |
-| 拆包时间 | 0m 14s       | ≈0m 43s                                                      | ≈6m 5s                                         | ≈2m 20s                                                      |
+| 工具   | XnbConverter | [StardewXnbHack](https://github.com/Pathoschild/StardewXnbHack) | [xnbcli](https://github.com/LeonBlade/xnbcli/) | [XNBExtract](https://community.playstarbound.com/threads/110976) |
+|------|--------------|-----------------------------------------------------------------|------------------------------------------------|------------------------------------------------------------------|
+| 拆包时间 | 0m 14s       | ≈0m 43s                                                         | ≈6m 5s                                         | ≈2m 20s                                                          |
 
 ## 关于
 
@@ -42,27 +42,27 @@
 
 #### 拆包：
 
-```
+```bat
 unpack -c -i "xnb文件/xnb文件夹" -o "导出目录"
 ```
 
- 匹配 "xnb文件/xnb文件夹" 里的所有xnb文件，并且导出源文件和xnb配置文件到"导出目录"
+匹配 "xnb文件/xnb文件夹" 里的所有xnb文件，并且导出源文件和xnb配置文件到"导出目录"
 
 #### 打包：
 
-```
+```bat
 pack -c -i "xnb文件/xnb文件夹" -o "导出目录"
 ```
 
- 匹配 "xnb文件/xnb文件夹" 里的所有.config文件，并且编译xnb文件到"导出目录"
+匹配 "xnb文件/xnb文件夹" 里的所有.config文件，并且编译xnb文件到"导出目录"
 
 #### 自动转换：
 
-```
+```bat
 auto -c -i "文件/文件夹" -o "导出目录"
 ```
 
- 在 "文件/文件夹" 匹配.xnb和.config等文件，自动拆包和打包并且生成文件到 "导出目录"
+在 "文件/文件夹" 匹配.xnb和.config等文件，自动拆包和打包并且生成文件到 "导出目录"
 
 你可以打开程序界面输入这些指令，也可以直接点击pack.bat、unpack.bat等批处理文件快速执行
 
@@ -76,20 +76,26 @@ auto -c -i "文件/文件夹" -o "导出目录"
 
 #### 配置文件说明：
 
+```json
 {
-"LogTime" : true, //true 或 false 这个选项决定是否打印日志的时候打印时间
-"TimeFormat" : "MM-dd HH:mm:ss", //"yyyy-MM-dd HH:mm:ss"、"MM-dd HH:mm:ss"等 这个参数决定打印时间的格式、更多格式请参考字符串日期格式
-"LogPrintingOptions" : "Info, Warn, Error", //Info, Warn, Error, Debug （只有四个可选项）
-日志的打印选项，决定在控制台打印的信息的类型，选项之间请用英文“,”隔开
-"LogSaveOptions" : "Error", //Info, Warn, Error, Debug （只有四个可选项） 保存日志的选项，决定程序保存什么类型的日志到日志文件，选项之间请用英文“,”隔开
-"Concurrency" : 15 // Concurrency is   >0 and < 16 推荐设置 15 并行处理文件的数量，推荐15个
+  "LogTime": true,
+  //true 或 false 这个选项决定是否打印日志的时候打印时间
+  "TimeFormat": "MM-dd HH:mm:ss",
+  //"yyyy-MM-dd HH:mm:ss"、"MM-dd HH:mm:ss"等 这个参数决定打印时间的格式、更多格式请参考字符串日期格式
+  "LogPrintingOptions": "Info, Warn, Error",
+  //Info, Warn, Error, Debug （只有四个可选项）日志的打印选项，决定在控制台打印的信息的类型，选项之间请用英文“,”隔开
+  "LogSaveOptions": "Error",
+  //Info, Warn, Error, Debug （只有四个可选项） 保存日志的选项，决定程序保存什么类型的日志到日志文件，选项之间请用英文“,”隔开
+  "Concurrency": 15
+  // Concurrency is   >0 and < 16 推荐设置 15 并行处理文件的数量，推荐15个
 }
+```
 
 ## xnb模组的简易教程：
 
 1、使用本软件解包。
-2、你可以修改原文件，比如美化图片、更换字体、更换你修改后的json、地图等
-3、你也可以新增xnb，比如在星露谷修改一个地图：
+2、修改原文件，比如美化图片、更换字体、更换你修改后的json、地图等
+3、新增xnb：比如在星露谷修改一个地图
 首先你准备好已经改好的"地图.tbin"，新增的"图块集.png"，然后复制一份"其他图块集.config"，
 把文件名字改成"图块集.config"。
 4、打包回去，本项目对于错误的数据格式会进行报错并中断该任务，请你在修改xnb里的数据时保证数据格式正确。

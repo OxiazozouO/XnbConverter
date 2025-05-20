@@ -11,7 +11,7 @@ public class BufferWriter : IDisposable
 
 	public int BytePosition;
 
-	public BufferWriter(int size = 10485760)
+	public BufferWriter(int size = Pool.LongSize)
 	{
 		Buffer = Pool.RentByte(size);
 	}

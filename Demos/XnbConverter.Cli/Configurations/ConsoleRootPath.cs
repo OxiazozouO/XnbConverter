@@ -16,14 +16,15 @@ public class ConsoleRootPath : RootPath
         LogPath = BasePath;
         ConfigFilePath = Path.Combine(CachePath, "config.json");
         ExDllPath = Path.Combine(CachePath, "custom dll");
+        XnbCachePath = Path.Combine(CachePath, "xnb cache");
         TryMkdirs(CachePath, ExDllPath);
+        // TryMkdirs(CachePath, XnbCachePath);
 
         TryCreateConfigFile();
         TryReadConfigFile();
         InitDll();
 
         Error.Culture = ConfigHelper.Culture;
-
 
         string? name = Assembly.GetExecutingAssembly().GetName().Name;
         var packedPath = Path.Combine(BasePath, "packed");

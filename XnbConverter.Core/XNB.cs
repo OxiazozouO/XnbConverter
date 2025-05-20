@@ -222,8 +222,8 @@ public class XNB : IDisposable
             throw new XnbError(Error.XNB_4, num4);
         }
 
-        ReaderResolver readerResolver = new ReaderResolver(array, bufferReader, list, list2);
-        Data = readerResolver.Read(0);
+        ReaderResolver resolver = new ReaderResolver(array, bufferReader, list, list2);
+        Data = resolver.Read(0);
         Logger.Info(Error.XNB_12);
     }
 
@@ -321,19 +321,19 @@ public class XNB : IDisposable
                 Lzx = false;
             }
 
-            BufferWriter bufferWriter = new BufferWriter(GetLen());
+            BufferWriter writer = new BufferWriter(GetLen());
             char c = (char)target;
-            bufferWriter.WriteAsciiString("XNB" + c);
-            bufferWriter.WriteByte(formatVersion);
-            bufferWriter.WriteByte((byte)xnbConfig.Header.CompressedFlag);
-            bufferWriter.WriteUInt32(0u);
+            writer.WriteAsciiString("XNB" + c);
+            writer.WriteByte(formatVersion);
+            writer.WriteByte((byte)xnbConfig.Header.CompressedFlag);
+            writer.WriteUInt32(0u);
             if (flag)
             {
-                bufferWriter.WriteUInt32(0u);
+                writer.WriteUInt32(0u);
             }
 
             int count = xnbConfig.Readers.Count;
-            bufferWriter.Write7BitNumber(count);
+            writer.Write7BitNumber(count);
             BaseReader[] array = new BaseReader[count];
             List<string> list = new List<string>(count * 2);
             List<int> list2 = new List<int>(count * 2);
@@ -346,8 +346,8 @@ public class XNB : IDisposable
                 list.Add(readerInfo.Entity.ToString());
                 list2.Add(i);
                 list2.Add(i);
-                XnbConverter.Readers.Base.StringReader.WriteValueBy7Bit(bufferWriter, readersDto.Type);
-                bufferWriter.WriteUInt32(readersDto.Version);
+                XnbConverter.Readers.Base.StringReader.WriteValueBy7Bit(writer, readersDto.Type);
+                writer.WriteUInt32(readersDto.Version);
             }
 
             if (xnbConfig.Content.Extension == ".json")
@@ -356,25 +356,25 @@ public class XNB : IDisposable
                 obj = JsonConvert.DeserializeObject((string)obj, resultType, FileUtils.Settings);
             }
 
-            bufferWriter.Write7BitNumber(0);
-            new ReaderResolver(array, bufferWriter, list, list2).Write(0, obj);
+            writer.Write7BitNumber(0);
+            new ReaderResolver(array, writer, list, list2).Write(0, obj);
             if ((Lzx || Lz4) && !Lzx && Lz4)
             {
-                int num = bufferWriter.BytePosition - 14;
+                int num = writer.BytePosition - 14;
                 byte[] array2 = new byte[LZ4Codec.MaximumOutputLength(num)];
-                int num2 = LZ4Codec.Encode(bufferWriter.Buffer, 14, num, array2, 0, num);
+                int num2 = LZ4Codec.Encode(writer.Buffer, 14, num, array2, 0, num);
                 int num3 = 14 + num2;
-                bufferWriter.WriteUInt32((uint)num, 10);
-                bufferWriter.WriteUInt32((uint)num3, 6);
-                array2.AsSpan(0, num2).CopyTo(bufferWriter.Buffer.AsSpan(14, num2));
-                bufferWriter.BytePosition = num3;
+                writer.WriteUInt32((uint)num, 10);
+                writer.WriteUInt32((uint)num3, 6);
+                array2.AsSpan(0, num2).CopyTo(writer.Buffer.AsSpan(14, num2));
+                writer.BytePosition = num3;
             }
             else
             {
-                bufferWriter.WriteUInt32((uint)bufferWriter.BytePosition, 6);
+                writer.WriteUInt32((uint)writer.BytePosition, 6);
             }
 
-            bufferWriter.SaveBufferToFile(path);
+            writer.SaveBufferToFile(path);
         }
         catch (Exception ex)
         {
@@ -409,91 +409,36 @@ public class XNB : IDisposable
             return;
         }
 
-        switch (extension.Length)
+        switch (extension)
         {
-            case 4:
-                switch (extension[1])
-                {
-                    case 'p':
-                        if (extension == ".png")
-                        {
-                            Texture2D texture2D = Texture2D.FromPng(array2[0]);
-                            texture2D.Format = XnbConfig.Content.Format;
-                            Data = texture2D;
-                        }
-
-                        break;
-                    case 'c':
-                        if (extension == ".cso")
-                        {
-                            Data = new Effect
-                            {
-                                Data = File.ReadAllBytes(array2[0])
-                            };
-                        }
-
-                        break;
-                    case 'x':
-                        if (extension == ".xml")
-                        {
-                            Data = new XmlSource
-                            {
-                                Data = File.ReadAllText(array2[0])
-                            };
-                        }
-
-                        break;
-                }
-
+            case ".png":
+                Texture2D texture2D = Texture2D.FromPng(array2[0]);
+                texture2D.Format = XnbConfig.Content.Format;
+                Data = texture2D;
                 break;
-            case 5:
-                switch (extension[1])
-                {
-                    case 't':
-                        if (extension == ".tbin")
-                        {
-                            byte[] data2 = File.ReadAllBytes(array2[0]);
-                            TBin10Reader.RemoveTileSheetsExtension(ref data2);
-                            TBin10 data3 = new TBin10
-                            {
-                                Data = data2
-                            };
-                            Data = data3;
-                        }
-
-                        break;
-                    case 'j':
-                        if (extension == ".json")
-                        {
-                            Data = File.ReadAllText(array2[0]);
-                        }
-
-                        break;
-                }
-
+            case ".cso":
+                Data = new Effect { Data = File.ReadAllBytes(array2[0]) };
                 break;
-            case 10:
-                switch (extension[7])
-                {
-                    case 'p':
-                        if (extension == ".json .png")
-                        {
-                            SpriteFont spriteFont = SpriteFont.FormFiles(array2[0], array2[1]);
-                            spriteFont.Texture.Format = XnbConfig.Content.Format;
-                            Data = spriteFont;
-                        }
-
-                        break;
-                    case 'w':
-                        if (extension == ".json .wav")
-                        {
-                            SoundEffect data = SoundEffect.FormWave(array2[0], array2[1]);
-                            Data = data;
-                        }
-
-                        break;
-                }
-
+            case ".xml":
+                Data = new XmlSource { Data = File.ReadAllText(array2[0]) };
+                break;
+            case ".tbin":
+                byte[] data2 = File.ReadAllBytes(array2[0]);
+                TBin10Reader.RemoveTileSheetsExtension(ref data2);
+                TBin10 data3 = new TBin10 { Data = data2 };
+                Data = data3;
+                break;
+            case ".json":
+                Data = File.ReadAllText(array2[0]);
+                break;
+            case ".json .png":
+                SpriteFont spriteFont = SpriteFont.FormFiles(array2[0], array2[1]);
+                spriteFont.Texture.Format = XnbConfig.Content.Format;
+                Data = spriteFont;
+                break;
+            case ".json .wav":
+                SoundEffect data = SoundEffect.FormWave(array2[0], array2[1]);
+                Data = data;
                 break;
         }
     }
@@ -501,32 +446,14 @@ public class XNB : IDisposable
     private int GetLen()
     {
         int num = XnbConfig.JsonSize();
-        object data = Data;
-        if (!(data is Texture2D texture2D))
+        return Data switch
         {
-            if (!(data is SpriteFont spriteFont))
-            {
-                if (!(data is string text))
-                {
-                    if (!(data is Effect effect))
-                    {
-                        if (data is XmlSource xmlSource)
-                        {
-                            return num + xmlSource.Data.Length + 200;
-                        }
-
-                        return 10485760;
-                    }
-
-                    return num + effect.Data.Length;
-                }
-
-                return num + (int)((double)text.Length * 3.5);
-            }
-
-            return num + (int)((double)spriteFont.Texture.Data.Length * 1.2);
-        }
-
-        return num + texture2D.Data.Length;
+            Texture2D texture2D => num + texture2D.Data.Length,
+            SpriteFont spriteFont => num + (int)((double)spriteFont.Texture.Data.Length * 1.2),
+            string text => num + (int)((double)text.Length * 3.5),
+            Effect effect => num + effect.Data.Length,
+            XmlSource xmlSource => num + xmlSource.Data.Length + 200,
+            _ => Pool.LongSize
+        };
     }
 }
