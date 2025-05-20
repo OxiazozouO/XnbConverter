@@ -1,0 +1,70 @@
+#保留的文件
+!.config/
+!.resources/
+!.config/**
+!.resources/**
+
+
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+
+# Rider 忽略的文件
+/projectSettingsUpdater.xml
+/modules.xml
+/.idea.XnbConverter.iml
+/contentModel.xml
+
+# 基于编辑器的 HTTP 客户端请求
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+# 文件夹
+bin/
+obj/
+artifacts/
+.dotnet/
+.nuget/
+.packages/
+.tools/
+.vs/
+.idea/
+node_modules/
+BenchmarkDotNet.Artifacts/
+.gradle/
+src/SignalR/clients/**/dist/
+modules/
+.ionide/
+packages/
+
+
+# 文件扩展名
+*.aps
+*.binlog
+#*.dll
+*.DS_Store
+#*.exe
+*.idb
+*.lib
+*.log
+*.pch
+*.pdb
+*.pidb
+*.psess
+*.res
+*.snk
+*.so
+*.suo
+*.svclog
+*.tlog
+*.user
+*.userprefs
+*.vspx
+*.zip
+*.sln.cache
+*.tmp
+.DS_Store
+
+appsettings.json

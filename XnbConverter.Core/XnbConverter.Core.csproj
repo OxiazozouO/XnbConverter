@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>XnbConverter</RootNamespace>
+        <OutputType>Library</OutputType>
+        <IsTrimmable>false</IsTrimmable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="LZ4PCL" Version="1.0.0" />
+        <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Error.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
+        <LastGenOutput>Error.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.de.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.es.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.fr.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.hu.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.it.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.ja.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.ko.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.pt.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.ru.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.tr.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Error.zh.resx">
+        <DependentUpon>Error.resx</DependentUpon>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Error.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Error.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Tbin\LICENSE" />
+      <None Remove="Utilities\LibSquishNet\LICENSE" />
+    </ItemGroup>
+
+</Project>

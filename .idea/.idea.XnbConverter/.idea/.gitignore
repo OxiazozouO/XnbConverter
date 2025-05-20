@@ -1,0 +1,74 @@
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+
+# Rider 忽略的文件
+/projectSettingsUpdater.xml
+/modules.xml
+/.idea.XnbConverter.iml
+/contentModel.xml
+
+# 基于编辑器的 HTTP 客户端请求
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+# 文件夹
+bin/
+obj/
+artifacts/
+.dotnet/
+.nuget/
+.packages/
+.tools/
+.vs/
+node_modules/
+BenchmarkDotNet.Artifacts/
+.gradle/
+src/SignalR/clients/**/dist/
+modules/
+.ionide/
+
+# 文件扩展名
+*.aps
+*.binlog
+*.dll
+*.DS_Store
+*.exe
+*.idb
+*.lib
+*.log
+*.pch
+*.pdb
+*.pidb
+*.psess
+*.res
+*.snk
+*.so
+*.suo
+*.svclog
+*.tlog
+*.user
+*.userprefs
+*.vspx
+*.zip
+
+# 排除规则
+# 排除 Visual Studio 项目文件
+*.sln.cache
+
+# 排除 NuGet 包目录
+packages/
+
+# 排除 Visual Studio 编译器生成的文件
+*.pdb
+
+# 排除调试日志和临时文件
+*.tmp
+
+# 排除敏感信息文件
+appsettings.json
+
+# 排除 macOS 系统生成的文件
+.DS_Store

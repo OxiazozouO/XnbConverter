@@ -1,0 +1,101 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <ApplicationIcon>App.ico</ApplicationIcon>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\XnbConverter.Core\XnbConverter.Core.csproj">
+        <Private>True</Private>
+      </ProjectReference>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <Folder Include="bin\Release\" />
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <Content Include="..\..\.config\config.json">
+        <Link>.config\config.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\..\.config\error.json">
+        <Link>.config\error.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\..\.config\ffmpeg.exe">
+        <Link>.config\ffmpeg.exe</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Tool\pack.bat">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Tool\unpack.bat">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Update="Tool\音频信息查看.bat">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <Compile Remove="bin\Release\net6.0\packed\**" />
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <EmbeddedResource Remove="bin\Release\net6.0\packed\**" />
+    </ItemGroup>
+
+
+
+
+
+
+    <ItemGroup>
+      <None Remove="bin\Release\net6.0\packed\**" />
+      <None Update="Tool\pack.bat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Tool\unpack.bat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Tool\音频信息查看.bat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="resources\pack.bat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

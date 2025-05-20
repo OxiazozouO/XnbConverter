@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <ApplicationIcon>..\..\.resources\App.ico</ApplicationIcon>
+        <StartupObject>XnbConverter.Cli.Program</StartupObject>
+        <LangVersion>10</LangVersion>
+        <IsTrimmable>false</IsTrimmable>
+        <PublishSingleFile>false</PublishSingleFile>
+        <Version>1.0</Version>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\..\XnbConverter.Core\XnbConverter.Core.csproj">
+            <Private>True</Private>
+        </ProjectReference>
+    </ItemGroup>
+</Project>
