@@ -1,7 +1,5 @@
 #保留的文件
-!.config/
 !.resources/
-!.config/**
 !.resources/**
 
 
@@ -80,3 +78,11 @@ appsettings.json
 
 # 发布产物（单文件 exe 通过 Release 分发，不进仓库）
 /out_publish/
+
+# 运行时自动生成（首次双击 exe 会重建）
+/.config/
+/pack.bat
+/unpack.bat
+/.run/
+*.DotSettings
+*.pubxml
