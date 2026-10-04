@@ -1,155 +1,154 @@
+**English** | [中文](README.zh-CN.md)
+
 # XnbConverter
 
-一个高效率的xnb转化工具，你可以在10秒内完成解包任务(Xact相关文件需要久一点)
-本项目为js项目xnbcli的c#移植扩展版本，并且对其功能不足之处进行补充，其中主要参考了monogame的源代码的解析的大部分。
+A high-performance XNB conversion tool — a full unpack of the game's Content takes about 10 seconds (XACT-related files take a bit longer).
+This project is a C# port and extension of the JavaScript project **xnbcli**, filling in the gaps it left behind. Most of the parsing logic is modeled on the MonoGame source.
 
-## 性能对比
+## Performance comparison
 
-| 工具   | XnbConverter | [StardewXnbHack](https://github.com/Pathoschild/StardewXnbHack) | [xnbcli](https://github.com/LeonBlade/xnbcli/) | [XNBExtract](https://community.playstarbound.com/threads/110976) |
+| Tool   | XnbConverter | [StardewXnbHack](https://github.com/Pathoschild/StardewXnbHack) | [xnbcli](https://github.com/LeonBlade/xnbcli/) | [XNBExtract](https://community.playstarbound.com/threads/110976) |
 |------|--------------|-----------------------------------------------------------------|------------------------------------------------|------------------------------------------------------------------|
-| 拆包时间 | 0m 14s       | ≈0m 43s                                                         | ≈6m 5s                                         | ≈2m 20s                                                          |
+| Unpack time | 0m 14s       | ≈0m 43s                                                         | ≈6m 5s                                         | ≈2m 20s                                                          |
 
-## 关于
+## About
 
-创建者：oxiaozouo by [1714050472@qq.com](1714050472@qq.com)
-版本：1.1.0-alpha
-语言：C# .NET 9
+Author: oxiaozouo — [1714050472@qq.com](1714050472@qq.com)
+Version: 1.1.0-alpha
+Language: C# .NET 9
 
-## 支持的转码内容
+## Supported conversions
 
-你可以非常方便的将xnb文件转化为源资源格式， 目前已知适用[Stardew Valley]、[Terraria(部分)]。
+XNB files can be converted to editable source assets and back. Known to work with [Stardew Valley] and [Terraria (partial)].
 
-#### 可相互转换：
+#### Round-trippable:
 
-| 导出的文件        | 说明                                                                     |
+| Exported file | Description |
 |--------------|------------------------------------------------------------------------|
-| ".json"      | 某个类的json形式，一般是游戏中某个行为的配置文件、目前可以支持星露谷1.5的结构化数据，星露谷1.5的结构化数据可以自行查看游戏wiki |
-| ".png"       | 游戏贴图素材,一般有人物肖像、物品贴图、地图的图块集等                                            |
-| ".fx" | 着色器。由 MGFX 二进制**还原**出的 HLSL 效果源码，任何 HLSL 工具都能打开/编辑/渲染。MGFX 外壳（容器结构）内嵌在同名 .config 里；打包时把 .fx 反译回 GLSL 写回。注意：与其它类型不同，effect **不是逐字节还原**（GLSL 会被重新排版，功能等价）。DX 平台的字节码无法还原成源码，此时改出 .cso（原样字节） |
-| ".tbin"      | 地图，可以用[tiled](https://www.mapeditor.org/)进行编辑                          |
-| ".xml"       | 某个类的xml形式，一般为字体文件                                                      |
-| ".json .png" | 一般为字体，json为字体的裁剪信息和字形信息，png为字体的图片                                      |
-| ".json .wav" | 一般为SoundEffect，就是游戏音乐、游戏音效等音乐文件                                        |
-| ".xwb" | 解包成若干个wav文件   为SoundEffect的合集，Xact的一部分，扩展了更多音频处理功能；打包时按生成的同名 .xwb.config 清单写回 |
+| ".json"      | JSON form of a class — usually a configuration file for some in-game behavior. Stardew Valley 1.5 structured data is supported; the fields can be looked up on the game wiki. |
+| ".png"       | Game textures — character portraits, item sprites, map tilesheets, etc. |
+| ".fx" | Shaders. HLSL effect source **reconstructed** from the MGFX binary. Any HLSL tool can open, edit and render it. The MGFX shell (container structure) is embedded in the same-named `.config`; on pack, the `.fx` is translated back to GLSL and written out. Note: unlike other types, effects are **not byte-exact** — the GLSL gets re-laid-out, though it is functionally equivalent. DX platform bytecode cannot be turned back into source, so it is exported as `.cso` instead (raw bytes). |
+| ".tbin"      | Maps, editable with [Tiled](https://www.mapeditor.org/). |
+| ".xml"       | XML form of a class — usually font files. |
+| ".json .png" | Usually fonts: the JSON holds glyph cropping/metrics, the PNG is the atlas image. |
+| ".json .wav" | Usually `SoundEffect` — music and sound effects. |
+| ".xwb" | Wave banks — a collection of sound effects, part of XACT. Unpacks to individual wav files; on pack, rebuilt from the generated same-named `.xwb.config` manifest. |
 
-## 命令使用说明：
+## Command reference
 
-#### 拆包：
-
-```bat
-unpack -c -i "xnb文件/xnb文件夹" -o "导出目录"
-```
-
-匹配 "xnb文件/xnb文件夹" 里的所有xnb文件，并且导出源文件和xnb配置文件到"导出目录"
-
-#### 打包：
+#### Unpack:
 
 ```bat
-pack -c -i "xnb文件/xnb文件夹" -o "导出目录"
+unpack -c -i "xnb file/xnb folder" -o "output directory"
 ```
 
-匹配 "xnb文件/xnb文件夹" 里的所有.config文件，并且编译xnb文件到"导出目录"
+Matches every XNB file under "xnb file/xnb folder" and exports both the source assets and the XNB config files into "output directory".
 
-#### 自动转换：
+#### Pack:
 
 ```bat
-auto -c -i "文件/文件夹" -o "导出目录"
+pack -c -i "xnb file/xnb folder" -o "output directory"
 ```
 
-在 "文件/文件夹" 匹配.xnb和.config等文件，自动拆包和打包并且生成文件到 "导出目录"
+Matches every `.config` file under "xnb file/xnb folder" and compiles the XNB files into "output directory".
 
-你可以打开程序界面输入这些指令，也可以直接点击pack.bat、unpack.bat等批处理文件快速执行
+#### Auto (unpack + pack):
 
-#### 参数说明：
+```bat
+auto -c -i "file/folder" -o "output directory"
+```
 
--c ：启用并行处理(启用这个功能是本项目区别于xnbcli的主要特性)
-通过对文件的并行处理、你可以将打包/解包任务消耗的时间在一定范围内缩减n倍，
-运行内存也会对应的增加，你可以设置：.config/config.json的"Concurrency"的值，以控制并行处理的数量。
--i ：输入文件/文件夹
--o ：输出目录
+Matches both `.xnb` and `.config` files under "file/folder", unpacks and repacks automatically, and writes the results to "output directory".
 
-#### 配置文件说明：
+You can type these commands into the program's console, or just double-click `pack.bat` / `unpack.bat` to run them quickly.
+
+#### Options:
+
+`-c` : enable parallel processing. This is the main feature that sets this project apart from xnbcli.
+By processing files in parallel you can cut pack/unpack time by up to N times, at the cost of proportionally more memory.
+Set the `"Concurrency"` value in `.config/config.json` to control how many files are processed at once.
+`-i` : input file / folder
+`-o` : output directory
+
+#### Configuration file:
 
 ```json
 {
   "LogTime": true,
-  //true 或 false 这个选项决定是否打印日志的时候打印时间
+  // true or false — whether to print a timestamp with each log line
   "TimeFormat": "MM-dd HH:mm:ss",
-  //"yyyy-MM-dd HH:mm:ss"、"MM-dd HH:mm:ss"等 这个参数决定打印时间的格式、更多格式请参考字符串日期格式
+  // e.g. "yyyy-MM-dd HH:mm:ss", "MM-dd HH:mm:ss" — format of that timestamp; see standard date format strings
   "LogPrintingOptions": "Info, Warn, Error",
-  //Info, Warn, Error, Debug （只有四个可选项）日志的打印选项，决定在控制台打印的信息的类型，选项之间请用英文“,”隔开
+  // Info, Warn, Error, Debug (only these four) — which log levels are printed to the console, comma-separated
   "LogSaveOptions": "Error",
-  //Info, Warn, Error, Debug （只有四个可选项） 保存日志的选项，决定程序保存什么类型的日志到日志文件，选项之间请用英文“,”隔开
+  // Info, Warn, Error, Debug (only these four) — which log levels are written to the log file, comma-separated
   "Concurrency": 15
-  // Concurrency is   >0 and < 16 推荐设置 15 并行处理文件的数量，推荐15个
+  // Concurrency is >0 and < 16; 15 is recommended — number of files processed in parallel
 }
 ```
 
-## xnb模组的简易教程：
+## Quick tutorial: making an XNB mod
 
-1、使用本软件解包。
-2、修改原文件，比如美化图片、更换字体、更换你修改后的json、地图等
-3、新增xnb：比如在星露谷修改一个地图
-首先你准备好已经改好的"地图.tbin"，新增的"图块集.png"，然后复制一份"其他图块集.config"，
-把文件名字改成"图块集.config"。
-4、打包回去，本项目对于错误的数据格式会进行报错并中断该任务，请你在修改xnb里的数据时保证数据格式正确。
+1. Unpack with this tool.
+2. Edit the exported files — retouch images, swap fonts, change the JSON, edit maps, etc.
+3. Adding a new XNB (e.g. a modified map in Stardew Valley):
+   Prepare your edited `map.tbin` and the new `tilesheet.png`, then copy an existing `other_tilesheet.config`
+   and rename it to `tilesheet.config`.
+4. Pack it back. This project reports an error and aborts that file if the data format is wrong, so make sure your edits keep the data valid.
 
-## 注意：
+## Notes
 
-本项目处于开发阶段（暂且弃坑）、仅供学习交流使用，请勿商用。对于制作出来的xnb文件涉及的版权问题（字体版权、美术资源版权、原作者版权等），请你自行斟酌、本项目不承担任何责任。
+This project is still in development (currently on hold), provided for learning and exchange only — please do not use it commercially. For any copyright issues arising from the XNB files you produce (font licenses, art asset licenses, original author rights, etc.), please judge for yourself; this project accepts no responsibility.
 
-对于程序运行时出现的任何问题，请你联系邮箱1714050472@qq.com，我会尽快解决。
+If you run into any problems while using it, contact [1714050472@qq.com](1714050472@qq.com) and I will try to help as soon as possible.
 
-## 版权信息：
+## Credits
 
-### 1、[xnbcli](https://github.com/LeonBlade/xnbcli)
+### 1. [xnbcli](https://github.com/LeonBlade/xnbcli)
 
-本项目在xnbcli项目的基础上进行c#移植，并补充功能
+This project is a C# port of xnbcli with additional functionality.
 
-### 2、[unxwb](https://github.com/mariodon/unxwb)
+### 2. [unxwb](https://github.com/mariodon/unxwb)
 
-本项目对WaveBank的导出处理来自unxwb。并遵循其 GPL协议
+WaveBank export is based on unxwb, under its GPL license.
 
-### 3、[monogame](https://github.com/MonoGame/MonoGame)
+### 3. [MonoGame](https://github.com/MonoGame/MonoGame)
 
-本项目的AudioEngine、SoundBank、WaveBank等读取处理部分的代码主要来自monogame项目。
+The AudioEngine, SoundBank and WaveBank readers are largely derived from the MonoGame project.
 
-### 4、[TConvert](https://github.com/trigger-segfault/TConvert)
+### 4. [TConvert](https://github.com/trigger-segfault/TConvert)
 
-本项目对SoundEffect的读取参考TConvert的WavConverter.cs的代码部分以及ffmpeg对音频的处理，并且遵循其 GPL 协议
-并且完成了对SoundEffect的写入处理
+SoundEffect reading references the `WavConverter.cs` part of TConvert and ffmpeg's audio handling, under their GPL licenses. SoundEffect writing was implemented as well.
 
-### 5、[FFmpeg](http://ffmpeg.org)
+### 5. [FFmpeg](http://ffmpeg.org)
 
-本项目对音频的转码处理主要来自ffmpeg，并遵循其 LGPL 公共许可协议。
+Audio transcoding is largely based on ffmpeg, under its LGPL license.
 
-### 6、[TbinCSharp](https://github.com/spacechase0/TbinCSharp)
+### 6. [TbinCSharp](https://github.com/spacechase0/TbinCSharp)
 
-本项目对于Tbin的读取来自TbinCSharp，并遵循其 MIT 许可协议。
-完成了tbin写入xnb的功能
+TBin reading comes from TbinCSharp, under its MIT license. Writing tbin back into XNB was implemented as well.
 
-### 7、[LibSquishNet](https://github.com/MaxxWyndham/LibSquishNet)
+### 7. [LibSquishNet](https://github.com/MaxxWyndham/LibSquishNet)
 
-本项目对dxt压缩、dxt压缩等处理的代码来自LibSquishNet，并遵循其 MIT 许可协议。
-主要对代码进行性能优化，性能显著提升，并集成到本项目之中。
+DXT compression/decompression comes from LibSquishNet, under its MIT license. The code was heavily optimized for performance and integrated into this project.
 
-### 8、[LzxDecoder.cs](https://github.com/MonoGame/MonoGame/blob/master/MonoGame.Framework/Content/LzxDecoder.cs)
+### 8. [LzxDecoder.cs](https://github.com/MonoGame/MonoGame/blob/master/MonoGame.Framework/Content/LzxDecoder.cs)
 
-本项目对lzx压缩处理的代码来自LzxDecoder.cs,并遵循其 LGPL MS-PL 等协议
-原项目地址为：[lzx](https://www.cabextract.org.uk/libmspack/)
+LZX compression handling comes from LzxDecoder.cs, under its LGPL / MS-PL licenses.
+Original project: [libmspack](https://www.cabextract.org.uk/libmspack/)
 
-本项目遵循 GPL 协议
+This project is released under the GPL.
 
-### 9、[lz4net](https://github.com/MiloszKrajewski/lz4net)（经 MonoGame 内置）
+### 9. [lz4net](https://github.com/MiloszKrajewski/lz4net) (via MonoGame)
 
-本项目对 LZ4 的压缩/解压使用 MonoGame 内容管线内置的 lz4net 源码，位于 `XnbConverter.Core/Utilities/LZ4`，遵循其 BSD-3-Clause 协议。
+LZ4 compression/decompression uses the copy of lz4net bundled inside the MonoGame content pipeline, located at `XnbConverter.Core/Utilities/LZ4`, under its BSD-3-Clause license.
 
-## 使用到的库：
+## Libraries used
 
-### 1、[Newtonsoft.Json](https://www.newtonsoft.com/json)
+### 1. [Newtonsoft.Json](https://www.newtonsoft.com/json)
 
-json 读写。目前唯一还从 NuGet 引用的库。
+JSON reading and writing. Currently the only library still referenced from NuGet.
 
-### 2、lz4net（内置源码，不再引包）
+### 2. lz4net (vendored source, no package reference)
 
-LZ4 压缩/解压直接用 MonoGame 内容管线里的那份 lz4net，源码在 `XnbConverter.Core/Utilities/LZ4`（BSD-3-Clause）。
+LZ4 compression/decompression uses the copy of lz4net from the MonoGame content pipeline, at `XnbConverter.Core/Utilities/LZ4` (BSD-3-Clause).
