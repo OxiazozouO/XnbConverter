@@ -16,9 +16,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\XnbConverter.Core\XnbConverter.Core.csproj"/>
-        <!-- Core 已经不带 ImageSharp 了（转换器改成自研 PNG 编解码），
-             这个 demo 自己还在用，就自己声明。 -->
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
     </ItemGroup>
 
 </Project>

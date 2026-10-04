@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using XnbConverter.Entity.Mono;
 using XnbConverter.Tbin.Entity;
 
@@ -29,9 +27,9 @@ public static class Tbin10Util
     /// <param name="imgList">图片id为key的图片列表</param>
     /// <param name="seasonSet">图片是否为季节性的图片</param>
     private static void LoadImages(this List<TileSheet> tileSheets, string path,
-        out Dictionary<string, List<Image<Rgba32>>> imgList, out HashSet<string> seasonSet)
+        out Dictionary<string, List<Bitmap>> imgList, out HashSet<string> seasonSet)
     {
-        imgList = new Dictionary<string, List<Image<Rgba32>>>();
+        imgList = new Dictionary<string, List<Bitmap>>();
         seasonSet = new HashSet<string>();
         var ex = "";
         foreach (var v in tileSheets)
@@ -40,14 +38,14 @@ public static class Tbin10Util
 
             if (v.Image.Contains("spring_"))
             {
-                List<Image<Rgba32>> lt = new();
+                List<Bitmap> lt = new();
                 foreach (var season in GetSeasons(v.Image))
                 {
                     var s = Path.Combine(path, season + ".png");
 
                     if (File.Exists(s))
                     {
-                        var image = Image.Load<Rgba32>(s);
+                        var image = Bitmap.Load(s);
                         lt.Add(image);
                     }
                     else
@@ -66,8 +64,8 @@ public static class Tbin10Util
                 {
                     if (!imgList.ContainsKey(v.Id))
                     {
-                        var image = Image.Load<Rgba32>(s);
-                        List<Image<Rgba32>> lt = new();
+                        var image = Bitmap.Load(s);
+                        List<Bitmap> lt = new();
                         lt.Add(image);
                         imgList.Add(v.Id, lt);
                     }
@@ -467,7 +465,7 @@ public static class Tbin10Util
                             }
                             else
                             {
-                                Image<Rgba32>[] image = null;
+                                Bitmap[] image = null;
                                 var tag = false;
                                 for (var i = 0; i < staInd; ++i)
                                 {
@@ -478,7 +476,7 @@ public static class Tbin10Util
 
                                 if (tag)
                                 {
-                                    image = new Image<Rgba32>[]
+                                    image = new Bitmap[]
                                     {
                                         new(16, 16),
                                         new(16, 16),
@@ -498,7 +496,7 @@ public static class Tbin10Util
                                 }
                                 else
                                 {
-                                    image = new Image<Rgba32>[]
+                                    image = new Bitmap[]
                                     {
                                         new(16, 16)
                                     };
@@ -593,15 +591,15 @@ public static class Tbin10Util
 
                                     for (var i = 0; i < ma; i++)
                                     {
-                                        Image<Rgba32>[] imgCopy;
+                                        Bitmap[] imgCopy;
                                         if (tag && image.Length == 1)
                                         {
-                                            imgCopy = new Image<Rgba32>[4];
+                                            imgCopy = new Bitmap[4];
                                             for (var k = 0; k < 4; k++) imgCopy[k] = image[0].Clone();
                                         }
                                         else
                                         {
-                                            imgCopy = new Image<Rgba32>[image.Length];
+                                            imgCopy = new Bitmap[image.Length];
                                             for (var k = 0; k < image.Length; k++) imgCopy[k] = image[k].Clone();
                                         }
 
@@ -1039,7 +1037,7 @@ public static class Tbin10Util
         private const int DefSize = 1250;
         private readonly string _path;
         private readonly Dictionary<int, List<string>> _pathNames = new();
-        private readonly Dictionary<int, List<List<Image<Rgba32>>>> _tmpList = new();
+        private readonly Dictionary<int, List<List<Bitmap>>> _tmpList = new();
         private readonly Dictionary<int, TileSheet> _tmpTileSheet = new();
 
         public readonly List<TileSheet> TileSheets = new();
@@ -1050,7 +1048,7 @@ public static class Tbin10Util
             _path = path;
         }
 
-        public void Add(params Image<Rgba32>[] img)
+        public void Add(params Bitmap[] img)
         {
             _w = img.Length;
             if (_tmpList.TryGetValue(_w, out var value))
@@ -1058,7 +1056,7 @@ public static class Tbin10Util
                 if (value[0].Count == DefSize * DefSize)
                 {
                     Save(value);
-                    for (var i = 0; i < value.Count; i++) value[i] = new List<Image<Rgba32>>();
+                    for (var i = 0; i < value.Count; i++) value[i] = new List<Bitmap>();
 
                     _pathNames[_w] = new List<string>();
                     _tmpTileSheet[_w] = new TileSheet
@@ -1076,8 +1074,8 @@ public static class Tbin10Util
             }
             else
             {
-                _tmpList.Add(_w, new List<List<Image<Rgba32>>>());
-                for (var i = 0; i < _w; i++) _tmpList[_w].Add(new List<Image<Rgba32>>());
+                _tmpList.Add(_w, new List<List<Bitmap>>());
+                for (var i = 0; i < _w; i++) _tmpList[_w].Add(new List<Bitmap>());
 
                 if (!_pathNames.ContainsKey(_w)) _pathNames.Add(_w, new List<string>());
 
@@ -1109,7 +1107,7 @@ public static class Tbin10Util
             _tmpTileSheet[_w].Properties.AddRange(pl);
         }
 
-        public void Save(List<List<Image<Rgba32>>> list)
+        public void Save(List<List<Bitmap>> list)
         {
             int num;
             if (list[0].Count < DefSize * DefSize)
@@ -1129,7 +1127,7 @@ public static class Tbin10Util
 
             for (var i = 0; i < list.Count; ++i)
             {
-                var m = new Image<Rgba32>(num, num); //2
+                var m = new Bitmap(num, num); //2
                 _tmpTileSheet[_w].SheetSize = new IntVector2 { X = num / 16, Y = num / 16 };
                 for (var j = 0; j < list[0].Count; ++j) m.DrawImagePortion(j, list[i][j], 0);
 

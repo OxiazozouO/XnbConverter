@@ -108,24 +108,6 @@ if (args.Length > 1 && args[0] == "pngbench2")
     return;
 }
 
-if (args.Length > 1 && args[0] == "pngbench")
-{
-    PngBench.Run(args[1]);
-    return;
-}
-
-if (args.Length > 1 && args[0] == "pngreal")
-{
-    PngCheck.RunReal(args[1]);
-    return;
-}
-
-if (args.Length > 1 && args[0] == "pngtest")
-{
-    PngCheck.Run(args[1]);
-    return;
-}
-
 bool wrongMode = args.Length > 1 && args[1] == "wrong";
 
 byte[] file = File.ReadAllBytes(path);

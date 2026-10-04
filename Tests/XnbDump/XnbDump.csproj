@@ -11,7 +11,5 @@
         <!-- 诊断工具故意继续用 NuGet 版 LZ4PCL：与 Core 里 vendored 的 lz4net
              交叉校验，两边输出必须逐字节一致。 -->
         <PackageReference Include="LZ4PCL" Version="1.0.0" />
-        <!-- 用来交叉验证自研 PNG 编码器 -->
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
     </ItemGroup>
 </Project>
