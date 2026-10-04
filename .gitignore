@@ -77,3 +77,6 @@ appsettings.json
 /tmp_*/
 /.config/custom dll/
 /.config/xnb cache/
+
+# 发布产物（单文件 exe 通过 Release 分发，不进仓库）
+/out_publish/

@@ -44,7 +44,7 @@ public static class Program
 
         // 无参数：打印帮助后进入交互模式
         ReckonByTime("help");
-        UpdateByGitHub("v1.0");
+        UpdateByGitHub("v1.6.2");
         while (true)
         {
             ReckonByTime(Console.ReadLine());
