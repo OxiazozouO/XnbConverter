@@ -1,5 +1,5 @@
 using System.Reflection;
-using Microsoft.Xna.Framework.Content;
+using XnbConverter.Utilities;
 
 namespace XnbConverter.Readers.Mono;
 
@@ -13,10 +13,6 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
 
     private int _baseReadIndex = -1;
 
-    public override bool IsValueType()
-    {
-        return false;
-    }
 
     public override void Init(ReaderResolver resolver)
     {
@@ -251,13 +247,12 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
             return false;
         }
 
-        if (Attribute.GetCustomAttribute(p, typeof(ContentSerializerIgnoreAttribute)) is
-            ContentSerializerIgnoreAttribute)
+        if (ContentAttributes.Has(p, ContentAttributes.SerializerIgnore))
         {
             return false;
         }
 
-        if (!(Attribute.GetCustomAttribute(p, typeof(ContentSerializerAttribute)) is ContentSerializerAttribute))
+        if (!ContentAttributes.Has(p, ContentAttributes.Serializer))
         {
             getMethod = p.GetGetMethod();
             if (getMethod == null || !getMethod.IsPublic)
@@ -292,13 +287,12 @@ public class ReflectiveReader<TV> : BaseReader where TV : new()
 
     private static bool IsField(FieldInfo p)
     {
-        if (Attribute.GetCustomAttribute(p, typeof(ContentSerializerIgnoreAttribute)) is
-            ContentSerializerIgnoreAttribute)
+        if (ContentAttributes.Has(p, ContentAttributes.SerializerIgnore))
         {
             return false;
         }
 
-        if (!(Attribute.GetCustomAttribute(p, typeof(ContentSerializerAttribute)) is ContentSerializerAttribute) &&
+        if (!ContentAttributes.Has(p, ContentAttributes.Serializer) &&
             (!p.IsPublic || p.IsInitOnly))
         {
             return false;

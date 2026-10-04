@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>XnbProf</AssemblyName>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\XnbConverter.Core\XnbConverter.Core.csproj" />
+        <!-- 复用 CLI 的 RootPath / Logger 初始化，保证和真实运行完全一致 -->
+        <ProjectReference Include="..\..\Demos\XnbConverter.Cli\XnbConverter.Cli.csproj" />
+    </ItemGroup>
+</Project>

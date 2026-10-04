@@ -14,14 +14,11 @@ public class XactSoundReader : BaseReader
 		xactClipReader.Init(resolver);
 	}
 
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{
 		XactSound xactSound = new XactSound();
+		xactSound.FileOffset = (uint)bufferReader.BytePosition;
 		xactSound.Flags = bufferReader.ReadByte();
 		xactSound.CategoryId = bufferReader.ReadUInt16();
 		xactSound.VolumeFlag = bufferReader.ReadByte();
@@ -71,7 +68,24 @@ public class XactSoundReader : BaseReader
 		return xactSound;
 	}
 
+	/// <summary>
+	/// 就地修补 Sound 的固定头部字段（前 9 字节：Flags/CategoryId/VolumeFlag/Pitch/Priority/Filter）。
+	/// 其后的内容随 Flags 变化，且含未被解析的 ExtraData 区间，所以不整段重建、保持原样。
+	/// </summary>
 	public override void Write(object input)
 	{
+		XactSound xactSound = (XactSound)input;
+		if (xactSound.FileOffset == 0)
+		{
+			return;
+		}
+
+		bufferWriter.BytePosition = (int)xactSound.FileOffset;
+		bufferWriter.WriteByte(xactSound.Flags);
+		bufferWriter.WriteUInt16(xactSound.CategoryId);
+		bufferWriter.WriteByte(xactSound.VolumeFlag);
+		bufferWriter.WriteInt16((short)Math.Round(xactSound.Pitch * 1000f));
+		bufferWriter.WriteByte(xactSound.Priority);
+		bufferWriter.WriteUInt16(xactSound.Filter);
 	}
 }

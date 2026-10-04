@@ -1,3 +1,4 @@
+using System.Text;
 using XnbConverter.Configurations;
 using XnbConverter.Exceptions;
 using XnbConverter.Readers;
@@ -25,14 +26,11 @@ public class SoundBankReader : BaseReader
 		return (XnbConverter.Xact.SoundBank.Entity.SoundBank)soundBankReader.Read();
 	}
 
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{
 		XnbConverter.Xact.SoundBank.Entity.SoundBank soundBank = new XnbConverter.Xact.SoundBank.Entity.SoundBank();
+		soundBank.OriginalBytes = bufferReader.Buffer.AsSpan(0, bufferReader.Size).ToArray();
 		XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundBankHeader header = soundBank.Header;
 		header.Magic = bufferReader.ReadString(4);
 		if (header.Magic != "SDBK")
@@ -104,6 +102,7 @@ public class SoundBankReader : BaseReader
 			{
 				XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry soundEntry = new XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry
 				{
+					FileOffset = (uint)bufferReader.BytePosition,
 					Flags = bufferReader.ReadByte(),
 					SoundOffset = bufferReader.ReadUInt32()
 				};
@@ -123,6 +122,7 @@ public class SoundBankReader : BaseReader
 			for (int k = 0; k < header.NumComplexCues; k++)
 			{
 				XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue soundCue = new XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue();
+				soundCue.FileOffset = (uint)bufferReader.BytePosition;
 				soundCue.Flags = bufferReader.ReadByte();
 				if (((uint)(soundCue.Flags >> 2) & (true ? 1u : 0u)) != 0)
 				{
@@ -151,6 +151,7 @@ public class SoundBankReader : BaseReader
 					for (int l = 0; l < soundCue.NumEntries; l++)
 					{
 						XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue.CueVariation cueVariation = new XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue.CueVariation();
+						cueVariation.FileOffset = (uint)bufferReader.BytePosition;
 						switch (num2)
 						{
 						case 0:
@@ -221,6 +222,139 @@ public class SoundBankReader : BaseReader
 
 	public override void Write(object input)
 	{
-		throw new NotImplementedException();
+		Build((XnbConverter.Xact.SoundBank.Entity.SoundBank)input);
+	}
+
+	/// <summary>
+	/// 写回 .xsb：以读入时的原始字节为模板，把已建模的记录（声库名表、简单/复杂 Cue、
+	/// Cue 变体、各 Sound 的头部字段）按各自记录的原偏移就地修补。
+	/// 声调表里未被解析的 ExtraData、哈希表等部分原样保留，因此只支持同尺寸修改。
+	/// </summary>
+	public static byte[] Build(XnbConverter.Xact.SoundBank.Entity.SoundBank soundBank)
+	{
+		if (soundBank.OriginalBytes == null)
+		{
+			throw new XnbError("缺少原始字节，无法写回（请先用 Read 读入）");
+		}
+
+		if (soundBank.SoundEntrys.Count != soundBank.Header.NumSimpleCues)
+		{
+			throw new XnbError($"简单 Cue 数由 {soundBank.Header.NumSimpleCues} 变为 {soundBank.SoundEntrys.Count}，当前只支持同尺寸修改");
+		}
+
+		if (soundBank.Cues.Count != soundBank.Header.NumComplexCues)
+		{
+			throw new XnbError($"复杂 Cue 数由 {soundBank.Header.NumComplexCues} 变为 {soundBank.Cues.Count}，当前只支持同尺寸修改");
+		}
+
+		if (soundBank.WaveBankNames.Count != soundBank.Header.NumWaveBanks)
+		{
+			throw new XnbError($"声库数由 {soundBank.Header.NumWaveBanks} 变为 {soundBank.WaveBankNames.Count}，当前只支持同尺寸修改");
+		}
+
+		byte[] array = (byte[])soundBank.OriginalBytes.Clone();
+		BufferWriter bufferWriter = new BufferWriter(array);
+		SoundBankReader soundBankReader = new SoundBankReader();
+		soundBankReader.Init(new ReaderResolver
+		{
+			bufferWriter = bufferWriter
+		});
+
+		bufferWriter.BytePosition = (int)soundBank.Header.WaveBankNameTableOffset;
+		foreach (string waveBankName in soundBank.WaveBankNames)
+		{
+			WriteFixedName(bufferWriter, waveBankName, 64);
+		}
+
+		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry soundEntry in soundBank.SoundEntrys)
+		{
+			bufferWriter.BytePosition = (int)soundEntry.FileOffset;
+			bufferWriter.WriteByte(soundEntry.Flags);
+			bufferWriter.WriteUInt32(soundEntry.SoundOffset);
+		}
+
+		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue soundCue in soundBank.Cues)
+		{
+			int bytePosition = (int)soundCue.FileOffset;
+			bufferWriter.BytePosition = bytePosition;
+			bufferWriter.WriteByte(soundCue.Flags);
+			bytePosition++;
+			if (((uint)(soundCue.Flags >> 2) & 1u) != 0)
+			{
+				bufferWriter.WriteUInt32(soundCue.SoundOffset);
+				// 紧随其后的 4 字节未解析数据保持原样
+				bytePosition += 8;
+			}
+			else
+			{
+				bufferWriter.WriteUInt32(soundCue.VariationTableOffset);
+				bufferWriter.WriteUInt32(soundCue.TransitionTableOffset);
+				bytePosition += 8;
+			}
+
+			bufferWriter.BytePosition = bytePosition;
+			bufferWriter.WriteByte(soundCue.InstanceLimit);
+			bufferWriter.WriteUInt16(soundCue.FadeInSec);
+			bufferWriter.WriteUInt16(soundCue.FadeOutSec);
+			bufferWriter.WriteByte(soundCue.InstanceFlags);
+
+			int num = (soundCue.VariationFlags >> 3) & 7;
+			foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue.CueVariation cueVariation in soundCue.CueVariations)
+			{
+				bufferWriter.BytePosition = (int)cueVariation.FileOffset;
+				switch (num)
+				{
+				case 0:
+					bufferWriter.WriteUInt16(cueVariation.TrackIndex);
+					bufferWriter.WriteByte(cueVariation.WaveBankIndex);
+					bufferWriter.WriteByte(cueVariation.BWeightMin);
+					bufferWriter.WriteByte(cueVariation.BWeightMax);
+					break;
+				case 1:
+					bufferWriter.WriteUInt32(cueVariation.SoundOffset);
+					bufferWriter.WriteByte(cueVariation.BWeightMin);
+					bufferWriter.WriteByte(cueVariation.BWeightMax);
+					break;
+				case 3:
+					bufferWriter.WriteUInt32(cueVariation.SoundOffset);
+					bufferWriter.WriteSingle(cueVariation.FWeightMin);
+					bufferWriter.WriteSingle(cueVariation.FWeightMax);
+					bufferWriter.WriteUInt32(cueVariation.Flags);
+					break;
+				case 4:
+					bufferWriter.WriteUInt16(cueVariation.TrackIndex);
+					bufferWriter.WriteByte(cueVariation.WaveBankIndex);
+					break;
+				default:
+					throw new XnbError($"未实现的变体表类型 {num}，无法写回");
+				}
+			}
+		}
+
+		foreach (KeyValuePair<string, XactSound[]> sound in soundBank._sounds)
+		{
+			XactSound[] value = sound.Value;
+			foreach (XactSound xactSound in value)
+			{
+				soundBankReader.xactSoundReader.Write(xactSound);
+			}
+		}
+
+		return array;
+	}
+
+	/// <summary>把名字写进定长槽（不足补 0，超长截断），与 ReadString(count) 的读法对应。</summary>
+	private static void WriteFixedName(BufferWriter bufferWriter, string name, int length)
+	{
+		byte[] bytes = Encoding.Default.GetBytes(name ?? string.Empty);
+		Span<byte> span = new byte[length];
+		bytes.AsSpan(0, Math.Min(bytes.Length, length)).CopyTo(span);
+		bufferWriter.Write(span);
+	}
+
+	/// <summary>写回 .xsb 文件。</summary>
+	public static void Write(XnbConverter.Xact.SoundBank.Entity.SoundBank soundBank, string path)
+	{
+		File.WriteAllBytes(path, Build(soundBank));
 	}
 }

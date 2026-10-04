@@ -14,7 +14,8 @@ public static class ConfigHelper
         TimeFormat = "MM-dd HH:mm:ss",
         LogPrintingOptions = ConfigModel.LogLevels.Info | ConfigModel.LogLevels.Warn | ConfigModel.LogLevels.Error,
         LogSaveOptions = ConfigModel.LogLevels.Error,
-        Concurrency = 15
+        Concurrency = 15,
+        PngCompression = "fastest"
     };
 
     public static string GetJson(ConfigModel model)
@@ -58,6 +59,15 @@ public static class ConfigHelper
 
     public static bool LogTime => Config.LogTime;
 
+    /// <summary>
+    /// PNG 是否走最低压缩档。
+    ///
+    /// **默认就是速度优先**：配置里没有这个键（老配置、刚生成的配置）时按 fastest 处理，
+    /// 只有显式写 "optimal" 才切到体积优先。见 <see cref="ConfigModel.PngCompression"/>。
+    /// </summary>
+    public static bool PngFastest =>
+        !string.Equals(Config.PngCompression, "optimal", StringComparison.OrdinalIgnoreCase);
+
     public static string? TimeFormat => Config.TimeFormat;
 
     public static int Concurrency => Math.Min(Math.Max(1, Config.Concurrency), 15);
@@ -74,10 +84,18 @@ public static class ConfigHelper
 
     #endregion
 
+    /// <summary>
+    /// 派生一份并行期用的配置副本。
+    /// **新增字段时必须同步加到这里** —— 并行处理用的就是这份副本
+    ///（EnableMultithreading 换成副本，TurnOffMultithreading 再还原），
+    /// 漏掉的字段在并行段里会静默变回默认值：Locale 和 PngCompression 就是这么丢的。
+    /// </summary>
     private static ConfigModel Copy(this ConfigModel root, int printMod, int saveMod, int concurrency)
     {
         return new ConfigModel
         {
+            Locale = root.Locale,
+            PngCompression = root.PngCompression,
             LogTime = root.LogTime,
             TimeFormat = root.TimeFormat,
             Concurrency = concurrency,

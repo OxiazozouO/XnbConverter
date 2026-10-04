@@ -47,7 +47,11 @@ public class Squish : IDisposable
 		rangeFit.Dispose();
 	}
 
-	private static void FixRange(int min, int max, int steps)
+	/// <summary>
+	/// 把 [min, max] 撑到至少 steps 宽。原版 C++ 是引用传参（int&amp;），移植时写成了按值，
+	/// 调用方拿不到修改，等于没做；这里改回 ref。
+	/// </summary>
+	private static void FixRange(ref int min, ref int max, int steps)
 	{
 		if (max - min < steps)
 		{
@@ -59,7 +63,7 @@ public class Squish : IDisposable
 		}
 	}
 
-	private static int FitCodes(ReadOnlySpan<byte> rgba, int mask, byte[] codes, byte[] indices)
+	private static int FitCodes(ReadOnlySpan<byte> rgba, int mask, ReadOnlySpan<byte> codes, Span<byte> indices)
 	{
 		int num = 0;
 		for (int i = 0; i < 16; i++)
@@ -160,17 +164,9 @@ public class Squish : IDisposable
 	{
 		int num = block[0];
 		int num2 = block[1];
-		byte[] array = new byte[8]
-		{
-			(byte)num,
-			(byte)num2,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0
-		};
+		Span<byte> array = stackalloc byte[8];
+		array[0] = (byte)num;
+		array[1] = (byte)num2;
 		if (num > num2)
 		{
 			for (int i = 1; i < 7; i++)
@@ -187,7 +183,7 @@ public class Squish : IDisposable
 			array[6] = 0;
 			array[7] = byte.MaxValue;
 		}
-		byte[] array2 = new byte[16];
+		Span<byte> array2 = stackalloc byte[16];
 		int num3 = 2;
 		int num4 = 0;
 		for (int k = 0; k < 2; k++)
@@ -322,40 +318,27 @@ public class Squish : IDisposable
 		}
 		val = Math.Min(val, num);
 		val2 = Math.Min(val2, num2);
-		byte[] array = new byte[8]
-		{
-			(byte)val,
-			(byte)num,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0
-		};
+		// 原移植版漏了这两句，而 FixRange 又写成了按值传参（等于没做）
+		FixRange(ref val, ref num, 5);
+		FixRange(ref val2, ref num2, 7);
+		Span<byte> array = stackalloc byte[8];
+		array[0] = (byte)val;
+		array[1] = (byte)num;
 		for (int j = 1; j < 5; j++)
 		{
 			array[1 + j] = (byte)(((5 - j) * val + j * num) / 5);
 		}
 		array[6] = 0;
 		array[7] = byte.MaxValue;
-		byte[] array2 = new byte[8]
-		{
-			(byte)val2,
-			(byte)num2,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0
-		};
+		Span<byte> array2 = stackalloc byte[8];
+		array2[0] = (byte)val2;
+		array2[1] = (byte)num2;
 		for (int k = 1; k < 7; k++)
 		{
 			array2[1 + k] = (byte)(((7 - k) * val2 + k * num2) / 7);
 		}
-		byte[] array3 = Pool.RentByte(16);
-		byte[] array4 = Pool.RentByte(16);
+		Span<byte> array3 = stackalloc byte[16];
+		Span<byte> array4 = stackalloc byte[16];
 		int num5 = FitCodes(rgba, mask, array, array3);
 		int num6 = FitCodes(rgba, mask, array2, array4);
 		if (num5 <= num6)
@@ -366,11 +349,9 @@ public class Squish : IDisposable
 		{
 			WriteAlphaBlock7(val2, num2, array4, block);
 		}
-		Pool.Return(array3);
-		Pool.Return(array4);
 	}
 
-	private static void WriteAlphaBlock(int alpha0, int alpha1, byte[] indices, Span<byte> block)
+	private static void WriteAlphaBlock(int alpha0, int alpha1, ReadOnlySpan<byte> indices, Span<byte> block)
 	{
 		block[0] = (byte)alpha0;
 		block[1] = (byte)alpha1;
@@ -392,7 +373,7 @@ public class Squish : IDisposable
 		}
 	}
 
-	private static void WriteAlphaBlock5(int alpha0, int alpha1, byte[] indices, Span<byte> block)
+	private static void WriteAlphaBlock5(int alpha0, int alpha1, Span<byte> indices, Span<byte> block)
 	{
 		// check the relative values of the endpoints
 		if (alpha0 > alpha1)
@@ -413,7 +394,7 @@ public class Squish : IDisposable
 		WriteAlphaBlock(alpha0, alpha1, indices, block);
 	}
 	
-	private static void WriteAlphaBlock7(int alpha0, int alpha1, byte[] indices, Span<byte> block)
+	private static void WriteAlphaBlock7(int alpha0, int alpha1, Span<byte> indices, Span<byte> block)
 	{
 		if (alpha0 < alpha1)
 		{

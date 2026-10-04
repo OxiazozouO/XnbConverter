@@ -31,6 +31,7 @@ public class AudioEngineReader : BaseReader
 	public override object Read()
 	{
 		XnbConverter.Xact.AudioEngine.Entity.AudioEngine audioEngine = new XnbConverter.Xact.AudioEngine.Entity.AudioEngine();
+		audioEngine.OriginalBytes = bufferReader.Buffer.AsSpan(0, bufferReader.Size).ToArray();
 		audioEngine.Magic = bufferReader.ReadString(4);
 		if (audioEngine.Magic != "XGSF")
 		{
@@ -107,6 +108,7 @@ public class AudioEngineReader : BaseReader
 		for (int l = 0; l < audioEngine.numVars; l++)
 		{
 			XnbConverter.Xact.AudioEngine.Entity.AudioEngine.RpcVariable rpcVariable = new XnbConverter.Xact.AudioEngine.Entity.AudioEngine.RpcVariable();
+			rpcVariable.Index = l;
 			rpcVariable.Name = array2[l];
 			rpcVariable.Flags = bufferReader.ReadByte();
 			rpcVariable.InitValue = bufferReader.ReadSingle();
@@ -180,13 +182,105 @@ public class AudioEngineReader : BaseReader
 		return audioEngine;
 	}
 
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override void Write(object input)
 	{
-		throw new NotImplementedException();
+		Build((XnbConverter.Xact.AudioEngine.Entity.AudioEngine)input);
+	}
+
+	/// <summary>
+	/// 写回 .xgs：以读入时的原始字节为模板，把已建模的结构（类别、变量、RPC 曲线、
+	/// DSP 参数）按各自记录的原偏移重写。名字索引表、DSP 预设区等未建模部分原样保留。
+	/// 因此只支持「同尺寸修改」——结构条目数不能变，写回前会校验。
+	/// </summary>
+	public static byte[] Build(XnbConverter.Xact.AudioEngine.Entity.AudioEngine audioEngine)
+	{
+		if (audioEngine.OriginalBytes == null)
+		{
+			throw new XnbError("缺少原始字节，无法写回（请先用 Read 读入）");
+		}
+
+		if (audioEngine._categories == null || audioEngine._categories.Length != audioEngine.numCats)
+		{
+			throw new XnbError($"类别数由 {audioEngine.numCats} 变为 {audioEngine._categories?.Length}，当前只支持同尺寸修改");
+		}
+
+		int num = ((audioEngine._cueVariables?.Length ?? 0) + (audioEngine._variables?.Length ?? 0));
+		if (num != audioEngine.numVars)
+		{
+			throw new XnbError($"变量数由 {audioEngine.numVars} 变为 {num}，当前只支持同尺寸修改");
+		}
+
+		if (audioEngine.RpcCurves == null || audioEngine.RpcCurves.Length != audioEngine.numRpc)
+		{
+			throw new XnbError($"RPC 曲线数由 {audioEngine.numRpc} 变为 {audioEngine.RpcCurves?.Length}，当前只支持同尺寸修改");
+		}
+
+		byte[] array = (byte[])audioEngine.OriginalBytes.Clone();
+		BufferWriter bufferWriter = new BufferWriter(array);
+		AudioEngineReader audioEngineReader = new AudioEngineReader();
+		audioEngineReader.Init(new ReaderResolver
+		{
+			bufferWriter = bufferWriter
+		});
+
+		bufferWriter.BytePosition = (int)audioEngine.catsOffset;
+		AudioCategory[] categories = audioEngine._categories;
+		foreach (AudioCategory audioCategory in categories)
+		{
+			audioEngineReader.audioCategoryReader.Write(audioCategory);
+		}
+
+		WriteVariables(audioEngine._cueVariables);
+		WriteVariables(audioEngine._variables);
+
+		foreach (XnbConverter.Xact.AudioEngine.Entity.AudioEngine.RpcCurve rpcCurve in audioEngine.RpcCurves)
+		{
+			bufferWriter.BytePosition = (int)rpcCurve.FileOffset;
+			XnbConverter.Xact.AudioEngine.Entity.AudioEngine.RpcVariable rpcVariable = rpcCurve.IsGlobal
+				? audioEngine._variables[rpcCurve.Variable]
+				: audioEngine._cueVariables[rpcCurve.Variable];
+			bufferWriter.WriteUInt16((ushort)rpcVariable.Index);
+			bufferWriter.WriteByte((byte)rpcCurve.Points.Length);
+			bufferWriter.WriteUInt16((ushort)rpcCurve.Parameter);
+			XnbConverter.Xact.AudioEngine.Entity.AudioEngine.RpcPoint[] points = rpcCurve.Points;
+			foreach (XnbConverter.Xact.AudioEngine.Entity.AudioEngine.RpcPoint rpcPoint in points)
+			{
+				bufferWriter.WriteSingle((float)rpcPoint.X);
+				bufferWriter.WriteSingle((float)rpcPoint.Y);
+				bufferWriter.WriteByte((byte)rpcPoint.Type);
+			}
+		}
+
+		if (audioEngine._reverbSettings != null)
+		{
+			bufferWriter.BytePosition = (int)audioEngine.dspParamsOffset;
+			audioEngineReader.reverbSettingsReader.Write(audioEngine._reverbSettings);
+		}
+
+		return array;
+
+		void WriteVariables(XnbConverter.Xact.AudioEngine.Entity.AudioEngine.RpcVariable[] variables)
+		{
+			if (variables == null)
+			{
+				return;
+			}
+
+			foreach (XnbConverter.Xact.AudioEngine.Entity.AudioEngine.RpcVariable rpcVariable2 in variables)
+			{
+				bufferWriter.BytePosition = (int)audioEngine.varsOffset + rpcVariable2.Index * 13;
+				bufferWriter.WriteByte(rpcVariable2.Flags);
+				bufferWriter.WriteSingle((float)rpcVariable2.InitValue);
+				bufferWriter.WriteSingle((float)rpcVariable2.MinValue);
+				bufferWriter.WriteSingle((float)rpcVariable2.MaxValue);
+			}
+		}
+	}
+
+	/// <summary>写回 .xgs 文件。</summary>
+	public static void Write(XnbConverter.Xact.AudioEngine.Entity.AudioEngine audioEngine, string path)
+	{
+		File.WriteAllBytes(path, Build(audioEngine));
 	}
 }

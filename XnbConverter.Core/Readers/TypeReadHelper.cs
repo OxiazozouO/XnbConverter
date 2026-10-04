@@ -37,8 +37,9 @@ public static class TypeReadHelper
             ["Tide"] = ".tbin",
             ["SoundEffect"] = ".json .wav",
             ["SpriteFont"] = ".json .png",
+            ["DynamicSpriteFont"] = ".json .png",
             ["XmlSource"] = ".xml",
-            ["Effect"] = ".cso"
+            ["Effect"] = ".fx .cso"
         };
         Map = new ConcurrentDictionary<string, ReaderInfo>();
         ReaderTypes = new Dictionary<string, Type>();
@@ -71,6 +72,13 @@ public static class TypeReadHelper
             }
         }
 
+        // Point / Rectangle / Vector2 住在 XnaShim 程序集（程序集名 MonoGame.Framework）里，
+        // 上面按命名空间扫自己程序集扫不到，只能显式登记。
+        // 它们本来就是 MonoGame 也有的同名同形结构体，所以放在替身里两边共用一份，不必各写一遍。
+        Entities.Add("Point", typeof(global::Microsoft.Xna.Framework.Point));
+        Entities.Add("Rectangle", typeof(global::Microsoft.Xna.Framework.Rectangle));
+        Entities.Add("Vector2", typeof(global::Microsoft.Xna.Framework.Vector2));
+
         types = new Type[]
         {
             typeof(bool),
@@ -96,6 +104,15 @@ public static class TypeReadHelper
             Reader = typeof(TBinReader),
             Entity = typeof(TBin10),
             Extension = ExtMap["Tide"]
+        };
+
+        // SoundEffect 的读取器和实体都在 XnbConverter.Xact 命名空间，不在下面按命名空间扫描的两个列表里，
+        // 扫不到，只能显式登记（Terraria 的 Content/Sounds/*.xnb 用的就是这个名字，不带程序集限定）。
+        Map["Microsoft.Xna.Framework.Content.SoundEffectReader"] = new ReaderInfo
+        {
+            Reader = typeof(global::XnbConverter.Xact.SoundEffectReader),
+            Entity = typeof(global::XnbConverter.Xact.SoundEffect),
+            Extension = ExtMap["SoundEffect"]
         };
     }
 
@@ -254,7 +271,7 @@ public static class TypeReadHelper
         Type[] exportedTypes = Assembly.Load(bytes).GetExportedTypes();
         foreach (Type type in exportedTypes)
         {
-            ExtendTypes.Add(type.Name, type);
+            ExtendTypes[type.Name] = type;   // 不同程序集可能有同名类型，覆盖而不是抛异常
         }
     }
 

@@ -1,4 +1,4 @@
-using Point = XnbConverter.Entity.Mono.Point;
+using Point = Microsoft.Xna.Framework.Point;
 
 namespace XnbConverter.Readers.Mono;
 

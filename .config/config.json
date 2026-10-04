@@ -1,0 +1,9 @@
+{
+  "Locale": "zh-CN",
+  "LogTime": false,
+  "TimeFormat": "MM-dd HH:mm:ss",
+  "LogPrintingOptions": "Info, Warn, Error",
+  "LogSaveOptions": "Error",
+  "Concurrency": 15,
+  "PngCompression": "fastest"
+}

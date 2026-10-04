@@ -27,8 +27,4 @@ public class TBinReader : BaseReader
 		bufferWriter.Write(tBin.Data);
 	}
 
-	public override bool IsValueType()
-	{
-		return false;
-	}
 }

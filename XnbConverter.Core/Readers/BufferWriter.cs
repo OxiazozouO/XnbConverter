@@ -83,57 +83,48 @@ public class BufferWriter : IDisposable
 
 	public void WriteInt16(short number)
 	{
-		byte[] bytes = BitConverter.GetBytes(number);
-		Array.Copy(bytes, 0, Buffer, BytePosition, bytes.Length);
-		BytePosition += bytes.Length;
+		System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(Buffer.AsSpan(BytePosition), number);
+		BytePosition += 2;
 	}
 
 	public void WriteUInt16(ushort number)
 	{
-		byte[] bytes = BitConverter.GetBytes(number);
-		Array.Copy(bytes, 0, Buffer, BytePosition, bytes.Length);
-		BytePosition += bytes.Length;
+		System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(Buffer.AsSpan(BytePosition), number);
+		BytePosition += 2;
 	}
 
 	public void WriteInt32(int number)
 	{
-		byte[] bytes = BitConverter.GetBytes(number);
-		Array.Copy(bytes, 0, Buffer, BytePosition, bytes.Length);
-		BytePosition += bytes.Length;
+		System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(Buffer.AsSpan(BytePosition), number);
+		BytePosition += 4;
 	}
 
 	public void WriteUInt32(uint number)
 	{
-		byte[] bytes = BitConverter.GetBytes(number);
-		Array.Copy(bytes, 0, Buffer, BytePosition, bytes.Length);
-		BytePosition += bytes.Length;
+		System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(Buffer.AsSpan(BytePosition), number);
+		BytePosition += 4;
 	}
 
 	public void WriteUInt32(uint number, int offset)
 	{
-		byte[] bytes = BitConverter.GetBytes(number);
-		Array.Copy(bytes, 0, Buffer, offset, bytes.Length);
+		System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(Buffer.AsSpan(offset), number);
 	}
 
 	public void WriteSingle(float number)
 	{
-		byte[] bytes = BitConverter.GetBytes(number);
-		Array.Copy(bytes, 0, Buffer, BytePosition, bytes.Length);
-		BytePosition += bytes.Length;
+		System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(Buffer.AsSpan(BytePosition), number);
+		BytePosition += 4;
 	}
 
 	public void WriteDouble(double number)
 	{
-		byte[] bytes = BitConverter.GetBytes(number);
-		Array.Copy(bytes, 0, Buffer, BytePosition, bytes.Length);
-		BytePosition += bytes.Length;
+		System.Buffers.Binary.BinaryPrimitives.WriteDoubleLittleEndian(Buffer.AsSpan(BytePosition), number);
+		BytePosition += 8;
 	}
 
 	public void WriteBoolean(bool b)
 	{
-		byte[] bytes = BitConverter.GetBytes(b);
-		Array.Copy(bytes, 0, Buffer, BytePosition, bytes.Length);
-		BytePosition += bytes.Length;
+		Buffer[BytePosition++] = b ? (byte)1 : (byte)0;
 	}
 
 	public void Write7BitNumber(int number)

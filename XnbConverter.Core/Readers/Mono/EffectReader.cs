@@ -25,8 +25,4 @@ public class EffectReader : BaseReader
 		bufferWriter.Write(effect.Data);
 	}
 
-	public override bool IsValueType()
-	{
-		return false;
-	}
 }

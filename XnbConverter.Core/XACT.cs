@@ -1,9 +1,11 @@
+using XnbConverter.Configurations;
 using XnbConverter.Xact.AudioEngine.Entity;
 using XnbConverter.Xact.AudioEngine.Reader;
 using XnbConverter.Xact.SoundBank.Entity;
 using XnbConverter.Xact.SoundBank.Reader;
 using XnbConverter.Xact.WaveBank.Entity;
 using XnbConverter.Xact.WaveBank.Reader;
+using XnbConverter.Xact.WaveBank.Writer;
 
 namespace XnbConverter;
 
@@ -32,6 +34,7 @@ public static class XACT
 					break;
 				}
 				string filePath = text + "\\";
+				waveBank.OutputPath = text;
 				foreach (WaveBank.WaveBankEntry entry in waveBank.Entries)
 				{
 					entry.FilePath = filePath;
@@ -107,7 +110,15 @@ public static class XACT
 			int num = 0;
 			foreach (var item3 in hashSet)
 			{
-				WaveBank.WaveBankEntry waveBankEntry = array[item3.Item1].Entries[item3.Item2];
+				// 声库可能引用了本次没有一起提供的波形库（或索引越界），跳过而不是直接崩
+				WaveBank sourceBank = array[item3.Item1];
+				if (sourceBank == null || item3.Item2 < 0 || item3.Item2 >= sourceBank.Entries.Count)
+				{
+					Logger.Warn($"声库 '{fileName}' 引用了缺失的波形库 #{item3.Item1} 条目 #{item3.Item2}，已跳过");
+					continue;
+				}
+
+				WaveBank.WaveBankEntry waveBankEntry = sourceBank.Entries[item3.Item2];
 				if (waveBankEntry.FileName == null)
 				{
 					waveBankEntry.FilePath = waveBankEntry.FilePath + item3.Item3 + "\\";
@@ -132,5 +143,21 @@ public static class XACT
 		{
 			WaveBankReader.Save(waveBank);
 		}
+	}
+
+	/// <summary>
+	/// 与 <see cref="Load"/> 对称：按解包目录里的 "*.xwb.config" 清单重建各个 .xwb。
+	/// 采用同尺寸替换，条目的 wav 载荷长度必须与清单记录一致。
+	/// </summary>
+	public static int Pack(IEnumerable<(string ManifestPath, string OutputPath)> files)
+	{
+		int num = 0;
+		foreach ((string manifestPath, string outputPath) in files)
+		{
+			WaveBankWriter.Write(manifestPath, outputPath);
+			num++;
+		}
+
+		return num;
 	}
 }

@@ -59,8 +59,4 @@ public class ArrayReader<V> : BaseReader where V : new()
 		}
 	}
 
-	public override bool IsValueType()
-	{
-		return false;
-	}
 }

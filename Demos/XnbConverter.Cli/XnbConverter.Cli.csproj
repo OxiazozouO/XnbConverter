@@ -18,4 +18,16 @@
             <Private>True</Private>
         </ProjectReference>
     </ItemGroup>
+
+    <!--
+      替身程序集只该待在 xna-shim\ 子目录里。搁在输出根目录会被运行时的默认探测抢先命中，
+      .config/custom dll 里放的真 MonoGame 就永远轮不上 —— 实测 xTile.dll 会因此加载失败。
+      Core → Cli 的传递引用会把根目录那份抄过来，DestinationSubDirectory 管不住它，所以这里清掉。
+    -->
+    <Target Name="DropXnaShimFromOutputRoot" AfterTargets="CopyFilesToOutputDirectory">
+        <ItemGroup>
+            <XnaShimStray Include="$(OutDir)MonoGame.Framework.*" />
+        </ItemGroup>
+        <Delete Files="@(XnaShimStray)" ContinueOnError="true" />
+    </Target>
 </Project>

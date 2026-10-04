@@ -20,10 +20,6 @@ public class ChunkReader : BaseReader, IReaderFileUtil<Chunk>
 		};
 	}
 
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{

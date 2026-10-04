@@ -25,7 +25,7 @@ public class CharReader : BaseReader
 	public override void Write(object content)
 	{
 		string s = content.ToString();
-		byte[] bytes = Encoding.Default.GetBytes(s);
+		byte[] bytes = Encoding.UTF8.GetBytes(s);   // 读用 UTF8，写也必须用 UTF8，否则非 ASCII 字符回不去
 		bufferWriter.Write(bytes);
 	}
 

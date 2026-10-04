@@ -56,6 +56,9 @@ public class SoundBank
 		public byte Flags;
 
 		public uint SoundOffset;
+
+		/// <summary>该条目在 .xsb 中的起始偏移。</summary>
+		public uint FileOffset;
 	}
 
 	public class SoundCue
@@ -65,6 +68,9 @@ public class SoundBank
 			public byte BWeightMax;
 
 			public byte BWeightMin;
+
+			/// <summary>该项在 .xsb 中的起始偏移，写回时据此就地修补。</summary>
+			public uint FileOffset;
 
 			public uint Flags;
 
@@ -80,6 +86,9 @@ public class SoundBank
 		}
 
 		public List<CueVariation> CueVariations = new List<CueVariation>();
+
+		/// <summary>该 Cue 记录在 .xsb 中的起始偏移。</summary>
+		public uint FileOffset;
 
 		public ushort FadeInSec;
 
@@ -117,6 +126,12 @@ public class SoundBank
 	public SoundBankHeader Header = new SoundBankHeader();
 
 	public List<SoundEntry> SoundEntrys = new List<SoundEntry>();
+
+	/// <summary>
+	/// 读入时的原始字节。写回采用「同尺寸原地替换」：以它为模板，只把已建模的记录
+	/// 按各自记录的原偏移就地修补，声调表里未被解析的 ExtraData 等部分保持原样。
+	/// </summary>
+	public byte[] OriginalBytes;
 
 	public List<string> WaveBankNames = new List<string>();
 }

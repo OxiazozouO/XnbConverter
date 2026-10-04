@@ -261,6 +261,24 @@ namespace XnbConverter {
         ///   Looks up a localized string similar to Invalid output path {0}
         ///{1}.
         /// </summary>
+        public static string DynamicSpriteFont_1 {
+            get {
+                return ResourceManager.GetString("DynamicSpriteFont.1", resourceCulture);
+            }
+        }
+        
+        public static string EmbeddedAssemblies_1 {
+            get {
+                return ResourceManager.GetString("EmbeddedAssemblies.1", resourceCulture);
+            }
+        }
+        
+        public static string EmbeddedAssemblies_2 {
+            get {
+                return ResourceManager.GetString("EmbeddedAssemblies.2", resourceCulture);
+            }
+        }
+        
         public static string FileUtils_1 {
             get {
                 return ResourceManager.GetString("FileUtils.1", resourceCulture);
@@ -1370,6 +1388,15 @@ namespace XnbConverter {
         public static string XNB_9 {
             get {
                 return ResourceManager.GetString("XNB.9", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid PNG data: {0}.
+        /// </summary>
+        public static string Png_1 {
+            get {
+                return ResourceManager.GetString("Png.1", resourceCulture);
             }
         }
     }

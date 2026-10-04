@@ -1,62 +1,76 @@
 using XnbConverter.Entity.Mono;
-using XnbConverter.Utilities;
 
 namespace Squish;
 
 public class Sym3x3
 {
+	/// <summary>
+	/// 加权协方差矩阵的主特征向量（幂迭代）。
+	/// 缓冲区用栈分配，避免每块向对象池借还。
+	/// </summary>
 	public static Vector3 ExtractIndicesFromPackedBytes(int n, Vector3[] points, float[] weights)
 	{
-		float num = 0f;
-		float[] array = Pool.RentFloat(16);
-		Span<float> span = array.AsSpan();
-		Span<float> span2 = span.Slice(0, 3);
-		span2.Fill(0f);
+		Span<float> buffer = stackalloc float[16];
+		Span<float> centroid = buffer.Slice(0, 3);
+		Span<float> delta = buffer.Slice(3, 3);
+		Span<float> weighted = buffer.Slice(6, 3);
+		Span<float> covariance = buffer.Slice(9, 6);
+
+		// 协方差必须从 0 开始累加；原移植版漏了这一步，会累加到池里的残留数据上
+		covariance.Clear();
+
+		float total = 0f;
+		centroid.Clear();
 		for (int i = 0; i < n; i++)
 		{
-			num += weights[i];
-			span2[0] += weights[i] * points[i].X;
-			span2[1] += weights[i] * points[i].Y;
-			span2[2] += weights[i] * points[i].Z;
+			total += weights[i];
+			centroid[0] += weights[i] * points[i].X;
+			centroid[1] += weights[i] * points[i].Y;
+			centroid[2] += weights[i] * points[i].Z;
 		}
-		if (num > float.Epsilon)
+
+		if (total > float.Epsilon)
 		{
-			span2[0] /= num;
-			span2[1] /= num;
-			span2[2] /= num;
+			centroid[0] /= total;
+			centroid[1] /= total;
+			centroid[2] /= total;
 		}
-		Span<float> span3 = span.Slice(3, 3);
-		Span<float> span4 = span.Slice(6, 3);
-		Span<float> span5 = span.Slice(9, span.Length - 9);
-		for (int j = 0; j < n; j++)
+
+		for (int i = 0; i < n; i++)
 		{
-			span3[0] = points[j].X - span2[0];
-			span3[1] = points[j].Y - span2[1];
-			span3[2] = points[j].Z - span2[2];
-			span4[0] = weights[j] * span3[0];
-			span4[1] = weights[j] * span3[1];
-			span4[2] = weights[j] * span3[2];
-			span5[0] += span3[0] * span4[0];
-			span5[1] += span3[0] * span4[1];
-			span5[2] += span3[0] * span4[2];
-			span5[3] += span3[1] * span4[1];
-			span5[4] += span3[1] * span4[2];
-			span5[5] += span3[2] * span4[2];
+			delta[0] = points[i].X - centroid[0];
+			delta[1] = points[i].Y - centroid[1];
+			delta[2] = points[i].Z - centroid[2];
+			weighted[0] = weights[i] * delta[0];
+			weighted[1] = weights[i] * delta[1];
+			weighted[2] = weights[i] * delta[2];
+			covariance[0] += delta[0] * weighted[0];
+			covariance[1] += delta[0] * weighted[1];
+			covariance[2] += delta[0] * weighted[2];
+			covariance[3] += delta[1] * weighted[1];
+			covariance[4] += delta[1] * weighted[2];
+			covariance[5] += delta[2] * weighted[2];
 		}
-		Span<float> span6 = span2;
-		Span<float> span7 = span3;
-		span7.Fill(1f);
+
+		// 幂迭代求主特征向量
+		Span<float> vector = delta;
+		vector.Fill(1f);
 		for (int k = 0; k < 8; k++)
 		{
-			span6[0] = span7[0] * span5[0] + span7[1] * span5[1] + span7[2] * span5[2];
-			span6[1] = span7[0] * span5[1] + span7[1] * span5[3] + span7[2] * span5[4];
-			span6[2] = span7[0] * span5[2] + span7[1] * span5[4] + span7[2] * span5[5];
-			float num2 = Math.Max(span6[0], Math.Max(span6[1], span6[2]));
-			span7[0] = span6[0] / num2;
-			span7[1] = span6[1] / num2;
-			span7[2] = span6[2] / num2;
+			centroid[0] = vector[0] * covariance[0] + vector[1] * covariance[1] + vector[2] * covariance[2];
+			centroid[1] = vector[0] * covariance[1] + vector[1] * covariance[3] + vector[2] * covariance[4];
+			centroid[2] = vector[0] * covariance[2] + vector[1] * covariance[4] + vector[2] * covariance[5];
+			float max = Math.Max(centroid[0], Math.Max(centroid[1], centroid[2]));
+			if (max == 0f)
+			{
+				break;
+			}
+
+			vector[0] = centroid[0] / max;
+			vector[1] = centroid[1] / max;
+			vector[2] = centroid[2] / max;
 		}
-		Pool.Return(array);
-		return new Vector3(span7[0], span7[1], span7[2]);
+
+		return new Vector3(vector[0], vector[1], vector[2]);
 	}
 }

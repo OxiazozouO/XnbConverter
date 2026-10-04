@@ -103,6 +103,18 @@ public class Lzx : IDisposable
 
     private LzxState _state;
 
+    /// <summary>
+    /// 调试钩子：每解出一个词法单元时回调 (是否字面量, 长度, 距离/字节值)。
+    /// 默认 null，不影响正常解码；用于比对两个 LZX 流的编码决策。
+    /// </summary>
+    public static Action<bool, int, int>? TokenHook;
+
+    /// <summary>
+    /// 调试钩子：长度表预树每解出一个符号时回调 (块内起始下标, 目标下标, 符号, 覆盖个数)。
+    /// 默认 null，不影响正常解码；用于比对长度表的游程编码规则。
+    /// </summary>
+    public static Action<int, int, int, int>? LengthHook;
+
     static Lzx()
     {
         ExtraBits = new byte[52];
@@ -243,6 +255,7 @@ public class Lzx : IDisposable
                                 656u, 12u);
                             if (num6 < 256)
                             {
+                                TokenHook?.Invoke(true, 1, num6);
                                 _state.Window[_state.WindowPos++] = (byte)num6;
                                 num5--;
                                 continue;
@@ -304,6 +317,7 @@ public class Lzx : IDisposable
                                 }
                             }
 
+                            TokenHook?.Invoke(false, num7, num9);
                             int windowPos = (int)_state.WindowPos;
                             num5 -= num7;
                             int num12;
@@ -343,6 +357,7 @@ public class Lzx : IDisposable
                                 656u, 12u);
                             if (num6 < 256)
                             {
+                                TokenHook?.Invoke(true, 1, num6);
                                 _state.Window[_state.WindowPos++] = (byte)num6;
                                 num5--;
                                 continue;
@@ -396,6 +411,7 @@ public class Lzx : IDisposable
                                 }
                             }
 
+                            TokenHook?.Invoke(false, num7, num9);
                             int windowPos = (int)_state.WindowPos;
                             num5 -= num7;
                             int num12;
@@ -476,6 +492,7 @@ public class Lzx : IDisposable
                 case 17:
                 {
                     uint num2 = buffer.ReadLzxBits(4) + 4;
+                    LengthHook?.Invoke(first, i, 17, (int)num2);
                     table.Slice(i, (int)num2).Fill(0);
                     i += (int)num2;
                     break;
@@ -483,6 +500,7 @@ public class Lzx : IDisposable
                 case 18:
                 {
                     uint num2 = buffer.ReadLzxBits(5) + 20;
+                    LengthHook?.Invoke(first, i, 18, (int)num2);
                     table.Slice(i, (int)num2).Fill(0);
                     i += (int)num2;
                     break;
@@ -491,6 +509,7 @@ public class Lzx : IDisposable
                 {
                     uint num3 = buffer.ReadLzxBits(1) + 4;
                     num = (int)ReadHuffSymbol(buffer, _state.PreTreeTable, _state.PreTreeLen, 20u, 6u);
+                    LengthHook?.Invoke(first, i, 19, (int)num3);
                     num = table[i] - num;
                     if (num < 0)
                     {
@@ -502,6 +521,7 @@ public class Lzx : IDisposable
                     break;
                 }
                 default:
+                    LengthHook?.Invoke(first, i, num, 1);
                     num = table[i] - num;
                     if (num < 0)
                     {

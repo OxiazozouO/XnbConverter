@@ -1,5 +1,4 @@
 using XnbConverter.Entity.Mono;
-using XnbConverter.Utilities;
 
 namespace Squish;
 
@@ -101,14 +100,12 @@ public static class ColourBlock
 
 	public static void DecompressColour(Span<byte> rgba, ReadOnlySpan<byte> block, bool isDxt1)
 	{
-		byte[] array = Pool.RentByte(16);
-		Span<byte> colour = array.AsSpan();
-		colour.Fill(0);
+		// 缓冲改栈分配：这是逐块调用的热路径，原来每块要向对象池借还两次
+		Span<byte> colour = stackalloc byte[16];
+		Span<byte> indices = stackalloc byte[16];
+		colour.Clear();
 		int num = Unpack565(block[0], block[1], colour);
-		byte p = block[2];
-		byte p2 = block[3];
-		ref Span<byte> reference = ref colour;
-		int num2 = Unpack565(p, p2, reference.Slice(4, reference.Length - 4));
+		int num2 = Unpack565(block[2], block[3], colour.Slice(4));
 		if (isDxt1 && num <= num2)
 		{
 			for (int i = 0; i < 3; i++)
@@ -131,25 +128,19 @@ public static class ColourBlock
 		}
 		colour[11] = byte.MaxValue;
 		colour[15] = (byte)(!isDxt1 || num > num2 ? 255u : 0u);
-		byte[] array2 = Pool.RentByte(16);
 		int k = 4;
 		int num7 = -1;
 		for (; k < 8; k++)
 		{
 			byte b = block[k];
-			array2[++num7] = (byte)(b & 3u);
-			array2[++num7] = (byte)((uint)(b >> 2) & 3u);
-			array2[++num7] = (byte)((uint)(b >> 4) & 3u);
-			array2[++num7] = (byte)((uint)(b >> 6) & 3u);
+			indices[++num7] = (byte)(b & 3u);
+			indices[++num7] = (byte)((uint)(b >> 2) & 3u);
+			indices[++num7] = (byte)((uint)(b >> 4) & 3u);
+			indices[++num7] = (byte)((uint)(b >> 6) & 3u);
 		}
 		for (int l = 0; l < 16; l++)
 		{
-			Span<byte> span = colour.Slice(4 * array2[l], 4);
-			reference = ref rgba;
-			int num8 = 4 * l;
-			span.CopyTo(reference.Slice(num8, reference.Length - num8));
+			colour.Slice(4 * indices[l], 4).CopyTo(rgba.Slice(4 * l));
 		}
-		Pool.Return(array2);
-		Pool.Return(array);
 	}
 }

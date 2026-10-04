@@ -20,10 +20,6 @@ public class DATAChunkReader : BaseReader, IReaderFileUtil<DATAChunk>
 		return dATAChunk;
 	}
 
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{

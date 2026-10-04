@@ -5,10 +5,6 @@ namespace XnbConverter.Xact.AudioEngine.Reader;
 
 public class AudioCategoryReader : BaseReader
 {
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{
@@ -32,6 +28,13 @@ public class AudioCategoryReader : BaseReader
 
 	public override void Write(object input)
 	{
-		_ = (AudioCategory)input;
+		AudioCategory audioCategory = (AudioCategory)input;
+		bufferWriter.WriteByte((byte)audioCategory.maxInstances);
+		bufferWriter.WriteUInt16((ushort)Math.Round(audioCategory.fadeIn * 1000f));
+		bufferWriter.WriteUInt16((ushort)Math.Round(audioCategory.fadeOut * 1000f));
+		bufferWriter.WriteByte(audioCategory.instanceFlags);
+		bufferWriter.WriteUInt16(audioCategory.unkn);
+		bufferWriter.WriteByte(audioCategory.volumeDecibels);
+		bufferWriter.WriteByte(audioCategory.visibilityFlags);
 	}
 }

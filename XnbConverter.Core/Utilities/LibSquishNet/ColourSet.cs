@@ -90,24 +90,22 @@ public class ColourSet : IDisposable
 		}
 	}
 
-	public byte[] RemapIndices(byte[] source)
+	/// <summary>按块内去重结果重映射索引，结果写入调用方的 span（避免每块借还对象池）。</summary>
+	public void RemapIndices(ReadOnlySpan<byte> source, Span<byte> destination)
 	{
-		byte[] array = Pool.RentByte(16);
 		for (int i = 0; i < 16; i++)
 		{
 			int num = Remap[i];
-			array[i] = (byte)(num == -1 ? 3 : source[num]);
+			destination[i] = (byte)(num == -1 ? 3 : source[num]);
 		}
-		return array;
 	}
 
-	public byte[] RemapIndices(byte source)
+	/// <summary>单色块：所有有效像素用同一个索引。</summary>
+	public void RemapIndices(byte source, Span<byte> destination)
 	{
-		byte[] array = Pool.RentByte(16);
 		for (int i = 0; i < 16; i++)
 		{
-			array[i] = (byte)(Remap[i] == -1 ? 3 : source);
+			destination[i] = (byte)(Remap[i] == -1 ? 3 : source);
 		}
-		return array;
 	}
 }

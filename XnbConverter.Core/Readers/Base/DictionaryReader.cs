@@ -57,8 +57,4 @@ public class DictionaryReader<TK, TV, K, V> : BaseReader where TK : BaseReader, 
 		}
 	}
 
-	public override bool IsValueType()
-	{
-		return false;
-	}
 }

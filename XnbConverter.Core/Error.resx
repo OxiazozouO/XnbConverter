@@ -192,6 +192,15 @@ Author Email: {3}</value>
     <data name="ReaderResolver.2" xml:space="preserve">
         <value>Reader not found, index: {0}</value>
     </data>
+    <data name="DynamicSpriteFont.1" xml:space="preserve">
+        <value>DynamicSpriteFont 的 json 反序列化失败</value>
+    </data>
+    <data name="EmbeddedAssemblies.1" xml:space="preserve">
+        <value>提取嵌入程序集: {0} ({1} 字节) -> {2}</value>
+    </data>
+    <data name="EmbeddedAssemblies.2" xml:space="preserve">
+        <value>读取嵌入程序集失败, 已跳过: {0} ({1})</value>
+    </data>
     <data name="FileUtils.1" xml:space="preserve">
         <value>Invalid output path {0}
 {1}</value>
@@ -507,5 +516,8 @@ Author Email: {3}</value>
     </data>
     <data name="WaveBankReader.6" xml:space="preserve">
         <value>- segment : {0}    offset : {1}    length : {2}({3})</value>
+    </data>
+    <data name="Png.1" xml:space="preserve">
+        <value>Invalid PNG data: {0}</value>
     </data>
 </root>

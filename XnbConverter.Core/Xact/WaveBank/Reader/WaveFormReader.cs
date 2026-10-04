@@ -268,10 +268,6 @@ public class WaveFormReader : BaseReader, IReaderFileUtil<WaveForm>, IDisposable
         return num;
     }
 
-    public override bool IsValueType()
-    {
-        throw new NotImplementedException();
-    }
 
     public override object Read()
     {

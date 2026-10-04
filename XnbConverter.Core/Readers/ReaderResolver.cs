@@ -6,6 +6,9 @@ public class ReaderResolver
 {
     private readonly List<int> typeIndex;
 
+    /// <summary>类型名 -> 索引。原来 GetIndex 是 List.IndexOf 线性扫，而它会被逐字段调用。</summary>
+    private readonly Dictionary<string, int> _indexByName = new Dictionary<string, int>();
+
     private readonly List<string> _typeName;
 
     private readonly BaseReader[] readerArr;
@@ -41,6 +44,7 @@ public class ReaderResolver
             _typeName.Add(names[i].ToString());
         }
 
+        BuildIndex();
         Init();
     }
 
@@ -52,7 +56,21 @@ public class ReaderResolver
         this.bufferWriter = bufferWriter;
         _typeName = typeName;
         this.typeIndex = typeIndex;
+        BuildIndex();
         Init();
+    }
+
+    private void BuildIndex()
+    {
+        _indexByName.Clear();
+        for (int i = 0; i < _typeName.Count; i++)
+        {
+            // 和原来的 List.IndexOf 一样：同名只认第一个
+            if (!_indexByName.ContainsKey(_typeName[i]))
+            {
+                _indexByName[_typeName[i]] = typeIndex[i];
+            }
+        }
     }
 
     private void Init()
@@ -105,13 +123,12 @@ public class ReaderResolver
 
     public int GetIndex(Type t)
     {
-        int num = _typeName.IndexOf(t.ToString());
-        if (num == -1 || num > typeIndex.Count)
+        if (!_indexByName.TryGetValue(t.ToString(), out int index))
         {
             throw new ArgumentException();
         }
 
-        return typeIndex[num];
+        return index;
     }
 
     public void Write(int i, object item)

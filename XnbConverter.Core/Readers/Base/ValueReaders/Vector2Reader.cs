@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using XnbConverter.Entity.Mono;
 
 namespace XnbConverter.Readers.Base.ValueReaders;

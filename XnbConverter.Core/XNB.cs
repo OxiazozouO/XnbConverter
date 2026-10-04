@@ -1,4 +1,4 @@
-using LZ4PCL;
+using XnbConverter.Utilities.LZ4;
 using Newtonsoft.Json;
 using XnbConverter.Configurations;
 using XnbConverter.Entity.Mono;
@@ -13,6 +13,9 @@ namespace XnbConverter;
 
 public class XNB : IDisposable
 {
+    // ==== 临时探针，量完就删 ====
+    public static readonly bool ProbeOn = Environment.GetEnvironmentVariable("XNB_PROBE") != null;
+
     [Flags]
     public enum CompressedMasks : byte
     {
@@ -55,6 +58,24 @@ public class XNB : IDisposable
             public string Extension;
 
             public int Format;
+
+            /// <summary>
+            /// 贴图未补齐的内容尺寸（见 <see cref="Texture2D.ContentWidth"/>）。
+            /// 安卓版才有值，PC 版为 0；导出时记下来，打包时原样写回。
+            /// </summary>
+            public int ContentWidth;
+
+            public int ContentHeight;
+
+            /// <summary>
+            /// Effect 专用。只存「从 .fx 推不出来」的那部分：外壳（容器结构）和源码插入位置。
+            /// 着色器本身不在 config 里 —— 它就是同名的 .fx 文件，打包时从那儿反译回 GLSL。
+            /// 空表示没拆成，此时 <c>.cso</c> 存的是完整原始字节。
+            /// </summary>
+            public int ShaderOffset;
+
+            /// <summary>挖掉着色器源码之后的 MGFX 外壳（base64）：头部、采样器表、常量缓冲表、属性表、技术/通道。这是唯一必需的一坨「魔法值」。</summary>
+            public string? ShaderShell;
         }
 
         public ContentDto Content;
@@ -182,7 +203,7 @@ public class XNB : IDisposable
             else if (Lz4)
             {
                 byte[] subArray = bufferReader.Buffer[14..bufferReader.Size];
-                LZ4Codec.Decode(subArray, 0, subArray.Length, bufferReader.Buffer, 14, num2);
+                LZ4Codec.Decode32(subArray, 0, subArray.Length, bufferReader.Buffer, 14, num2, true);
             }
 
             bufferReader.BytePosition = 14;
@@ -264,6 +285,8 @@ public class XNB : IDisposable
                     Texture2D texture2D = (Texture2D)Data;
                     texture2D.SaveAsPng(array2[0]);
                     content.Format = texture2D.Format;
+                    content.ContentWidth = texture2D.ContentWidth;
+                    content.ContentHeight = texture2D.ContentHeight;
                     break;
                 }
                 case ".json":
@@ -278,11 +301,45 @@ public class XNB : IDisposable
                 }
                 case ".json .png":
                 {
-                    SpriteFont spriteFont = (SpriteFont)Data;
-                    content.Format = spriteFont.Texture.Format;
-                    spriteFont.Save(array2[0], array2[1]);
+                    // SpriteFont 与 DynamicSpriteFont 共用同一组扩展名，按实际数据类型分流
+                    if (Data is SpriteFont spriteFont)
+                    {
+                        content.Format = spriteFont.Texture.Format;
+                        spriteFont.Save(array2[0], array2[1]);
+                        break;
+                    }
+
+                    DynamicSpriteFont dynamicSpriteFont = (DynamicSpriteFont)Data;
+                    content.Format = dynamicSpriteFont.Pages.Count > 0
+                        ? dynamicSpriteFont.Pages[0].Texture!.Format
+                        : 0;
+                    dynamicSpriteFont.Save(array2[0], array2[1]);
                     break;
                 }
+                case ".fx .cso":
+                {
+                    byte[] mgfx = ((Effect)Data).Data;
+                    // 能拆：把着色器源码还原成 HLSL 效果源码（.fx），
+                    //       外壳和原始 GLSL 一起内嵌进 .config —— 解包只多出一个文件。
+                    // 拆不动（DX 字节码、格式不认得）：原样导出整个 MGFX，不做还原。
+                    if (Utilities.Mgfx.TrySplit(mgfx, out byte[] shell, out int shaderOffset, out byte[] shader))
+                    {
+                        File.WriteAllText(array2[0], Utilities.FxReconstruct.Build(
+                            System.Text.Encoding.UTF8.GetString(shader),
+                            Utilities.Mgfx.ReadableNames(shell)));
+                        content.ShaderOffset = shaderOffset;
+                        content.ShaderShell = Convert.ToBase64String(shell);
+                    }
+                    else
+                    {
+                        File.WriteAllBytes(array2[1], mgfx);
+                        content.ShaderOffset = 0;
+                        content.ShaderShell = null;
+                    }
+
+                    break;
+                }
+
                 case ".cso":
                     File.WriteAllBytes(array2[0], ((Effect)Data).Data);
                     break;
@@ -309,6 +366,8 @@ public class XNB : IDisposable
             byte formatVersion = xnbConfig.Header.FormatVersion;
             _AnalysisFlag();
             bool flag = target == TargetTags.Android || target == TargetTags.Ios ? true : false;
+            // 输入原本是 LZX 压缩时，非 Android/iOS 目标也沿用 LZX 重新打包
+            bool lzx = !flag && Lzx;
             if (flag)
             {
                 xnbConfig.Header.CompressedFlag |= CompressedMasks.Lz4;
@@ -316,18 +375,28 @@ public class XNB : IDisposable
             }
             else
             {
-                xnbConfig.Header.CompressedFlag = (CompressedMasks)(Hidef ? 1u : 0u);
+                xnbConfig.Header.CompressedFlag = (CompressedMasks)(Hidef ? 1u : 0u)
+                    | (lzx ? CompressedMasks.Lzx : 0);
                 Lz4 = false;
-                Lzx = false;
+                Lzx = lzx;
             }
 
-            BufferWriter writer = new BufferWriter(GetLen());
+            // 存到字段上而不是只用局部变量：只有这样 Dispose() 才能把它还给池。
+            // 之前这里每次打包都新借一块和载荷同量级的缓冲、且从不归还，是写出端最大的一笔分配。
+            // 实测（LooseSprites 26 个文件）：写出阶段分配 43 MB → 17 MB。
+            //
+            // 尺寸必须严格等于 GetLen()，不能随手加余量：LZ4HC 的 chainTable 是按
+            // 「绝对指针 & 0xFFFF」索引的（见 LZ4Codec.Unsafe32HC.Dirty.cs），所以压缩结果
+            // 依赖源缓冲落在哪个地址上；而地址由 ArrayPool 的分配顺序决定，改尺寸会改变
+            // 分配顺序，进而让重打包的字节流对不上原始文件。
+            bufferWriter = new BufferWriter(GetLen());
+            BufferWriter writer = bufferWriter;
             char c = (char)target;
             writer.WriteAsciiString("XNB" + c);
             writer.WriteByte(formatVersion);
             writer.WriteByte((byte)xnbConfig.Header.CompressedFlag);
             writer.WriteUInt32(0u);
-            if (flag)
+            if (flag || lzx)
             {
                 writer.WriteUInt32(0u);
             }
@@ -356,25 +425,63 @@ public class XNB : IDisposable
                 obj = JsonConvert.DeserializeObject((string)obj, resultType, FileUtils.Settings);
             }
 
+            long tProbe = ProbeOn ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
             writer.Write7BitNumber(0);
             new ReaderResolver(array, writer, list, list2).Write(0, obj);
+            if (ProbeOn)
+            {
+                Console.Error.WriteLine($"CONTENT {System.Diagnostics.Stopwatch.GetTimestamp() - tProbe} {writer.BytePosition}");
+            }
+
             if ((Lzx || Lz4) && !Lzx && Lz4)
             {
+                long tProbe2 = ProbeOn ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
                 int num = writer.BytePosition - 14;
-                byte[] array2 = new byte[LZ4Codec.MaximumOutputLength(num)];
-                int num2 = LZ4Codec.Encode(writer.Buffer, 14, num, array2, 0, num);
+                int outCap = LZ4Codec.MaximumOutputLength(num);
+                // 与 MonoGame 管线一致：用高压缩档 Encode32HC，且输出上限传 MaximumOutputLength。
+                // 换成这一档之后，重打包的 LZ4 字节流才和原始 XNB 完全一致。
+                //
+                // 这里**不能**让源和目标是同一块缓冲（试过，见 git 历史）：LZ4 一个序列的
+                // 写指针虽然是逐字节跟在读指针后面的，但「偏移 + 匹配长度」这几个字节是在拷完
+                // 字面量之后才写的，落点等于 src_p + (字面量长度 − 余量)。只要字面量段长于余量，
+                // 就会写进尚未读取的输入 —— 而字面量段最长可以等于整份载荷，所以任何有界的
+                // 错位余量都堵不住，LZ4 官方也因此不支持 in-place。
+                // 输出缓冲走池：它和载荷同量级，且每个文件一块
+                byte[] array2 = Pool.RentByte(outCap);
+                int num2 = LZ4Codec.Encode32HC(writer.Buffer, 14, num, array2, 0, outCap);
                 int num3 = 14 + num2;
                 writer.WriteUInt32((uint)num, 10);
                 writer.WriteUInt32((uint)num3, 6);
                 array2.AsSpan(0, num2).CopyTo(writer.Buffer.AsSpan(14, num2));
                 writer.BytePosition = num3;
+                Pool.Return(array2);
+                if (ProbeOn)
+                {
+                    Console.Error.WriteLine($"LZ4 {System.Diagnostics.Stopwatch.GetTimestamp() - tProbe2} {num}");
+                }
+            }
+            else if (Lzx)
+            {
+                // LZX：整段载荷交给压缩器，帧与块结构与原始 XNB 一致
+                int num = writer.BytePosition - 14;
+                byte[] array2 = LzxCompressor.Compress(writer.Buffer, 14, num);
+                int num2 = 14 + array2.Length;
+                writer.WriteUInt32((uint)num, 10);
+                writer.WriteUInt32((uint)num2, 6);
+                array2.AsSpan(0, array2.Length).CopyTo(writer.Buffer.AsSpan(14, array2.Length));
+                writer.BytePosition = num2;
             }
             else
             {
                 writer.WriteUInt32((uint)writer.BytePosition, 6);
             }
 
+            long tProbe3 = ProbeOn ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
             writer.SaveBufferToFile(path);
+            if (ProbeOn)
+            {
+                Console.Error.WriteLine($"SAVE {System.Diagnostics.Stopwatch.GetTimestamp() - tProbe3} {writer.BytePosition}");
+            }
         }
         catch (Exception ex)
         {
@@ -414,8 +521,40 @@ public class XNB : IDisposable
             case ".png":
                 Texture2D texture2D = Texture2D.FromPng(array2[0]);
                 texture2D.Format = XnbConfig.Content.Format;
+                texture2D.ContentWidth = XnbConfig.Content.ContentWidth;
+                texture2D.ContentHeight = XnbConfig.Content.ContentHeight;
                 Data = texture2D;
                 break;
+            case ".fx .cso":
+            {
+                if (!string.IsNullOrEmpty(content.ShaderShell) && File.Exists(array2[0]))
+                {
+                    // .fx 就是着色器本体：反译回 GLSL，按 ShaderOffset 插进外壳。
+                    byte[] glsl = System.Text.Encoding.UTF8.GetBytes(
+                        Utilities.FxReconstruct.ToGlsl(File.ReadAllText(array2[0])));
+
+                    try
+                    {
+                        Data = new Effect
+                        {
+                            Data = Utilities.Mgfx.Join(Convert.FromBase64String(content.ShaderShell),
+                                content.ShaderOffset, glsl),
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new XnbError(Error.XNB_7, ex.Message);
+                    }
+                }
+                else
+                {
+                    // 没拆成：.cso 里就是完整字节
+                    Data = new Effect { Data = File.ReadAllBytes(array2[1]) };
+                }
+
+                break;
+            }
+
             case ".cso":
                 Data = new Effect { Data = File.ReadAllBytes(array2[0]) };
                 break;
@@ -432,6 +571,12 @@ public class XNB : IDisposable
                 Data = File.ReadAllText(array2[0]);
                 break;
             case ".json .png":
+                if (XnbConfig.Readers[0].Type.Contains("DynamicSpriteFont"))
+                {
+                    Data = DynamicSpriteFont.FormFiles(array2[0], array2[1]);
+                    break;
+                }
+
                 SpriteFont spriteFont = SpriteFont.FormFiles(array2[0], array2[1]);
                 spriteFont.Texture.Format = XnbConfig.Content.Format;
                 Data = spriteFont;
@@ -450,6 +595,7 @@ public class XNB : IDisposable
         {
             Texture2D texture2D => num + texture2D.Data.Length,
             SpriteFont spriteFont => num + (int)((double)spriteFont.Texture.Data.Length * 1.2),
+            DynamicSpriteFont dynamicSpriteFont => num + dynamicSpriteFont.Pages.Sum(page => (int)((double)(page.Texture?.Data.Length ?? 0) * 1.2)) + 4096,
             string text => num + (int)((double)text.Length * 3.5),
             Effect effect => num + effect.Data.Length,
             XmlSource xmlSource => num + xmlSource.Data.Length + 200,

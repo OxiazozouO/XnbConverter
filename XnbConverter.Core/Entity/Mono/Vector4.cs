@@ -83,40 +83,16 @@ public struct Vector4
 		return this;
 	}
 
+	/// <summary>
+	/// 逐分量截断到 [min, max]。用 Min/Max 实现以编译成无分支的 minss/maxss，
+	/// 内层循环里这个函数被高频调用，分支版本会因数据分布产生大量预测失败。
+	/// </summary>
 	public Vector4 Clamp(float min, float max)
 	{
-		if (X < min)
-		{
-			X = min;
-		}
-		else if (X > max)
-		{
-			X = max;
-		}
-		if (Y < min)
-		{
-			Y = min;
-		}
-		else if (Y > max)
-		{
-			Y = max;
-		}
-		if (Z < min)
-		{
-			Z = min;
-		}
-		else if (Z > max)
-		{
-			Z = max;
-		}
-		if (W < min)
-		{
-			W = min;
-		}
-		else if (W > max)
-		{
-			W = max;
-		}
+		X = MathF.Min(MathF.Max(X, min), max);
+		Y = MathF.Min(MathF.Max(Y, min), max);
+		Z = MathF.Min(MathF.Max(Z, min), max);
+		W = MathF.Min(MathF.Max(W, min), max);
 		return this;
 	}
 

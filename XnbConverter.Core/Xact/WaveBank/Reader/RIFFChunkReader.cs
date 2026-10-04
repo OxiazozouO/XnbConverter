@@ -30,10 +30,6 @@ public class RIFFChunkReader : BaseReader, IReaderFileUtil<RIFFChunk>
 		return rIFFChunk;
 	}
 
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{

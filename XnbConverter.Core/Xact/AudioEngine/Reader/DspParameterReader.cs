@@ -5,10 +5,6 @@ namespace XnbConverter.Xact.AudioEngine.Reader;
 
 public class DspParameterReader : BaseReader
 {
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{
@@ -24,6 +20,11 @@ public class DspParameterReader : BaseReader
 
 	public override void Write(object input)
 	{
-		throw new NotImplementedException();
+		DspParameter dspParameter = (DspParameter)input;
+		bufferWriter.WriteByte(dspParameter.unkn1);
+		bufferWriter.WriteSingle((float)dspParameter.Value);
+		bufferWriter.WriteSingle((float)dspParameter.MinValue);
+		bufferWriter.WriteSingle((float)dspParameter.MaxValue);
+		bufferWriter.WriteUInt16(dspParameter.unkn2);
 	}
 }

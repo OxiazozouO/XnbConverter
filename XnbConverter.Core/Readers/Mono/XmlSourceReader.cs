@@ -26,8 +26,4 @@ public class XmlSourceReader : BaseReader
 		StringReader.WriteValueBy7Bit(bufferWriter, xmlSource.Data);
 	}
 
-	public override bool IsValueType()
-	{
-		return false;
-	}
 }

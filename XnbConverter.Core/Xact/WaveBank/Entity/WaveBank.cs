@@ -202,6 +202,24 @@ public class WaveBank
 
 	public readonly WaveBankHeader Header = new WaveBankHeader();
 
+	/// <summary>解包时这一层目录的基路径（不含末尾分隔符），打包时用来定位清单和波形文件。</summary>
+	[JsonIgnore]
+	public string OutputPath;
+
+	/// <summary>
+	/// 波形数据区起点之前的原始字节（header + BankData + EntryMetaData + 保留区），
+	/// 打包时原样回写即可保证这部分逐字节不变。
+	/// </summary>
+	[JsonIgnore]
+	public byte[] Prefix;
+
+	/// <summary>
+	/// 原始 .xwb 的文件大小。条目之间可能有对齐用的零填充间隙（Terraria 的就有），
+	/// 重建时必须按这个总长分配缓冲，否则尾部会被截掉。
+	/// </summary>
+	[JsonIgnore]
+	public int FileSize;
+
 	public const int AdpcmMiniWaveFormatBlockAlignConversionOffset = 22;
 
 	private const int HEADER_VERSION = 43;

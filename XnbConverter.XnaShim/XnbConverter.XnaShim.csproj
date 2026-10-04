@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <!--
+          程序集名必须是 MonoGame.Framework：游戏的数据程序集就是按这个名字引用它的
+          （见 StardewValley.GameData.dll 的程序集引用表）。
+          名字、版本对不上，运行时就不会接受它来顶替那个引用。
+        -->
+        <AssemblyName>MonoGame.Framework</AssemblyName>
+        <AssemblyVersion>3.6.0.862</AssemblyVersion>
+        <FileVersion>3.6.0.862</FileVersion>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <IsTrimmable>false</IsTrimmable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+</Project>

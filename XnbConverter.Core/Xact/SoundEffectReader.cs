@@ -25,10 +25,6 @@ public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
         return soundEffect;
     }
 
-    public override bool IsValueType()
-    {
-        throw new NotImplementedException();
-    }
 
     public override void Init(ReaderResolver resolver)
     {
@@ -41,12 +37,16 @@ public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
     public override object Read()
     {
         SoundEffect soundEffect = new SoundEffect();
-        if ((long)bufferReader.ReadInt32() != 18)
+        // 格式块长度（WAVEFORMATEX 的 18 字节）由 FmtChunkReader.Read 一并读走，
+        // 这里**不能再预读一次** —— 否则会把紧随其后的 FmtTag/SampleRate 当成这个字段，
+        // 整段错位 4 字节。Terraria 的 Content/Sounds/*.xnb 就是这么被读崩的
+        // （报「格式为 -21436」，其实是把 SampleRate 44100 当成了 FmtTag）。
+        soundEffect.WaveForm.fmtChunk = (FmtChunk)_fmtChunkReader.Read();
+        if (soundEffect.WaveForm.fmtChunk.FmtSize != 18)
         {
             throw new AggregateException("参数错误！");
         }
 
-        soundEffect.WaveForm.fmtChunk = (FmtChunk)_fmtChunkReader.Read();
         soundEffect.WaveForm.fmtChunk.CheckFmtID("SoundEffect");
         soundEffect.WaveForm.dataChunk = (DATAChunk)_dataChunkReader.Read();
         soundEffect.WaveForm.riffChunk.ChunkSize = 36 + soundEffect.WaveForm.dataChunk.DataSize;
@@ -72,9 +72,12 @@ public class SoundEffectReader : BaseReader, IReaderFileUtil<SoundEffect>
     public static void Save(SoundEffect input, string path)
     {
         SoundEffectReader soundEffectReader = new SoundEffectReader();
+        // 借出来用完必须还：BufferWriter 走的是池，不 Dispose 就等于每次导出一份
+        // 和音频数据同量级的垃圾。下面两处波形写出（这里和 WaveFormReader.Save）原来都漏了。
+        using BufferWriter writer = new BufferWriter((int)(input.WaveForm.riffChunk.ChunkSize + 1000));
         soundEffectReader.Init(new ReaderResolver
         {
-            bufferWriter = new BufferWriter((int)(input.WaveForm.riffChunk.ChunkSize + 1000))
+            bufferWriter = writer
         });
         soundEffectReader._waveFormReader.Save(input.WaveForm);
         soundEffectReader.bufferWriter.SaveBufferToFile(path);

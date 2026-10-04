@@ -5,6 +5,7 @@ namespace XnbConverter.Utilities;
 
 public static class Pool
 {
+
 	public const int Len128 = 128;
 
 	public const int Len512 = 512;
@@ -15,7 +16,40 @@ public static class Pool
 
 	public const int LongSize = 10485760;
 
-	private static readonly ArrayPool<byte> BytePool = ArrayPool<byte>.Shared;
+	/// <summary>
+	/// Shared 池最大只缓存 1MB 的数组，而 XNB 载荷、PNG 扫描线动辄好几 MB ——
+	/// 用 Shared 就是每个文件都新分配一块大数组、还回去也留不住，GC 直接被拖爆。
+	/// 这里放开到 32MB，让大缓冲也能循环利用。
+	/// </summary>
+	private static readonly ArrayPool<byte> BytePool = ArrayPool<byte>.Create(1 << 25, 4);
+
+	/// <summary>
+	/// LZX 近最优解析的 DP 工作数组（recLen/recDist 各 2MB 等，合计 6MB 出头），
+	/// 每次压缩都要一整批。共享池上限只有 1MB，这些数组会直接被丢弃，所以单独开一个。
+	/// </summary>
+	private static readonly ArrayPool<int> BigIntPool = ArrayPool<int>.Create(1 << 22, 4);
+
+	private static readonly ArrayPool<uint> UIntPool = ArrayPool<uint>.Create(1 << 22, 4);
+
+	public static int[] RentBigInt(int size)
+	{
+		return BigIntPool.Rent(size);
+	}
+
+	public static void ReturnBig(int[] arr)
+	{
+		BigIntPool.Return(arr);
+	}
+
+	public static uint[] RentUInt(int size)
+	{
+		return UIntPool.Rent(size);
+	}
+
+	public static void Return(uint[] arr)
+	{
+		UIntPool.Return(arr);
+	}
 
 	private static readonly ArrayPool<ushort> UShortPool = ArrayPool<ushort>.Create(8192, 50);
 
@@ -27,136 +61,89 @@ public static class Pool
 
 	private static readonly ArrayPool<Vector4> Vector4Pool = ArrayPool<Vector4>.Create(16, 50);
 
-	private static readonly object MessageLock = new object();
-
 	public static byte[] RentByte(int size)
 	{
-		lock (MessageLock)
-		{
-			return BytePool.Rent(size);
-		}
+		return BytePool.Rent(size);
 	}
 
 	public static byte[] RentNewByte(int size)
 	{
-		lock (MessageLock)
-		{
-			byte[] array = BytePool.Rent(size);
-			array.AsSpan().Fill(0);
-			return array;
-		}
+		byte[] array = BytePool.Rent(size);
+		array.AsSpan().Fill(0);
+		return array;
 	}
 
 	public static float[] RentFloat(int size)
 	{
-		lock (MessageLock)
-		{
-			return FloatPool.Rent(size);
-		}
+		return FloatPool.Rent(size);
 	}
 
 	public static float[] RentNewFloat(int size)
 	{
-		lock (MessageLock)
-		{
-			float[] array = FloatPool.Rent(size);
-			Array.Fill(array, 0f);
-			return array;
-		}
+		float[] array = FloatPool.Rent(size);
+		Array.Fill(array, 0f);
+		return array;
 	}
 
 	public static int[] RentInt(int size)
 	{
-		lock (MessageLock)
-		{
-			return IntPool.Rent(size);
-		}
+		return IntPool.Rent(size);
 	}
 
 	public static int[] RentNewInt(int size)
 	{
-		lock (MessageLock)
-		{
-			int[] array = IntPool.Rent(size);
-			Array.Fill(array, 0);
-			return array;
-		}
+		int[] array = IntPool.Rent(size);
+		Array.Fill(array, 0);
+		return array;
 	}
 
 	public static Vector3[] RentVector3(int size)
 	{
-		lock (MessageLock)
+		Vector3[] array = Vector3Pool.Rent(size);
+		for (int i = 0; i < array.Length; i++)
 		{
-			Vector3[] array = Vector3Pool.Rent(size);
-			for (int i = 0; i < array.Length; i++)
-			{
-				array[i] = new Vector3();
-			}
-			return array;
+		array[i] = new Vector3();
 		}
+		return array;
 	}
 
 	public static Vector4[] RentVector4(int size)
 	{
-		lock (MessageLock)
-		{
-			return Vector4Pool.Rent(size);
-		}
+		return Vector4Pool.Rent(size);
 	}
 
 	public static ushort[] RentUShort(int size)
 	{
-		lock (MessageLock)
-		{
-			return UShortPool.Rent(size);
-		}
+		return UShortPool.Rent(size);
 	}
 
 	public static void Return(byte[] arr)
 	{
-		lock (MessageLock)
-		{
-			BytePool.Return(arr);
-		}
+		BytePool.Return(arr);
 	}
 
 	public static void Return(ushort[] arr)
 	{
-		lock (MessageLock)
-		{
-			UShortPool.Return(arr);
-		}
+		UShortPool.Return(arr);
 	}
 
 	public static void Return(float[] arr)
 	{
-		lock (MessageLock)
-		{
-			FloatPool.Return(arr);
-		}
+		FloatPool.Return(arr);
 	}
 
 	public static void Return(int[] arr)
 	{
-		lock (MessageLock)
-		{
-			IntPool.Return(arr);
-		}
+		IntPool.Return(arr);
 	}
 
 	public static void Return(Vector3[] arr)
 	{
-		lock (MessageLock)
-		{
-			Vector3Pool.Return(arr);
-		}
+		Vector3Pool.Return(arr);
 	}
 
 	public static void Return(Vector4[] arr)
 	{
-		lock (MessageLock)
-		{
-			Vector4Pool.Return(arr);
-		}
+		Vector4Pool.Return(arr);
 	}
 }

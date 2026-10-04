@@ -68,3 +68,12 @@ packages/
 .DS_Store
 
 appsettings.json
+# ---- 本地测试数据与工具工作目录（不随仓库分发）----
+/Content/
+/Content.zip
+/packed/
+/unpacked/
+/out_test/
+/tmp_*/
+/.config/custom dll/
+/.config/xnb cache/

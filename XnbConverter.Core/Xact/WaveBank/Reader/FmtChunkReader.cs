@@ -55,10 +55,6 @@ public class FmtChunkReader : BaseReader, IReaderFileUtil<FmtChunk>
 		return fmtChunk;
 	}
 
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{

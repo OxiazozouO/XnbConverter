@@ -1,7 +1,9 @@
 using System.Text;
+using Newtonsoft.Json;
 using XnbConverter.Configurations;
 using XnbConverter.Readers;
 using XnbConverter.Utilities;
+using XnbConverter.Xact.WaveBank.Entity;
 using static XnbConverter.Xact.WaveBank.Entity.WaveBank;
 
 namespace XnbConverter.Xact.WaveBank.Reader;
@@ -18,10 +20,6 @@ public class WaveBankReader : BaseReader
 
     private int _index1;
 
-    public override bool IsValueType()
-    {
-        throw new NotImplementedException();
-    }
 
     public static XnbConverter.Xact.WaveBank.Entity.WaveBank Read(string path)
     {
@@ -247,7 +245,12 @@ public class WaveBankReader : BaseReader
             {
                 uint num8 = entry.PlayRegion.Offset -
                             (waveBankEntry3.PlayRegion.Offset + waveBankEntry3.PlayRegion.Length);
-                if (num8 != 0)
+                // 相邻条目之间的未知数据，只做留档（重建走 Prefix，不依赖它）。
+                // 条目不保证按 offset 递增 —— Terraria 的 Wave Bank 就存在重叠，
+                // 此时 num8 为负，(int)num8 会让 BufferReader.Read 抛越界异常，
+                // 把整份文件的解析直接带崩。所以只读「确实是正间隙、且落在缓冲内」的。
+                if (num8 > 0 && num8 <= int.MaxValue &&
+                    num8 <= (uint)(bufferReader.Size - bufferReader.BytePosition))
                 {
                     list.Add(bufferReader.Read((int)num8));
                     stringBuilder.Append("未知Entry数据：").Append(BitConverter.ToString(list[^1])).Append('\n');
@@ -257,6 +260,15 @@ public class WaveBankReader : BaseReader
             waveBankEntry3 = entry;
             stringBuilder.Append("读取Entry数据结束" + bufferReader.BytePosition).Append('\n');
         }
+
+        // 波形数据区之前的所有字节原样留档，打包时直接回写，保证这部分逐字节不变
+        if (num4 > 0 && num4 <= bufferReader.Buffer.Length)
+        {
+            waveBank.Prefix = bufferReader.Buffer.AsSpan(0, num4).ToArray();
+        }
+
+        // 原文件总长：条目之间/末尾可能有对齐填充，重建时靠它决定缓冲大小
+        waveBank.FileSize = bufferReader.Size;
 
         stringBuilder.Append("读取结束" + bufferReader.BytePosition).Append('\n');
         return waveBank;
@@ -290,6 +302,65 @@ public class WaveBankReader : BaseReader
             Directory.CreateDirectory(waveBankEntry.FilePath);
             WaveFormReader.Save(waveBankEntry.Data, waveBankEntry.GetPath(), code, rate, channels, bits, align);
         }
+
+        WriteManifest(waveBank);
+    }
+
+    /// <summary>
+    /// 写出 "&lt;库名&gt;.xwb.config"：记录波形数据区之前的所有原始字节、以及每个条目的
+    /// 文件名/偏移/长度。打包时据此把 wav 载荷依次拼回，同尺寸替换即可逐字节还原。
+    /// </summary>
+    private static void WriteManifest(XnbConverter.Xact.WaveBank.Entity.WaveBank waveBank)
+    {
+        if (string.IsNullOrEmpty(waveBank.OutputPath) || waveBank.Prefix == null)
+        {
+            return;
+        }
+
+        const int segmentIndex = 4;
+        int num = (int)waveBank.Header.Segments[segmentIndex].Offset;
+        if (num <= 0 || num > waveBank.Prefix.Length)
+        {
+            num = waveBank.Prefix.Length;
+        }
+
+        WaveBankManifest waveBankManifest = new WaveBankManifest
+        {
+            Signature = waveBank.Header.Signature,
+            Version = waveBank.Header.Version,
+            HeaderVersion = waveBank.Header.SkipHeaderVersion,
+            DataOffset = num,
+            // 原始文件总长（含条目之间、末尾的对齐填充）—— 重建时按它分配缓冲才不会截尾
+            OriginalSize = waveBank.FileSize > 0
+                ? waveBank.FileSize
+                : num + waveBank.Entries.Sum(entry => (long)entry.PlayRegion.Length),
+            Prefix = WaveBankManifest.ToBase64(waveBank.Prefix)
+        };
+
+        // 路径统一相对「清单所在目录」，这样打包时可以只靠清单定位波形文件
+        string path = waveBank.OutputPath + ".xwb.config";
+        string manifestDir = Path.GetDirectoryName(Path.GetFullPath(path)) ?? ".";
+
+        foreach (WaveBankEntry entry in waveBank.Entries)
+        {
+            string full = entry.GetPath();
+            if (string.IsNullOrEmpty(entry.FileName) || string.IsNullOrEmpty(full))
+            {
+                continue;
+            }
+
+            waveBankManifest.Entries.Add(new WaveBankManifest.Entry
+            {
+                FileName = Path.GetRelativePath(manifestDir, Path.GetFullPath(full)).Replace('/', '\\'),
+                Offset = (int)entry.PlayRegion.Offset,
+                Length = (int)entry.PlayRegion.Length,
+                FlagsAndDuration = entry.FlagsAndDuration,
+                Format = entry.Format
+            });
+        }
+
+        Directory.CreateDirectory(manifestDir);
+        File.WriteAllText(path, JsonConvert.SerializeObject(waveBankManifest, Formatting.Indented));
     }
 
     public override void Write(object input)

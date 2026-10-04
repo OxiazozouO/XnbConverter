@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Text;
-using Microsoft.Xna.Framework.Content;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -15,7 +14,7 @@ public static class FileUtils
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty jsonProperty = base.CreateProperty(member, memberSerialization);
-            if (member.GetCustomAttribute(typeof(ContentSerializerIgnoreAttribute)) != null)
+            if (ContentAttributes.Has(member, ContentAttributes.SerializerIgnore))
             {
                 jsonProperty.ShouldSerialize = (object _) => false;
             }

@@ -1,3 +1,6 @@
+// 必须用别名：Rectangle 住在替身程序集里，而本项目 global using 了 SixLabors.ImageSharp，
+// 那边也有同名同形的 Rectangle，直接 using 命名空间会撞成 CS0104。
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using XnbConverter.Exceptions;
 using XnbConverter.Utilities;
 

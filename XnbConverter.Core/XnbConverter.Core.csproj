@@ -7,6 +7,8 @@
         <RootNamespace>XnbConverter</RootNamespace>
         <OutputType>Library</OutputType>
         <IsTrimmable>false</IsTrimmable>
+        <!-- Utilities/LZ4 是 vendored 的 lz4net（见该目录 NOTICE.md），全是 unsafe 指针代码 -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,10 +20,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="LZ4PCL" Version="1.0.0" />
-        <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -75,6 +74,18 @@
     <ItemGroup>
       <None Remove="Tbin\LICENSE" />
       <None Remove="Utilities\LibSquishNet\LICENSE" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!--
+        Point / Rectangle / Vector2 住在替身程序集里，所以这是实打实的编译期依赖。
+        但它**不能落在输出目录根部** —— 那里会被运行时的默认探测抢先命中，
+        .config/custom dll 里放的真 MonoGame 就永远轮不上了（实测：xTile.dll 这类需要更多
+        MonoGame 类型的程序集会加载失败）。放进子目录，交给 RootPath 的解析兜底按优先级取。
+      -->
+      <ProjectReference Include="..\XnbConverter.XnaShim\XnbConverter.XnaShim.csproj">
+        <DestinationSubDirectory>xna-shim\</DestinationSubDirectory>
+      </ProjectReference>
     </ItemGroup>
 
 </Project>

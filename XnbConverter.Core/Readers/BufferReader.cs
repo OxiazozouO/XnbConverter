@@ -290,11 +290,17 @@ public class BufferReader : IDisposable
 		return BitConverter.ToDouble(array, 0);
 	}
 
+	/// <summary>Peek 的零拷贝版本，和 ReadOnly 对称。</summary>
+	public ReadOnlySpan<byte> PeekOnly(int count)
+	{
+		return Buffer.AsSpan(BytePosition, count);
+	}
+
 	public string PeekString(int count = 0)
 	{
 		if (count != 0)
 		{
-			return Encoding.Default.GetString(Peek(count));
+			return Encoding.Default.GetString(PeekOnly(count));
 		}
 		int bytePosition = BytePosition;
 		StringBuilder stringBuilder = new StringBuilder();

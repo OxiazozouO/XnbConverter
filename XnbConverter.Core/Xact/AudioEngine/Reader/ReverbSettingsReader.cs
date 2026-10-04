@@ -13,10 +13,6 @@ public class ReverbSettingsReader : BaseReader
 		dspParameterReader.Init(resolver);
 	}
 
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{
@@ -51,6 +47,10 @@ public class ReverbSettingsReader : BaseReader
 
 	public override void Write(object input)
 	{
-		throw new NotImplementedException();
+		ReverbSettings reverbSettings = (ReverbSettings)input;
+		for (int i = 0; i < reverbSettings.Parameters.Length; i++)
+		{
+			dspParameterReader.Write(reverbSettings.Parameters[i]);
+		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿using Rectangle = XnbConverter.Entity.Mono.Rectangle;
+﻿using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace XnbConverter.Readers.Base.ValueReaders;
 

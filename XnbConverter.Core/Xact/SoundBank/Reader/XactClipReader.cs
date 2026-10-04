@@ -6,10 +6,6 @@ namespace XnbConverter.Xact.SoundBank.Reader;
 
 public class XactClipReader : BaseReader
 {
-	public override bool IsValueType()
-	{
-		throw new NotImplementedException();
-	}
 
 	public override object Read()
 	{

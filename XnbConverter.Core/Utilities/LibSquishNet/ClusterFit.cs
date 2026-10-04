@@ -1,29 +1,45 @@
 using XnbConverter.Entity.Mono;
 using XnbConverter.Utilities;
+using Simd4 = System.Numerics.Vector4;
 
 namespace Squish;
 
+/// <summary>
+/// 聚类拟合：枚举沿主轴的所有分簇方案，取误差最小的一组端点。
+/// 内层循环是热路径，这里全部改用 <see cref="System.Numerics.Vector4"/>（硬件 SIMD），
+/// 并把除法换成乘倒数、把 Clamp 换成无分支 Min/Max。算术顺序与原版一致。
+/// </summary>
 public class ClusterFit : ColourFit
 {
-	private static readonly Vector4 V1 = new Vector4(3f, 3f, 3f, 9f);
+	private static readonly Simd4 V1 = new Simd4(3f, 3f, 3f, 9f);
 
-	private static readonly Vector4 V2 = new Vector4(2f, 2f, 2f, 4f);
+	private static readonly Simd4 V2 = new Simd4(2f, 2f, 2f, 4f);
 
-	private static readonly Vector4 TwothirdsTwothirds2 = V2 / V1;
+	private static readonly Simd4 TwothirdsTwothirds2 = V2 / V1;
+
+	/// <summary>V1 的逐分量倒数：内层循环用乘法代替除法。</summary>
+	private static readonly Simd4 V1Rcp = new Simd4(1f / 3f, 1f / 3f, 1f / 3f, 1f / 9f);
+
+	private static readonly Simd4 Grid = new Simd4(31f, 63f, 31f, 0f);
+
+	/// <summary>grid 的逐分量倒数。原移植版直接除以 (31,63,31,0)，W 会除零产生 NaN。</summary>
+	private static readonly Simd4 GridRcp = new Simd4(1f / 31f, 1f / 63f, 1f / 31f, 0f);
+
+	private static readonly Simd4 HalfHalf2 = new Simd4(0.5f, 0.5f, 0.5f, 0.25f);
 
 	private readonly int IterationCount;
 
 	private readonly byte[] Order = Pool.RentByte(128);
 
-	private readonly Vector4[] PointsWeights = Pool.RentVector4(16);
+	private readonly Simd4[] PointsWeights = new Simd4[16];
 
-	private Vector4 BestError = new Vector4();
+	private Simd4 BestError = default;
 
-	private Vector4 Metric = new Vector4();
+	private Simd4 Metric = default;
 
-	private Vector3 Principle;
+	private Simd4 Principle = default;
 
-	private Vector4 XsumWsum = new Vector4();
+	private Simd4 XsumWsum = default;
 
 	public ClusterFit(ColourSet colours, bool isDxt1, bool isColourIterativeClusterFit)
 		: base(colours, isDxt1)
@@ -33,118 +49,125 @@ public class ClusterFit : ColourFit
 
 	public override void Init()
 	{
-		Metric.Fill(1f);
-		BestError.Fill(float.MaxValue);
+		Metric = Simd4.One;
+		BestError = new Simd4(float.MaxValue);
 		Order.AsSpan().Fill(0);
-		XsumWsum.Clear();
+		XsumWsum = default;
 		int count = Colours.Count;
 		Vector3[] points = Colours.Points;
-		Principle = Sym3x3.ExtractIndicesFromPackedBytes(count, points, Colours.Weights);
+		Vector3 principle = Sym3x3.ExtractIndicesFromPackedBytes(count, points, Colours.Weights);
+		Principle = new Simd4(principle.X, principle.Y, principle.Z, 0f);
 	}
 
-	private void ConstructOrdering(Vector3 axis)
+	private static Simd4 Clamp01(Simd4 v)
+	{
+		return Simd4.Clamp(v, Simd4.Zero, Simd4.One);
+	}
+
+	private static Simd4 HalfAdjust(Simd4 v)
+	{
+		return new Simd4((int)(v.X + 0.5f), (int)(v.Y + 0.5f), (int)(v.Z + 0.5f), (int)(v.W + 0.5f));
+	}
+
+	/// <summary>对应原版 CompareAnyLessThan：XYZ 任一分量更小即胜，否则比 W。</summary>
+	private static bool CompareAnyLessThan(Simd4 a, Simd4 b)
+	{
+		if (!(a.X < b.X) && !(a.Y < b.Y) && !(a.Z < b.Z))
+		{
+			return a.W < b.W;
+		}
+
+		return true;
+	}
+
+	/// <summary>端点转 565，沿用 ColourBlock 的取整规则。</summary>
+	private static int To565(Simd4 c)
+	{
+		return new XnbConverter.Entity.Mono.Vector4(c.X, c.Y, c.Z, 0f).To565();
+	}
+
+	private void ConstructOrdering(Simd4 axis)
 	{
 		int count = Colours.Count;
 		Vector3[] points = Colours.Points;
-		float[] array = Pool.RentFloat(16);
+		Span<float> keys = stackalloc float[16];
 		for (int i = 0; i < count; i++)
 		{
-			array[i] = points[i].Dot(axis);
+			keys[i] = points[i].X * axis.X + points[i].Y * axis.Y + points[i].Z * axis.Z;
 			Order[i] = (byte)i;
 		}
 		for (int j = 0; j < count; j++)
 		{
 			int num = j;
-			while (num > 0 && array[num] < array[num - 1])
+			while (num > 0 && keys[num] < keys[num - 1])
 			{
-				ref float reference = ref array[num];
-				ref float reference2 = ref array[num - 1];
-				float num2 = array[num - 1];
-				float num3 = array[num];
-				reference = num2;
-				reference2 = num3;
-				ref byte reference3 = ref Order[num];
-				ref byte reference4 = ref Order[num - 1];
-				byte b = Order[num - 1];
-				byte b2 = Order[num];
-				reference3 = b;
-				reference4 = b2;
+				(keys[num], keys[num - 1]) = (keys[num - 1], keys[num]);
+				(Order[num], Order[num - 1]) = (Order[num - 1], Order[num]);
 				num--;
 			}
 		}
-		Pool.Return(array);
-		Vector3[] points2 = Colours.Points;
+
 		float[] weights = Colours.Weights;
-		XsumWsum = new Vector4(0f);
+		XsumWsum = default;
 		for (int k = 0; k < count; k++)
 		{
 			int num4 = Order[k];
-			Vector4 vector = new Vector4(points2[num4].X, points2[num4].Y, points2[num4].Z, 1f);
-			Vector4 vector2 = weights[num4] * vector;
+			Simd4 vector2 = weights[num4] * new Simd4(points[num4].X, points[num4].Y, points[num4].Z, 1f);
 			PointsWeights[k] = vector2;
 			XsumWsum += vector2;
 		}
 	}
 
-	private bool ConstructOrdering(Vector4 axis, int iteration)
+	private bool ConstructOrdering(Simd4 axis, int iteration)
 	{
 		int count = Colours.Count;
 		Vector3[] points = Colours.Points;
-		float[] array = Pool.RentFloat(16);
+		Span<float> keys = stackalloc float[16];
+		int offset = 16 * iteration;
 		for (int i = 0; i < count; i++)
 		{
-			array[i] = points[i].Dot(axis);
-			Order[16 * iteration + i] = (byte)i;
+			keys[i] = points[i].X * axis.X + points[i].Y * axis.Y + points[i].Z * axis.Z;
+			Order[offset + i] = (byte)i;
 		}
 		for (int j = 0; j < count; j++)
 		{
 			int num = j;
-			while (num > 0 && array[num] < array[num - 1])
+			while (num > 0 && keys[num] < keys[num - 1])
 			{
-				ref float reference = ref array[num];
-				ref float reference2 = ref array[num - 1];
-				float num2 = array[num - 1];
-				float num3 = array[num];
-				reference = num2;
-				reference2 = num3;
-				int num4 = 16 * iteration + num;
-				ref byte reference3 = ref Order[num4];
-				ref byte reference4 = ref Order[num4 - 1];
-				byte b = Order[num4 - 1];
-				byte b2 = Order[num4];
-				reference3 = b;
-				reference4 = b2;
+				(keys[num], keys[num - 1]) = (keys[num - 1], keys[num]);
+				(Order[offset + num], Order[offset + num - 1]) = (Order[offset + num - 1], Order[offset + num]);
 				num--;
 			}
 		}
-		Pool.Return(array);
+
 		for (int k = 0; k < iteration; k++)
 		{
 			bool flag = true;
 			for (int l = 0; l < count; l++)
 			{
-				if (Order[16 * iteration + l] != Order[16 * k + l])
+				if (Order[offset + l] != Order[16 * k + l])
 				{
 					flag = false;
 					break;
 				}
 			}
+
 			if (flag)
 			{
 				return false;
 			}
 		}
-		Vector3[] points2 = Colours.Points;
+
 		float[] weights = Colours.Weights;
-		XsumWsum = new Vector4(0f);
+		XsumWsum = default;
 		for (int m = 0; m < count; m++)
 		{
-			int num5 = Order[16 * iteration + m];
-			Vector4 vector = new Vector4(points2[num5].X, points2[num5].Y, points2[num5].Z, 1f);
-			Vector4 vector2 = weights[num5] * vector;
+			int num5 = Order[offset + m];
+			Simd4 vector2 = weights[num5] * new Simd4(points[num5].X, points[num5].Y, points[num5].Z, 1f);
 			PointsWeights[m] = vector2;
 			XsumWsum += vector2;
 		}
+
 		return true;
 	}
 
@@ -152,40 +175,41 @@ public class ClusterFit : ColourFit
 	{
 		int count = Colours.Count;
 		ConstructOrdering(Principle);
-		Vector4 vector = Vector4.Zero;
-		Vector4 vector2 = Vector4.Zero;
-		Vector4 vector3 = BestError;
+		Simd4 vector = default;
+		Simd4 vector2 = default;
+		Simd4 vector3 = BestError;
 		int num = 0;
 		int num2 = 0;
 		int num3 = 0;
 		int num4 = 0;
-		Vector4 axis;
+		Simd4 axis;
 		do
 		{
-			Vector4 vector4 = new Vector4(0f);
+			Simd4 vector4 = default;
 			for (int i = 0; i < count; i++)
 			{
-				Vector4 vector5 = i == 0 ? PointsWeights[0] : new Vector4(0f);
+				Simd4 vector5 = i == 0 ? PointsWeights[0] : default;
 				int num5 = i == 0 ? 1 : i;
 				while (true)
 				{
-					Vector4 vector6 = XsumWsum - vector5 - vector4;
-					Vector4 vector7 = vector5 * Vector4.HalfHalf2;
-					Vector4 vector8 = vector7 + vector4;
+					Simd4 vector6 = XsumWsum - vector5 - vector4;
+					Simd4 vector7 = vector5 * HalfHalf2;
+					Simd4 vector8 = vector7 + vector4;
 					float w = vector8.W;
-					Vector4 vector9 = vector7 + vector6;
+					Simd4 vector9 = vector7 + vector6;
 					float w2 = vector9.W;
 					float w3 = vector7.W;
 					float num6 = w * w2 - w3 * w3;
-					Vector4 vector10 = (w2 * vector8 - w3 * vector9) / num6;
-					Vector4 vector11 = (w * vector9 - w3 * vector8) / num6;
-					vector10 = (Vector4.Grid * vector10.Clamp(0f, 1f)).HalfAdjust() / Vector4.Grid;
-					vector11 = (Vector4.Grid * vector11.Clamp(0f, 1f)).HalfAdjust() / Vector4.Grid;
-					Vector4 vector12 = w * vector10 * vector10 + w2 * vector11 * vector11;
-					Vector4 vector13 = w3 * vector10 * vector11 - vector10 * vector8 - vector11 * vector9;
-					Vector4 vector14 = (2f * vector13 + vector12) * Metric;
-					Vector4 vector15 = new Vector4(vector14.X + vector14.Y + vector14.Z);
-					if (vector15.CompareAnyLessThan(vector3))
+					float num6Rcp = 1f / num6;
+					Simd4 vector10 = num6Rcp * (w2 * vector8 - w3 * vector9);
+					Simd4 vector11 = num6Rcp * (w * vector9 - w3 * vector8);
+					vector10 = GridRcp * HalfAdjust(Grid * Clamp01(vector10));
+					vector11 = GridRcp * HalfAdjust(Grid * Clamp01(vector11));
+					Simd4 vector12 = w * vector10 * vector10 + w2 * vector11 * vector11;
+					Simd4 vector13 = w3 * vector10 * vector11 - vector10 * vector8 - vector11 * vector9;
+					Simd4 vector14 = (2f * vector13 + vector12) * Metric;
+					Simd4 vector15 = new Simd4(vector14.X + vector14.Y + vector14.Z);
+					if (CompareAnyLessThan(vector15, vector3))
 					{
 						vector = vector10;
 						vector2 = vector11;
@@ -215,27 +239,26 @@ public class ClusterFit : ColourFit
 			axis = vector2 - vector;
 		}
 		while (ConstructOrdering(axis, num4));
-		if (vector3.CompareAnyLessThan(BestError))
+		if (CompareAnyLessThan(vector3, BestError))
 		{
-			byte[] array = Pool.RentNewByte(16);
+			Span<byte> unordered = stackalloc byte[16];
 			Span<byte> span = Order.AsSpan(16 * num, count);
 			int j;
 			for (j = 0; j < num2; j++)
 			{
-				array[span[j]] = 0;
+				unordered[span[j]] = 0;
 			}
 			for (; j < num3; j++)
 			{
-				array[span[j]] = 2;
+				unordered[span[j]] = 2;
 			}
 			for (; j < count; j++)
 			{
-				array[span[j]] = 1;
+				unordered[span[j]] = 1;
 			}
-			byte[] array2 = Colours.RemapIndices(array);
-			ColourBlock.WriteColourBlock3(vector.To565(), vector2.To565(), array2, block);
-			Pool.Return(array);
-			Pool.Return(array2);
+			Span<byte> indices = stackalloc byte[16];
+			Colours.RemapIndices(unordered, indices);
+			ColourBlock.WriteColourBlock3(To565(vector), To565(vector2), indices, block);
 			BestError = vector3;
 		}
 	}
@@ -244,28 +267,27 @@ public class ClusterFit : ColourFit
 	{
 		int count = Colours.Count;
 		ConstructOrdering(Principle);
-		Vector4 vector = Vector4.Zero;
-		Vector4 vector2 = Vector4.Zero;
-		Vector4 vector3 = BestError;
-		Vector4 vector4 = new Vector4();
-		Vector4 vector5 = new Vector4();
-		Vector4 vector6 = new Vector4();
+		Simd4 vector = default;
+		Simd4 vector2 = default;
+		Simd4 vector3 = BestError;
+		Simd4 vector4 = default;
+		Simd4 vector5 = default;
 		int num = 0;
 		int num2 = 0;
 		int num3 = 0;
 		int num4 = 0;
 		int num5 = 0;
-		Vector4 axis;
+		Simd4 axis;
 		do
 		{
-			vector4.Clear();
+			vector4 = default;
 			for (int i = 0; i < count; i++)
 			{
-				vector5.Clear();
+				vector5 = default;
 				int num6 = i;
 				while (true)
 				{
-					Vector4 vector7;
+					Simd4 vector7;
 					int num7;
 					if (num6 == 0)
 					{
@@ -274,29 +296,29 @@ public class ClusterFit : ColourFit
 					}
 					else
 					{
-						vector6.Clear();
-						vector7 = vector6;
+						vector7 = default;
 						num7 = num6;
 					}
 					int num8 = num7;
 					while (true)
 					{
-						Vector4 vector8 = XsumWsum - vector7 - vector5 - vector4;
-						Vector4 vector9 = vector5 * TwothirdsTwothirds2 + vector7 / V1 + vector4;
+						Simd4 vector8 = XsumWsum - vector7 - vector5 - vector4;
+						Simd4 vector9 = vector5 * TwothirdsTwothirds2 + V1Rcp * vector7 + vector4;
 						float w = vector9.W;
-						Vector4 vector10 = vector5 / V1 + vector7 * TwothirdsTwothirds2 + vector8;
+						Simd4 vector10 = V1Rcp * vector5 + vector7 * TwothirdsTwothirds2 + vector8;
 						float w2 = vector10.W;
 						float num9 = (vector5.W + vector7.W) * 2f / 9f;
 						float num10 = w2 * w - num9 * num9;
-						Vector4 vector11 = (w2 * vector9 - num9 * vector10) / num10;
-						Vector4 vector12 = (w * vector10 - num9 * vector9) / num10;
-						vector11 = (Vector4.Grid * vector11.Clamp(0f, 1f)).HalfAdjust() / Vector4.Grid;
-						vector12 = (Vector4.Grid * vector12.Clamp(0f, 1f)).HalfAdjust() / Vector4.Grid;
-						Vector4 vector13 = w * vector11 * vector11 + w2 * vector12 * vector12;
-						Vector4 vector14 = num9 * vector11 * vector12 - vector11 * vector9 - vector12 * vector10;
-						Vector4 vector15 = (2f * vector14 + vector13) * Metric;
-						Vector4 vector16 = new Vector4(vector15.X + vector15.Y + vector15.Z);
-						if (vector16.CompareAnyLessThan(vector3))
+						float num10Rcp = 1f / num10;
+						Simd4 vector11 = num10Rcp * (w2 * vector9 - num9 * vector10);
+						Simd4 vector12 = num10Rcp * (w * vector10 - num9 * vector9);
+						vector11 = GridRcp * HalfAdjust(Grid * Clamp01(vector11));
+						vector12 = GridRcp * HalfAdjust(Grid * Clamp01(vector12));
+						Simd4 vector13 = w * vector11 * vector11 + w2 * vector12 * vector12;
+						Simd4 vector14 = num9 * vector11 * vector12 - vector11 * vector9 - vector12 * vector10;
+						Simd4 vector15 = (2f * vector14 + vector13) * Metric;
+						Simd4 vector16 = new Simd4(vector15.X + vector15.Y + vector15.Z);
+						if (CompareAnyLessThan(vector16, vector3))
 						{
 							vector = vector11;
 							vector2 = vector12;
@@ -334,38 +356,36 @@ public class ClusterFit : ColourFit
 			axis = vector2 - vector;
 		}
 		while (ConstructOrdering(axis, num5));
-		if (vector3.CompareAnyLessThan(BestError))
+		if (CompareAnyLessThan(vector3, BestError))
 		{
-			byte[] array = Pool.RentNewByte(16);
+			Span<byte> unordered = stackalloc byte[16];
 			Span<byte> span = Order.AsSpan(16 * num, count);
 			int j;
 			for (j = 0; j < num2; j++)
 			{
-				array[span[j]] = 0;
+				unordered[span[j]] = 0;
 			}
 			for (; j < num3; j++)
 			{
-				array[span[j]] = 2;
+				unordered[span[j]] = 2;
 			}
 			for (; j < num4; j++)
 			{
-				array[span[j]] = 3;
+				unordered[span[j]] = 3;
 			}
 			for (; j < count; j++)
 			{
-				array[span[j]] = 1;
+				unordered[span[j]] = 1;
 			}
-			byte[] array2 = Colours.RemapIndices(array);
-			ColourBlock.WriteColourBlock4(vector.To565(), vector2.To565(), array2, block);
+			Span<byte> indices = stackalloc byte[16];
+			Colours.RemapIndices(unordered, indices);
+			ColourBlock.WriteColourBlock4(To565(vector), To565(vector2), indices, block);
 			BestError = vector3;
-			Pool.Return(array2);
-			Pool.Return(array);
 		}
 	}
 
 	public override void Dispose()
 	{
 		Pool.Return(Order);
-		Pool.Return(PointsWeights);
 	}
 }

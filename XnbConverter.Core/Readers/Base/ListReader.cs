@@ -54,8 +54,4 @@ public class ListReader<TK, K> : BaseReader where TK : BaseReader, new()
 		}
 	}
 
-	public override bool IsValueType()
-	{
-		return false;
-	}
 }

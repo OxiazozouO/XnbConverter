@@ -12,14 +12,14 @@ public class StringReader : BaseReader
 
 	public override object Read()
 	{
-		int count = bufferReader.Read7BitNumber();
-		return Encoding.Default.GetString(bufferReader.Read(count));
+		// 走 ReadOnly(span) 直解：不拷贝字节数组，且长度 0 时天然得到空串
+		//（不能用 ReadString(0)，那个值会走"读到 0 字节为止"的分支）
+		return Encoding.Default.GetString(bufferReader.ReadOnly(bufferReader.Read7BitNumber()));
 	}
 
 	public string ReadBy7Bit()
 	{
-		int count = bufferReader.Read7BitNumber();
-		return Encoding.Default.GetString(bufferReader.Read(count));
+		return Encoding.Default.GetString(bufferReader.ReadOnly(bufferReader.Read7BitNumber()));
 	}
 
 	public string ReadByInt32()
@@ -30,8 +30,7 @@ public class StringReader : BaseReader
 
 	public static string ReadValueBy7Bit(BufferReader bufferReader)
 	{
-		int count = bufferReader.Read7BitNumber();
-		return Encoding.Default.GetString(bufferReader.Read(count));
+		return Encoding.Default.GetString(bufferReader.ReadOnly(bufferReader.Read7BitNumber()));
 	}
 
 	public override void Write(object content)
@@ -65,8 +64,4 @@ public class StringReader : BaseReader
 		bufferWriter.Write(array[..bytes]);
 	}
 
-	public override bool IsValueType()
-	{
-		return false;
-	}
 }

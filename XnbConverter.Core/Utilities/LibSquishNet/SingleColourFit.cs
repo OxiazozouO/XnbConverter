@@ -1,5 +1,4 @@
 using XnbConverter.Entity.Mono;
-using XnbConverter.Utilities;
 
 namespace Squish;
 
@@ -7,7 +6,7 @@ public class SingleColourFit : ColourFit
 {
 	private readonly SourceBlock[] _sources;
 
-	private readonly byte[] m_colour = Pool.RentByte(3);
+	private readonly byte[] m_colour = new byte[3];
 
 	private Vector3 m_end;
 
@@ -29,7 +28,6 @@ public class SingleColourFit : ColourFit
 
 	public override void Init()
 	{
-		m_error = int.MaxValue;
 		m_besterror = int.MaxValue;
 		m_index = 0;
 		Vector3 vector = Colours.Points[0];
@@ -42,34 +40,36 @@ public class SingleColourFit : ColourFit
 
 	private bool ComputeEndPoints(SourceBlock[][][] lookups)
 	{
-		int i = 0;
-		int num = 0;
-		for (; i < 2; i++)
+		// 每次进来都要重置：原移植版沿用上一轮（Compress3）的 m_error，
+		// 而且累加变量写在了循环外，导致第二个候选点永远赢不了。
+		m_error = int.MaxValue;
+		Vector3 start = default;
+		Vector3 end = default;
+		for (int i = 0; i < 2; i++)
 		{
+			int error = 0;
 			for (int j = 0; j < 3; j++)
 			{
 				_sources[j] = lookups[j][m_colour[j]][i];
-				int error = _sources[j].Error;
-				num += error * error;
+				int diff = _sources[j].Error;
+				error += diff * diff;
 			}
-			if (num < m_error)
+
+			if (error < m_error)
 			{
-				m_start.X = (int)_sources[0].Start;
-				m_start.Y = (int)_sources[1].Start;
-				m_start.Z = (int)_sources[2].Start;
-				m_end.X = (int)_sources[0].End;
-				m_end.Y = (int)_sources[1].End;
-				m_end.Z = (int)_sources[2].End;
+				start.X = _sources[0].Start / 31f;
+				start.Y = _sources[1].Start / 63f;
+				start.Z = _sources[2].Start / 31f;
+				end.X = _sources[0].End / 31f;
+				end.Y = _sources[1].End / 63f;
+				end.Z = _sources[2].End / 31f;
 				m_index = (byte)(2 * i);
-				m_error = num;
+				m_error = error;
 			}
 		}
-		m_start.X /= 31f;
-		m_start.Y /= 63f;
-		m_start.Z /= 31f;
-		m_end.X /= 31f;
-		m_end.Y /= 63f;
-		m_end.Z /= 31f;
+
+		m_start = start;
+		m_end = end;
 		return m_error >= m_besterror;
 	}
 
@@ -77,9 +77,9 @@ public class SingleColourFit : ColourFit
 	{
 		if (!ComputeEndPoints(SingleColourLookup.Lookups_53_63_53))
 		{
-			byte[] array = Colours.RemapIndices(m_index);
-			ColourBlock.WriteColourBlock3(m_start.To565(), m_end.To565(), array, block);
-			Pool.Return(array);
+			Span<byte> indices = stackalloc byte[16];
+			Colours.RemapIndices(m_index, indices);
+			ColourBlock.WriteColourBlock3(m_start.To565(), m_end.To565(), indices, block);
 			m_besterror = m_error;
 		}
 	}
@@ -88,15 +88,14 @@ public class SingleColourFit : ColourFit
 	{
 		if (!ComputeEndPoints(SingleColourLookup.Lookups_54_64_54))
 		{
-			byte[] array = Colours.RemapIndices(m_index);
-			ColourBlock.WriteColourBlock4(m_start.To565(), m_end.To565(), array, block);
-			Pool.Return(array);
+			Span<byte> indices = stackalloc byte[16];
+			Colours.RemapIndices(m_index, indices);
+			ColourBlock.WriteColourBlock4(m_start.To565(), m_end.To565(), indices, block);
 			m_besterror = m_error;
 		}
 	}
 
 	public override void Dispose()
 	{
-		Pool.Return(m_colour);
 	}
 }

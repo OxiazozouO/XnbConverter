@@ -1,7 +1,7 @@
 ﻿using XnbConverter.Entity.Mono;
 using XnbConverter.Readers.Base;
 using XnbConverter.Readers.Base.ValueReaders;
-using Rectangle = XnbConverter.Entity.Mono.Rectangle;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace XnbConverter.Readers.Mono;
 
@@ -45,6 +45,12 @@ public class SpriteFontReader : BaseReader
     public override void Write(object content)
     {
         SpriteFont spriteFont = (SpriteFont)content;
+        // 字体页要用 XNA 的专用 DXT3 编码器才能逐字节还原
+        if (spriteFont.Texture != null)
+        {
+            spriteFont.Texture.IsFontTexture = true;
+        }
+
         readerResolver.Write(texture2DReader, spriteFont.Texture);
         readerResolver.Write(rectangleListReader, spriteFont.Glyphs);
         readerResolver.Write(rectangleListReader, spriteFont.Cropping);
@@ -55,8 +61,4 @@ public class SpriteFontReader : BaseReader
         nullableReader.Write(spriteFont.DefaultCharacter);
     }
 
-    public override bool IsValueType()
-    {
-        return false;
-    }
 }

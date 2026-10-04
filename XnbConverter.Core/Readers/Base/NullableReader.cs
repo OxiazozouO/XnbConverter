@@ -43,8 +43,4 @@ public class NullableReader<T, N> : BaseReader where T : BaseReader, new()
 		}
 	}
 
-	public override bool IsValueType()
-	{
-		return false;
-	}
 }

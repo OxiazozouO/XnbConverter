@@ -25,18 +25,12 @@
 |--------------|------------------------------------------------------------------------|
 | ".json"      | 某个类的json形式，一般是游戏中某个行为的配置文件、目前可以支持星露谷1.5的结构化数据，星露谷1.5的结构化数据可以自行查看游戏wiki |
 | ".png"       | 游戏贴图素材,一般有人物肖像、物品贴图、地图的图块集等                                            |
-| ".cso"       | 着色器，但是此文件为xnb的一部分，尚未进一步的解析                                             |
+| ".fx" | 着色器。由 MGFX 二进制**还原**出的 HLSL 效果源码，任何 HLSL 工具都能打开/编辑/渲染。MGFX 外壳（容器结构）内嵌在同名 .config 里；打包时把 .fx 反译回 GLSL 写回。注意：与其它类型不同，effect **不是逐字节还原**（GLSL 会被重新排版，功能等价）。DX 平台的字节码无法还原成源码，此时改出 .cso（原样字节） |
 | ".tbin"      | 地图，可以用[tiled](https://www.mapeditor.org/)进行编辑                          |
 | ".xml"       | 某个类的xml形式，一般为字体文件                                                      |
 | ".json .png" | 一般为字体，json为字体的裁剪信息和字形信息，png为字体的图片                                      |
 | ".json .wav" | 一般为SoundEffect，就是游戏音乐、游戏音效等音乐文件                                        |
-|              |                                                                        |
-
-#### 仅拆包：
-
-| 导入的文件  | 说明                                                 |
-|--------|----------------------------------------------------|
-| ".xwb" | 解包成若干个wav文件   为SoundEffect的合集，Xact的一部分，扩展了更多音频处理功能 |
+| ".xwb" | 解包成若干个wav文件   为SoundEffect的合集，Xact的一部分，扩展了更多音频处理功能；打包时按生成的同名 .xwb.config 清单写回 |
 
 ## 命令使用说明：
 
@@ -146,10 +140,16 @@ auto -c -i "文件/文件夹" -o "导出目录"
 
 本项目遵循 GPL 协议
 
+### 9、[lz4net](https://github.com/MiloszKrajewski/lz4net)（经 MonoGame 内置）
+
+本项目对 LZ4 的压缩/解压使用 MonoGame 内容管线内置的 lz4net 源码，位于 `XnbConverter.Core/Utilities/LZ4`，遵循其 BSD-3-Clause 协议。
+
 ## 使用到的库：
 
-### 1、[LZ4PCL](https://github.com/zenith-nz/LZ4PCL)
+### 1、[Newtonsoft.Json](https://www.newtonsoft.com/json)
 
-### 2、[Newtonsoft.Json](https://www.newtonsoft.com/json)
+json 读写。目前唯一还从 NuGet 引用的库。
 
-### 3、[SixLabors.ImageSharp](https://github.com/SixLabors/ImageSharp)
+### 2、lz4net（内置源码，不再引包）
+
+LZ4 压缩/解压直接用 MonoGame 内容管线里的那份 lz4net，源码在 `XnbConverter.Core/Utilities/LZ4`（BSD-3-Clause）。
