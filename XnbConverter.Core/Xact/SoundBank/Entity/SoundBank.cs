@@ -85,6 +85,12 @@ public class SoundBank
 			public byte WaveBankIndex;
 		}
 
+		/// <summary>
+		/// Cue 名（简单 Cue 与复杂 Cue 共用一张名字表，按顺序对应）。
+		/// <see cref="FileOffset"/> 为 0 表示这条是**新增**的 Cue，写回时走追加路径。
+		/// </summary>
+		public string Name;
+
 		public List<CueVariation> CueVariations = new List<CueVariation>();
 
 		/// <summary>该 Cue 记录在 .xsb 中的起始偏移。</summary>

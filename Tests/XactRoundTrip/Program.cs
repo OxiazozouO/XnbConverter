@@ -52,6 +52,20 @@ if (args.Length > 0 && args[0] == "--add")
     return bad;
 }
 
+if (args.Length > 0 && args[0] == "--addcue")
+{
+    Console.WriteLine("追加 Cue 检验");
+    int bad = 0;
+    foreach (string file in args.Skip(1))
+    {
+        Console.WriteLine($"{Path.GetFileName(file)}:");
+        bad += XactRoundTrip.AddCueCheck.Run(file);
+    }
+
+    Console.WriteLine($"\n追加 Cue 失败: {bad}");
+    return bad;
+}
+
 string[] inputs = args.Length > 0 ? args : new[] { "wavebank_14.xwb" };
 int pass = 0;
 int fail = 0;
