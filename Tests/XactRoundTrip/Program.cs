@@ -61,7 +61,7 @@ if (args.Length > 0 && args[0] == "--inject-cue")
 if (args.Length > 0 && args[0] == "--inject-music")
 {
     Console.WriteLine("注入音乐（实机验证用）");
-    return XactRoundTrip.InjectMusic.Run(args[1], args[2], args[3], args[4], args[5], args[6]);
+    return XactRoundTrip.InjectMusic.Run(args[1], args[2], args[3], args[4], args[5]);
 }
 
 if (args.Length > 0 && args[0] == "--ogg2pcm")
