@@ -38,6 +38,20 @@ if (args.Length > 0 && args[0] == "--triple")
     return bad;
 }
 
+if (args.Length > 0 && args[0] == "--add")
+{
+    Console.WriteLine("追加条目检验");
+    int bad = 0;
+    foreach (string file in args.Skip(1))
+    {
+        Console.WriteLine($"{Path.GetFileName(file)}:");
+        bad += XactRoundTrip.AddEntryCheck.Run(file);
+    }
+
+    Console.WriteLine($"\n追加条目失败: {bad}");
+    return bad;
+}
+
 string[] inputs = args.Length > 0 ? args : new[] { "wavebank_14.xwb" };
 int pass = 0;
 int fail = 0;

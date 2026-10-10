@@ -17,7 +17,10 @@ public class WaveBankManifest
 		/// <summary>相对解包根目录的 wav 路径。</summary>
 		public string FileName;
 
-		/// <summary>在原 .xwb 中的绝对偏移，用于校验。</summary>
+		/// <summary>
+		/// 在原 .xwb 中的绝对偏移。已有条目用于校验；
+		/// <b>新条目</b>写 <see cref="WaveBankWriter.AppendToEnd"/>（-1）表示追加到数据区末尾。
+		/// </summary>
 		public int Offset;
 
 		/// <summary>波形数据字节数；替换的 wav 载荷必须等长。</summary>
@@ -26,6 +29,14 @@ public class WaveBankManifest
 		public uint FlagsAndDuration;
 
 		public uint Format;
+
+		/// <summary>
+		/// 循环区在条目载荷内的起点/长度。只在**追加**新条目时用得上 ——
+		/// 已有条目的元数据随 Prefix 原样回写，不由这里重建。默认 0/0 表示不循环。
+		/// </summary>
+		public uint LoopOffset;
+
+		public uint LoopLength;
 	}
 
 	/// <summary>原文件头部签名，目前恒为 WBND。</summary>
