@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using XnbConverter.Audio;
 using XnbConverter.Xact.SoundBank.Entity;
 using XnbConverter.Xact.SoundBank.Reader;
 using XnbConverter.Xact.WaveBank.Entity;
