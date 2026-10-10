@@ -64,6 +64,12 @@ if (args.Length > 0 && args[0] == "--inject-music")
     return XactRoundTrip.InjectMusic.Run(args[1], args[2], args[3], args[4], args[5], args[6]);
 }
 
+if (args.Length > 0 && args[0] == "--ogg2pcm")
+{
+    Console.WriteLine("Ogg 解码对照检验");
+    return XactRoundTrip.OggToPcmCheck.Run(args[1], args[2]);
+}
+
 if (args.Length > 0 && args[0] == "--addcue")
 {
     Console.WriteLine("追加 Cue 检验");
