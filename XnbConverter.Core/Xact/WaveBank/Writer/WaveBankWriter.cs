@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using Newtonsoft.Json;
+using XnbConverter.Audio;
 using XnbConverter.Exceptions;
 using XnbConverter.Readers;
 using XnbConverter.Xact.WaveBank.Codec;
@@ -42,6 +43,12 @@ public static class WaveBankWriter
 			throw new XnbError($"波形库清单缺少 Prefix 字段：{manifestPath}");
 		}
 
+		string baseDir = Path.GetDirectoryName(Path.GetFullPath(manifestPath)) ?? ".";
+
+		// 指向 .ogg 的条目先解成 PCM 并回填 Length/Format。
+		// 必须在 GrowHeader 之前 —— 它要靠这两个字段写条目元数据。
+		Dictionary<string, byte[]> oggPayloads = DecodeOggEntries(waveBankManifest, baseDir);
+
 		// 清单条目多于头部记录的条目数 ⇒ 重建头部（追加波形）
 		int headerCount = ReadHeaderEntryCount(waveBankManifest);
 		if (waveBankManifest.Entries.Count < headerCount)
@@ -55,7 +62,6 @@ public static class WaveBankWriter
 			GrowHeader(waveBankManifest, headerCount);
 		}
 
-		string baseDir = Path.GetDirectoryName(Path.GetFullPath(manifestPath)) ?? ".";
 		List<byte[]> list = new List<byte[]>(waveBankManifest.Entries.Count);
 		int num = waveBankManifest.DataOffset;
 		foreach (WaveBankManifest.Entry entry in waveBankManifest.Entries)
@@ -66,10 +72,27 @@ public static class WaveBankWriter
 				throw new XnbError($"清单引用的波形文件不存在：{entry.FileName}");
 			}
 
-			WaveForm waveForm = LoadWaveForm(path);
-			byte[] array = waveForm.dataChunk.Data;
+			WaveForm waveForm = null;
+			byte[] array;
+			if (oggPayloads.TryGetValue(Path.GetFullPath(path), out byte[] oggPayload))
+			{
+				// 已经解好的 PCM —— ogg 没法当 wav 解析，这里直接用
+				array = oggPayload;
+			}
+			else
+			{
+				waveForm = LoadWaveForm(path);
+				array = waveForm.dataChunk.Data;
+			}
+
 			if (array.Length != entry.Length)
 			{
+				if (waveForm == null)
+				{
+					throw new XnbError(
+						$"条目 {entry.FileName} 是 ogg，解码后 {array.Length} 字节与清单记录的 {entry.Length} 不符");
+				}
+
 				// 长度不同：按目标条目的编解码与采样率重新编码成等长载荷
 				WaveBankEntry waveBankEntry = new WaveBankEntry
 				{
@@ -102,6 +125,53 @@ public static class WaveBankWriter
 		}
 
 		return (waveBankManifest, list);
+	}
+
+	/// <summary>
+	/// 清单里指向 .ogg 的条目：用移植进来的 NVorbis 解成 PCM，回填 Length 与 Format
+	/// （清单里这两项写 0 就行）。
+	///
+	/// 波形库本身只认 PCM / ADPCM / XMA / WMA，模组给的却是 ogg，所以在**打包这一层**解开：
+	/// 生产侧（SdvCpTool）只要把 ogg 放进解包目录、往清单里加一条 Offset = AppendToEnd 的条目，
+	/// 不必自己引解码器。
+	///
+	/// 返回「全路径 → PCM」，后面的拼接直接取用，跳过 wav 解析（ogg 也当不了 wav 解析）。
+	/// </summary>
+	private static Dictionary<string, byte[]> DecodeOggEntries(WaveBankManifest manifest, string baseDir)
+	{
+		Dictionary<string, byte[]> decoded =
+			new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+		foreach (WaveBankManifest.Entry entry in manifest.Entries)
+		{
+			if (entry.FileName == null ||
+				!entry.FileName.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
+			{
+				continue;
+			}
+
+			string path = Path.Combine(baseDir, entry.FileName);
+			if (!File.Exists(path))
+			{
+				throw new XnbError($"清单引用的波形文件不存在：{entry.FileName}");
+			}
+
+			(int channels, int rate, byte[] pcm) = OggVorbis.ToPcm16(path);
+			int blockAlign = channels * 2;
+			entry.Length = pcm.Length;
+			entry.Format = (uint)(0                   // PCM
+								  | (channels << 2)
+								  | (rate << 5)
+								  | (blockAlign << 23)
+								  | (1 << 31));       // 16bit
+			if (entry.LoopLength == 0)
+			{
+				entry.LoopLength = (uint)pcm.Length;  // 音乐默认整段循环
+			}
+
+			decoded[Path.GetFullPath(path)] = pcm;
+		}
+
+		return decoded;
 	}
 
 	/// <summary>从 Prefix 的 BankData 区读出头部记录的条目数。</summary>

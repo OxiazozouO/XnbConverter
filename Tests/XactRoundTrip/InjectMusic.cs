@@ -27,11 +27,9 @@ public static class InjectMusic
         string unpack = Path.Combine(outDir, "_unpack");
         Directory.CreateDirectory(unpack);
 
-        // ---- 1. ogg → PCM ----
-        (int channels, int rate, byte[] pcm) = OggVorbis.ToPcm16(oggPath);
-        Console.WriteLine($"  解码：{Path.GetFileName(oggPath)} → {channels}ch {rate}Hz 16bit，载荷 {pcm.Length} 字节");
-
-        // ---- 2. 解包 xwb，追加条目 ----
+        // ---- 1. 解包 xwb，把 ogg 放进去、清单里加一条 ----
+        //      ⚠ 这里**故意不解码** —— 生产侧（SdvCpTool）就是只做这两件事，
+        //      解码留给打包器（WaveBankWriter 认出 .ogg 会自己解并回填 Length/Format）。
         WaveBank wb = WaveBankReader.Read(xwbPath);
         wb.OutputPath = Path.Combine(unpack, "Wave Bank");
         for (int i = 0; i < wb.Entries.Count; i++)
@@ -43,34 +41,29 @@ public static class InjectMusic
         WaveBankReader.Save(wb);
         int newTrack = wb.Entries.Count;
 
-        string wavPath = Path.Combine(unpack, "Wave Bank", "Music", "injected.wav");
-        Directory.CreateDirectory(Path.GetDirectoryName(wavPath));
-        WritePcmWav(wavPath, channels, rate, pcm);
+        string oggDest = Path.Combine(unpack, "Wave Bank", "Music", Path.GetFileName(oggPath));
+        Directory.CreateDirectory(Path.GetDirectoryName(oggDest));
+        File.Copy(oggPath, oggDest, true);
 
         string manifest = wb.OutputPath + ".xwb.config";
         WaveBankManifest m = JsonConvert.DeserializeObject<WaveBankManifest>(File.ReadAllText(manifest));
         string manifestDir = Path.GetDirectoryName(Path.GetFullPath(manifest));
-        int blockAlign = channels * 2;
-        uint format = (uint)(0                        // PCM
-                             | (channels << 2)
-                             | (rate << 5)
-                             | (blockAlign << 23)
-                             | (1 << 31));            // 16bit
         m.Entries.Add(new WaveBankManifest.Entry
         {
-            FileName = Path.GetRelativePath(manifestDir, Path.GetFullPath(wavPath)).Replace('/', '\\'),
+            FileName = Path.GetRelativePath(manifestDir, Path.GetFullPath(oggDest)).Replace('/', '\\'),
             Offset = WaveBankWriter.AppendToEnd,
-            Length = pcm.Length,
+            Length = 0,          // 打包器解码后回填
+            Format = 0,          // 同上
             FlagsAndDuration = 0,
-            Format = format,
             LoopOffset = 0,
-            LoopLength = (uint)pcm.Length         // 整段循环（音乐要的）
+            LoopLength = 0       // 0 ⇒ 打包器按整段循环
         });
         File.WriteAllText(manifest, JsonConvert.SerializeObject(m, Formatting.Indented));
 
         byte[] newXwb = WaveBankWriter.Build(manifest);
         string outXwb = Path.Combine(outDir, "Wave Bank.xwb");
         File.WriteAllBytes(outXwb, newXwb);
+        Console.WriteLine($"  ogg 直接进库（打包器解码）：{Path.GetFileName(oggPath)}");
 
         // ---- 3. xsb 加 Cue，指向新条目 ----
         var sb = SoundBankReader.Read(xsbPath);
@@ -91,7 +84,7 @@ public static class InjectMusic
         WaveBank checkWb = WaveBankReader.Read(outXwb);
         var checkSb = SoundBankReader.Read(Path.Combine(outDir, "Sound Bank.xsb"));
         bool entryOk = checkWb.Entries.Count == newTrack + 1
-                       && checkWb.Entries[^1].PlayRegion.Length == pcm.Length;
+                       && checkWb.Entries[^1].PlayRegion.Length > 0;
         bool cueOk = checkSb.Cues[^1].Name == cueName
                      && checkSb.Cues[^1].CueVariations[0].TrackIndex == newTrack;
         Console.WriteLine($"  xwb 条目 {newTrack} → {checkWb.Entries.Count}，新条目载荷 {checkWb.Entries[^1].PlayRegion.Length}  {(entryOk ? "✓" : "✗")}");
@@ -99,26 +92,5 @@ public static class InjectMusic
         Console.WriteLine($"  写出：Wave Bank.xwb {newXwb.Length} 字节、Sound Bank.xsb {newXsb.Length} 字节");
 
         return entryOk && cueOk ? 0 : 1;
-    }
-
-    /// <summary>写标准 PCM 16bit wav（RIFF/WAVE + fmt + data）。</summary>
-    private static void WritePcmWav(string path, int channels, int rate, byte[] pcm)
-    {
-        int blockAlign = channels * 2;
-        using var w = new BinaryWriter(File.Create(path));
-        w.Write(new[] { 'R', 'I', 'F', 'F' });
-        w.Write(36 + pcm.Length);
-        w.Write(new[] { 'W', 'A', 'V', 'E' });
-        w.Write(new[] { 'f', 'm', 't', ' ' });
-        w.Write(16);
-        w.Write((short)1);                 // PCM
-        w.Write((short)channels);
-        w.Write(rate);
-        w.Write(rate * blockAlign);        // byte rate
-        w.Write((short)blockAlign);
-        w.Write((short)16);
-        w.Write(new[] { 'd', 'a', 't', 'a' });
-        w.Write(pcm.Length);
-        w.Write(pcm);
     }
 }
