@@ -144,5 +144,65 @@ public class SoundBankView
 				}
 			}
 		}
+
+		ApplyAddedCues(soundBank);
+	}
+
+	/// <summary>
+	/// <see cref="SoundView.FileOffset"/> / <see cref="VariationView.FileOffset"/> 为 0
+	/// 的条目表示**新增的 Cue**，append 到 <see cref="SoundBank.Cues"/>（FileOffset 留 0，
+	/// 由 <c>SoundBankReader.Build</c> 走追加路径）。
+	///
+	/// 与既有条目一样用「Cue 名」把 Sound 和它的变体对起来；新 Cue 一律写成
+	/// 复杂 Cue + 变体类型 0（直接引用波形），所以只需要一个变体。
+	/// </summary>
+	private void ApplyAddedCues(SoundBank soundBank)
+	{
+		Dictionary<string, VariationView> byCue = new Dictionary<string, VariationView>();
+		foreach (VariationView variation in Variations)
+		{
+			if (variation.FileOffset == 0 && !string.IsNullOrEmpty(variation.Cue))
+			{
+				byCue[variation.Cue] = variation;
+			}
+		}
+
+		foreach (SoundView sound in Sounds)
+		{
+			if (sound.FileOffset != 0)
+			{
+				continue;
+			}
+
+			if (string.IsNullOrEmpty(sound.Cue))
+			{
+				throw new XnbError("新增的 Sound 缺少 Cue 名。");
+			}
+
+			if (!byCue.TryGetValue(sound.Cue, out VariationView variation))
+			{
+				throw new XnbError($"新增的 Cue「{sound.Cue}」没有对应的变体（Variations 里缺少同名条目）。");
+			}
+
+			SoundBank.SoundCue cue = new SoundBank.SoundCue
+			{
+				// FileOffset 保持 0 —— 这是「新增」的标记
+				Name = sound.Cue,
+				Flags = 0,
+				VariationFlags = 0,
+				InstanceLimit = 0,
+				FadeInSec = 0,
+				FadeOutSec = 0,
+				InstanceFlags = 0
+			};
+			cue.CueVariations.Add(new SoundBank.SoundCue.CueVariation
+			{
+				TrackIndex = variation.TrackIndex,
+				WaveBankIndex = (byte)variation.WaveBankIndex,
+				BWeightMin = 0,
+				BWeightMax = 0
+			});
+			soundBank.Cues.Add(cue);
+		}
 	}
 }

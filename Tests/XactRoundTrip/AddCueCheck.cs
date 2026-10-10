@@ -106,6 +106,46 @@ public static class AddCueCheck
                           $"原段未被改动 {(prefixOk ? "✓" : $"✗ 首个意外差异 @{unexpected}")}   " +
                           $"文件 {original.Length} → {rebuilt.Length}");
 
-        return countsOk && cueOk && keptOk && prefixOk ? 0 : 1;
+        return countsOk && cueOk && keptOk && prefixOk && RunViaView(input, dir) ? 0 : 1;
+    }
+
+    /// <summary>
+    /// 第二段：走 <see cref="SoundBankView"/>（生产路径）加一个 Cue。
+    /// FileOffset 为 0 的 SoundView/VariationView 就是「新增」。
+    /// </summary>
+    private static bool RunViaView(string input, string dir)
+    {
+        const string name = "zzz_via_view_probe";
+
+        var bank = SoundBankReader.Read(input);
+        var view = SoundBankView.From(bank);
+        view.Sounds.Add(new SoundBankView.SoundView
+        {
+            FileOffset = 0,
+            Cue = name,
+            Pitch = 0f
+        });
+        view.Variations.Add(new SoundBankView.VariationView
+        {
+            FileOffset = 0,
+            Cue = name,
+            WaveBankIndex = 1,
+            TrackIndex = 3
+        });
+        view.ApplyTo(bank);
+
+        string outPath = Path.Combine(dir, "rebuilt_view.xsb");
+        File.WriteAllBytes(outPath, SoundBankReader.Build(bank));
+
+        var bank2 = SoundBankReader.Read(outPath);
+        var last = bank2.Cues[^1];
+        bool ok = last.Name == name
+                  && last.CueVariations.Count == 1
+                  && last.CueVariations[0].TrackIndex == 3
+                  && last.CueVariations[0].WaveBankIndex == 1;
+
+        Console.WriteLine($"  走视图新增：Cue「{last.Name}」→ (bank {last.CueVariations[0].WaveBankIndex}, " +
+                          $"track {last.CueVariations[0].TrackIndex})  {(ok ? "✓" : "✗")}");
+        return ok;
     }
 }
