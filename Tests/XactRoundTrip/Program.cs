@@ -52,6 +52,12 @@ if (args.Length > 0 && args[0] == "--add")
     return bad;
 }
 
+if (args.Length > 0 && args[0] == "--inject-cue")
+{
+    Console.WriteLine("插入 Cue（实机验证用）");
+    return XactRoundTrip.InjectCue.Run(args[1], args[2], int.Parse(args[3]), args[4]);
+}
+
 if (args.Length > 0 && args[0] == "--addcue")
 {
     Console.WriteLine("追加 Cue 检验");
