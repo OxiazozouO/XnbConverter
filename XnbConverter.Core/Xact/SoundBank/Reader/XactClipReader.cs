@@ -1,4 +1,5 @@
 using XnbConverter.Configurations;
+using XnbConverter.Exceptions;
 using XnbConverter.Readers;
 using XnbConverter.Xact.SoundBank.Entity;
 
@@ -134,8 +135,45 @@ public class XactClipReader : BaseReader
 		return xactClip;
 	}
 
+	/// <summary>
+	/// 写一条 Clip：头部 9 字节（VolumeDb + 指向事件区的 u32 + FilterQAndFlags + FilterFrequency），
+	/// 事件区紧随其后（首字节是事件数）。
+	/// <para>
+	/// **只写「类型 1（单条播放）」的事件** —— 原版音乐的循环就是这一种
+	/// （实测 <c>spring_day_ambient</c>：<c>EventInfo=0x20000001</c>、<c>LoopCount=255</c>、
+	/// <c>EventFlags=0x0C</c>）。别的类型（多轨/随机/音高）读得出来但写不了，
+	/// 遇到就**报错**，绝不写半条出去。
+	/// </para>
+	/// </summary>
 	public override void Write(object input)
 	{
-		throw new NotImplementedException();
+		XactClip clip = (XactClip)input;
+		int at = bufferWriter.BytePosition;
+
+		bufferWriter.WriteByte(clip.VolumeDb);
+		bufferWriter.WriteUInt32((uint)(at + 9));
+		bufferWriter.WriteUInt16(clip.FilterQAndFlags);
+		bufferWriter.WriteUInt16(clip.FilterFrequency);
+
+		XactClip.WaveIndex[] waves = clip.WaveIndexs ?? System.Array.Empty<XactClip.WaveIndex>();
+		bufferWriter.WriteByte((byte)waves.Length);
+		foreach (XactClip.WaveIndex w in waves)
+		{
+			uint kind = w.EventInfo & 0x1Fu;
+			if (kind != 1u)
+			{
+				throw new XnbError($"只支持写「类型 1（单条播放）」的 clip 事件，收到类型 {kind}");
+			}
+
+			bufferWriter.WriteUInt32(w.EventInfo);
+			bufferWriter.WriteUInt16((ushort)System.Math.Round(w.RandomOffset * 1000f));
+			bufferWriter.Write(w.unkn.Count > 0 ? w.unkn[0] : new byte[1]);
+			bufferWriter.WriteByte(w.EventFlags);
+			bufferWriter.WriteUInt16((ushort)w.TrackIndex);
+			bufferWriter.WriteByte((byte)w.WaveBankIndex);
+			bufferWriter.WriteByte(w.LoopCount);
+			bufferWriter.WriteUInt16((ushort)System.Math.Round(w.PanAngle * 100f));
+			bufferWriter.WriteUInt16((ushort)System.Math.Round(w.PanArc * 100f));
+		}
 	}
 }

@@ -1,4 +1,5 @@
 using XnbConverter.Configurations;
+using XnbConverter.Exceptions;
 using XnbConverter.Readers;
 using XnbConverter.Xact.SoundBank.Entity;
 
@@ -75,8 +76,44 @@ public class XactSoundReader : BaseReader
 	public override void Write(object input)
 	{
 		XactSound xactSound = (XactSound)input;
+
 		if (xactSound.FileOffset == 0)
 		{
+			// **新**的 Sound 记录（追加区里没有模板可修补）⇒ 整条写出来。
+			// 循环音乐就是这一种：Flags=0x01（带 Clip）+ NumClips=1 + 一条 LoopCount=255 的事件
+			//（原版 spring_day_ambient 实测就是这个形状）。
+			bufferWriter.WriteByte(xactSound.Flags);
+			bufferWriter.WriteUInt16(xactSound.CategoryId);
+			bufferWriter.WriteByte(xactSound.VolumeFlag);
+			bufferWriter.WriteInt16((short)System.Math.Round(xactSound.Pitch * 1000f));
+			bufferWriter.WriteByte(xactSound.Priority);
+			bufferWriter.WriteUInt16(xactSound.Filter);
+
+			if ((xactSound.Flags & 1) != 0)
+			{
+				XactClip[] clips = xactSound.SoundClips ?? System.Array.Empty<XactClip>();
+				if (clips.Length != xactSound.NumClips)
+				{
+					throw new XnbError($"新 Sound 的 NumClips={xactSound.NumClips} 与实际 clips={clips.Length} 不符");
+				}
+
+				bufferWriter.WriteByte((byte)xactSound.NumClips);
+				foreach (XactClip clip in clips)
+				{
+					xactClipReader.Write(clip);
+				}
+			}
+			else
+			{
+				bufferWriter.WriteUInt16((ushort)xactSound.TrackIndex);
+				bufferWriter.WriteByte((byte)xactSound.WaveBankIndex);
+			}
+
+			if ((xactSound.Flags & 0xEu) != 0)
+			{
+				throw new XnbError("新 Sound 暂不支持 ExtraData（Flags & 0xE）");
+			}
+
 			return;
 		}
 

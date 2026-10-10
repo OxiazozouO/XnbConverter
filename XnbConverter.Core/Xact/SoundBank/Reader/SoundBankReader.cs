@@ -103,6 +103,7 @@ public class SoundBankReader : BaseReader
 				XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry soundEntry = new XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry
 				{
 					FileOffset = (uint)bufferReader.BytePosition,
+					Name = array[j],
 					Flags = bufferReader.ReadByte(),
 					SoundOffset = bufferReader.ReadUInt32()
 				};
@@ -247,12 +248,20 @@ public class SoundBankReader : BaseReader
 		return ApplyInPlace(soundBank);
 	}
 
-	/// <summary>是否有 FileOffset 为 0（新增）的复杂 Cue。</summary>
+	/// <summary>是否有 FileOffset 为 0 的新增记录（复杂 Cue 或简单 Cue）。</summary>
 	private static bool HasAddedCues(XnbConverter.Xact.SoundBank.Entity.SoundBank soundBank)
 	{
 		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue cue in soundBank.Cues)
 		{
 			if (cue.FileOffset == 0)
+			{
+				return true;
+			}
+		}
+
+		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry entry in soundBank.SoundEntrys)
+		{
+			if (entry.FileOffset == 0)
 			{
 				return true;
 			}
@@ -269,9 +278,18 @@ public class SoundBankReader : BaseReader
 	/// </summary>
 	private static byte[] ApplyInPlace(XnbConverter.Xact.SoundBank.Entity.SoundBank soundBank)
 	{
-		if (soundBank.SoundEntrys.Count != soundBank.Header.NumSimpleCues)
+		int existingSimpleCues = 0;
+		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry entry in soundBank.SoundEntrys)
 		{
-			throw new XnbError($"简单 Cue 数由 {soundBank.Header.NumSimpleCues} 变为 {soundBank.SoundEntrys.Count}，当前只支持同尺寸修改");
+			if (entry.FileOffset != 0)
+			{
+				existingSimpleCues++;
+			}
+		}
+
+		if (existingSimpleCues != soundBank.Header.NumSimpleCues)
+		{
+			throw new XnbError($"原有简单 Cue 数 {existingSimpleCues} 与头部记录的 {soundBank.Header.NumSimpleCues} 不符");
 		}
 
 		int existingComplexCues = 0;
@@ -309,6 +327,11 @@ public class SoundBankReader : BaseReader
 
 		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry soundEntry in soundBank.SoundEntrys)
 		{
+			if (soundEntry.FileOffset == 0)
+			{
+				continue;   // 新增的简单 Cue 不在原文件里，由追加路径处理
+			}
+
 			bufferWriter.BytePosition = (int)soundEntry.FileOffset;
 			bufferWriter.WriteByte(soundEntry.Flags);
 			bufferWriter.WriteUInt32(soundEntry.SoundOffset);
@@ -382,6 +405,13 @@ public class SoundBankReader : BaseReader
 			XactSound[] value = sound.Value;
 			foreach (XactSound xactSound in value)
 			{
+				if (xactSound == null || xactSound.FileOffset == 0)
+				{
+					// 新增的 Sound 不在原文件里 —— 它由追加路径整条写出。
+					// 漏了这句，它会被当成「就地修补」写在写入游标的当前位置，把原文件中间的字节糊掉。
+					continue;
+				}
+
 				soundBankReader.xactSoundReader.Write(xactSound);
 			}
 		}
@@ -441,9 +471,33 @@ public class SoundBankReader : BaseReader
 			throw new XnbError($"原有复杂 Cue 数 {existing.Count} 与头部记录的 {soundBank.Header.NumComplexCues} 不符。");
 		}
 
-		if (soundBank.SoundEntrys.Count != soundBank.Header.NumSimpleCues)
+		// 新增的**简单** Cue：循环音乐走这条（简单 Cue → 带 Clip 的 Sound → LoopCount=255）。
+		// 原版就是这样（实测 spring_day_ambient 是「简单 Cue + Flags=0x01 + 1 个 Clip + LoopCount=255」）；
+		// 复杂 Cue + 变体类型 0 那条路表达不了循环。
+		var addedSimple = new List<XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry>();
+		var existingSimple = new List<XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry>();
+		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry entry in soundBank.SoundEntrys)
 		{
-			throw new XnbError($"简单 Cue 数由 {soundBank.Header.NumSimpleCues} 变为 {soundBank.SoundEntrys.Count}，当前只支持在尾部追加复杂 Cue。");
+			(entry.FileOffset == 0 ? addedSimple : existingSimple).Add(entry);
+		}
+
+		if (existingSimple.Count != soundBank.Header.NumSimpleCues)
+		{
+			throw new XnbError($"原有简单 Cue 数 {existingSimple.Count} 与头部记录的 {soundBank.Header.NumSimpleCues} 不符");
+		}
+
+		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry entry in addedSimple)
+		{
+			if (string.IsNullOrEmpty(entry.Name))
+			{
+				throw new XnbError("追加的简单 Cue 缺少名字。");
+			}
+
+			if (!soundBank._sounds.TryGetValue(entry.Name, out XactSound[] sounds)
+			    || sounds.Length != 1 || sounds[0] == null)
+			{
+				throw new XnbError($"追加的简单 Cue「{entry.Name}」在 _sounds 里没有唯一对应的 Sound 记录。");
+			}
 		}
 
 		if (soundBank.WaveBankNames.Count != soundBank.Header.NumWaveBanks)
@@ -451,9 +505,11 @@ public class SoundBankReader : BaseReader
 			throw new XnbError($"声库数由 {soundBank.Header.NumWaveBanks} 变为 {soundBank.WaveBankNames.Count}，当前只支持同尺寸修改");
 		}
 
+		int newSimpleCues = soundBank.Header.NumSimpleCues + addedSimple.Count;
 		int newComplexCues = soundBank.Header.NumComplexCues + added.Count;
-		int newTotalCues = soundBank.Header.NumTotalCues + added.Count;
-		if (newComplexCues > ushort.MaxValue || newTotalCues > ushort.MaxValue)
+		int newTotalCues = soundBank.Header.NumTotalCues + addedSimple.Count + added.Count;
+		if (newSimpleCues > ushort.MaxValue || newComplexCues > ushort.MaxValue
+		    || newTotalCues > ushort.MaxValue)
 		{
 			throw new XnbError("Cue 数超出 u16 上限。");
 		}
@@ -462,29 +518,77 @@ public class SoundBankReader : BaseReader
 		byte[] src = ApplyInPlace(soundBank);
 		int oldLen = src.Length;
 
-		int varBase = oldLen;
+		uint oldNamesOffset = HeaderU32(src, CueNamesOffsetField);
+		int oldNamesLen = HeaderU16(src, CueNameTableLenField);
+
+		// 新 Sound 记录先写到暂存区，只为量出它有多长 ——
+		// 里面的 ClipOffset 是绝对偏移，得知道最终落点才算得对，所以下面要在正式缓冲里重写一遍。
+		byte[] scratch = new byte[1 << 16];
+		BufferWriter scratchWriter = new BufferWriter(scratch);
+		XactSoundReader soundWriter = new XactSoundReader();
+		soundWriter.Init(new ReaderResolver { bufferWriter = scratchWriter });
+
+		int[] soundOffsets = new int[addedSimple.Count];
+		for (int i = 0; i < addedSimple.Count; i++)
+		{
+			soundOffsets[i] = scratchWriter.BytePosition;
+			soundWriter.Write(soundBank._sounds[addedSimple[i].Name][0]);
+		}
+
+		int soundLen = scratchWriter.BytePosition;
+
+		// 追加区布局：
+		//   [新 Sound 记录（含 Clip）][新的整张简单 Cue 表][新变体段][新复杂 Cue 表][名字表]
+		// 简单 Cue 表在文件里是**位置索引**（第 j 条 ↔ 名字表第 j 个），所以整张表搬到末尾重写，
+		// 头部 SimpleCuesOffset 指过来即可（老位置留着不碍事，没人再引用它）。
+		bool hasNewSimple = addedSimple.Count > 0;
+		int soundsBase = oldLen;
+		int simpleBase = hasNewSimple ? soundsBase + soundLen : -1;
+		int varBase = hasNewSimple
+			? simpleBase + (existingSimple.Count + addedSimple.Count) * SimpleCueRecordSize
+			: soundsBase + soundLen;
 		int varLen = added.Count * (VariationTableHeaderSize + VariationEntrySize);
 		int cuesBase = varBase + varLen;
 		int namesBase = cuesBase + newComplexCues * ComplexCueRecordSize;
 
-		uint oldNamesOffset = HeaderU32(src, CueNamesOffsetField);
-		int oldNamesLen = HeaderU16(src, CueNameTableLenField);
-
-		List<byte> names = new List<byte>(oldNamesLen + added.Count * 32);
-		for (int i = 0; i < oldNamesLen; i++)
+		// 名字表：**[原简单名][新简单名][原复杂名][新复杂名]**
+		//   「第 j 条简单 Cue ↔ 名字表第 j 个」是位置约定，所以新简单名必须插在复杂名**之前**。
+		//   没有新增简单 Cue 时走原来的「原样照抄 + 追加」路径，一个字节都不动。
+		var names = new List<byte>(oldNamesLen + 64 * (addedSimple.Count + added.Count));
+		if (hasNewSimple)
 		{
-			names.Add(src[oldNamesOffset + i]);
+			string[] oldNames = Encoding.UTF8.GetString(src, (int)oldNamesOffset, oldNamesLen).Split('\0');
+			for (int i = 0; i < soundBank.Header.NumSimpleCues; i++)
+			{
+				AddName(names, oldNames[i]);
+			}
+
+			foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry entry in addedSimple)
+			{
+				AddName(names, entry.Name);
+			}
+
+			for (int i = 0; i < soundBank.Header.NumComplexCues; i++)
+			{
+				AddName(names, oldNames[soundBank.Header.NumSimpleCues + i]);
+			}
 		}
-
-		if (names.Count > 0 && names[^1] != 0)
+		else
 		{
-			names.Add(0);
+			for (int i = 0; i < oldNamesLen; i++)
+			{
+				names.Add(src[oldNamesOffset + i]);
+			}
+
+			if (names.Count > 0 && names[names.Count - 1] != 0)
+			{
+				names.Add(0);
+			}
 		}
 
 		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue cue in added)
 		{
-			names.AddRange(Encoding.UTF8.GetBytes(cue.Name));
-			names.Add(0);
+			AddName(names, cue.Name);
 		}
 
 		if (names.Count > ushort.MaxValue)
@@ -495,7 +599,37 @@ public class SoundBankReader : BaseReader
 		byte[] result = new byte[namesBase + names.Count];
 		Array.Copy(src, result, oldLen);
 
-		// 新变体段：每个新 Cue 一段，紧跟其后放它的复杂 Cue 记录
+		// ① 新 Sound 记录（这次写进正式缓冲：位置是绝对的，Clip 内部偏移自然算对）
+		BufferWriter writer = new BufferWriter(result);
+		soundWriter.Init(new ReaderResolver { bufferWriter = writer });
+		for (int i = 0; i < addedSimple.Count; i++)
+		{
+			writer.BytePosition = soundsBase + soundOffsets[i];
+			soundWriter.Write(soundBank._sounds[addedSimple[i].Name][0]);
+			addedSimple[i].SoundOffset = (uint)(soundsBase + soundOffsets[i]);
+		}
+
+		// ② 新的简单 Cue 表：原有条目照抄（它们的 SoundOffset 没变），新增的接在后面。
+		//    没有新增简单 Cue 时整段不写，头部字段也不动 —— 老位置那张表就是对的。
+		if (hasNewSimple)
+		{
+			int simpleAt = simpleBase;
+			foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry entry in existingSimple)
+			{
+				result[simpleAt] = entry.Flags;
+				WriteU32(result, simpleAt + 1, entry.SoundOffset);
+				simpleAt += SimpleCueRecordSize;
+			}
+
+			foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundEntry entry in addedSimple)
+			{
+				result[simpleAt] = entry.Flags;
+				WriteU32(result, simpleAt + 1, entry.SoundOffset);
+				simpleAt += SimpleCueRecordSize;
+			}
+		}
+
+		// ③ 新变体段：每个新复杂 Cue 一段，紧跟其后放它的复杂 Cue 记录
 		uint[] variationOffsets = new uint[added.Count];
 		int at = varBase;
 		for (int i = 0; i < added.Count; i++)
@@ -513,7 +647,7 @@ public class SoundBankReader : BaseReader
 			at += VariationTableHeaderSize + VariationEntrySize;
 		}
 
-		// 新复杂 Cue 表：原有的照抄（它们的 offset 仍指老地方），新的接在后面
+		// ④ 新复杂 Cue 表：原有的照抄（它们的 offset 仍指老地方），新的接在后面
 		at = cuesBase;
 		foreach (XnbConverter.Xact.SoundBank.Entity.SoundBank.SoundCue cue in existing)
 		{
@@ -529,12 +663,25 @@ public class SoundBankReader : BaseReader
 
 		Array.Copy(names.ToArray(), 0, result, namesBase, names.Count);
 
+		if (hasNewSimple)
+		{
+			WriteU16(result, NumSimpleCuesField, (ushort)newSimpleCues);
+			WriteU32(result, SimpleCuesOffsetField, (uint)simpleBase);
+		}
+
 		WriteU16(result, NumComplexCuesField, (ushort)newComplexCues);
 		WriteU16(result, NumTotalCuesField, (ushort)newTotalCues);
 		WriteU16(result, CueNameTableLenField, (ushort)names.Count);
 		WriteU32(result, ComplexCuesOffsetField, (uint)cuesBase);
 		WriteU32(result, CueNamesOffsetField, (uint)namesBase);
 		return result;
+	}
+
+	/// <summary>往名字表里加一个以 NUL 结尾的名字。</summary>
+	private static void AddName(List<byte> names, string name)
+	{
+		names.AddRange(Encoding.UTF8.GetBytes(name ?? string.Empty));
+		names.Add(0);
 	}
 
 	/// <summary>把一条复杂 Cue 记录写进缓冲；variationOffset 为 null 时用记录自带的值。</summary>
@@ -585,7 +732,14 @@ public class SoundBankReader : BaseReader
 	}
 
 	// .xsb 头部的固定字段位置（见 Read 的读取顺序）
+	private const int NumSimpleCuesField = 19;
+
 	private const int NumTotalCuesField = 25;
+
+	private const int SimpleCuesOffsetField = 34;
+
+	/// <summary>简单 Cue 记录：Flags(1) + SoundOffset(4)。</summary>
+	private const int SimpleCueRecordSize = 5;
 	private const int CueNameTableLenField = 30;
 	private const int ComplexCuesOffsetField = 38;
 	private const int CueNamesOffsetField = 42;

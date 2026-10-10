@@ -70,6 +70,30 @@ if (args.Length > 0 && args[0] == "--ogg2pcm")
     return XactRoundTrip.OggToPcmCheck.Run(args[1], args[2]);
 }
 
+if (args.Length > 0 && args[0] == "--check-cue-loop")
+{
+    Console.WriteLine("用游戏自己的 MonoGame 校验 Cue 会不会循环");
+    return XactRoundTrip.CheckCueLoop.Run(args[1], args[2], args[3]);
+}
+
+if (args.Length > 0 && args[0] == "--inject-loop")
+{
+    Console.WriteLine("插入循环 Cue（照原版音乐的形态）");
+    return XactRoundTrip.InjectLoopCue.Run(args[1], args[2], int.Parse(args[3]), args[4]);
+}
+
+if (args.Length > 0 && args[0] == "--clip-roundtrip")
+{
+    Console.WriteLine("Clip 字节级往返（照原版做参照物）");
+    return XactRoundTrip.ClipRoundTrip.Run(args[1], args[2]);
+}
+
+if (args.Length > 0 && args[0] == "--dump-cue")
+{
+    Console.WriteLine("Cue 结构（照实例抄循环形态用）");
+    return XactRoundTrip.DumpCue.Run(args[1], args[2]);
+}
+
 if (args.Length > 0 && args[0] == "--addcue")
 {
     Console.WriteLine("追加 Cue 检验");

@@ -55,6 +55,12 @@ public class SoundBank
 	{
 		public byte Flags;
 
+		/// <summary>
+		/// 这条简单 Cue 的名字。读入时按名字表的对应位置填上；
+		/// 追加路径要拿它去 <c>_sounds</c> 里取 Sound 记录。
+		/// </summary>
+		public string Name;
+
 		public uint SoundOffset;
 
 		/// <summary>该条目在 .xsb 中的起始偏移。</summary>
