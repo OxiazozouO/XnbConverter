@@ -106,7 +106,18 @@ public static class CodecCheck
             int blockCount = payload.Length / blockAlign;
             int spb = MsAdpcm.SamplesPerBlock(blockAlign, channels);
 
-            short[] pcm = MsAdpcm.Decode(payload, 0, payload.Length, channels, blockAlign);
+            short[] pcm;
+            try
+            {
+                pcm = MsAdpcm.Decode(payload, 0, payload.Length, channels, blockAlign);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  条目{index}: {channels}ch {rate}Hz align={blockAlign} 块={blockCount} 解码失败：{ex.Message}");
+                failed++;
+                continue;
+            }
+
             byte[] reencoded = MsAdpcm.Encode(pcm, channels, blockAlign, blockCount, out double err);
             short[] pcm2 = MsAdpcm.Decode(reencoded, 0, reencoded.Length, channels, blockAlign);
 
@@ -120,16 +131,18 @@ public static class CodecCheck
             mse /= Math.Max(pcm.Length, 1);
             double psnr = mse <= 0 ? 99.0 : 10.0 * Math.Log10(32768.0 * 32768.0 / mse);
 
-            // 逐块比对块头里的两个采样字段（每声道 +3 与 +5 各 2 字节）
+            // 逐块比对块头里的两个采样字段（字段交错：采样1 在 3·ch，采样2 在 5·ch）
             int same = 0;
             for (int b = 0; b < blockCount; b++)
             {
                 bool ok = true;
                 for (int ch = 0; ch < channels && ok; ch++)
                 {
-                    int h = b * blockAlign + 7 * ch;
-                    ok = payload[h + 3] == reencoded[h + 3] && payload[h + 4] == reencoded[h + 4]
-                         && payload[h + 5] == reencoded[h + 5] && payload[h + 6] == reencoded[h + 6];
+                    int h = b * blockAlign;
+                    ok = payload[h + 3 * channels + 2 * ch] == reencoded[h + 3 * channels + 2 * ch]
+                         && payload[h + 3 * channels + 2 * ch + 1] == reencoded[h + 3 * channels + 2 * ch + 1]
+                         && payload[h + 5 * channels + 2 * ch] == reencoded[h + 5 * channels + 2 * ch]
+                         && payload[h + 5 * channels + 2 * ch + 1] == reencoded[h + 5 * channels + 2 * ch + 1];
                 }
 
                 if (ok)

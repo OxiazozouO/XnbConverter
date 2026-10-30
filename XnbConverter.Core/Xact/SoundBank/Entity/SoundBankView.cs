@@ -170,13 +170,21 @@ public class SoundBankView
 	/// </summary>
 	private void ApplyAddedCues(SoundBank soundBank)
 	{
-		Dictionary<string, VariationView> byCue = new Dictionary<string, VariationView>();
+		Dictionary<string, List<VariationView>> byCue =
+			new Dictionary<string, List<VariationView>>(StringComparer.OrdinalIgnoreCase);
 		foreach (VariationView variation in Variations)
 		{
-			if (variation.FileOffset == 0 && !string.IsNullOrEmpty(variation.Cue))
+			if (variation.FileOffset != 0 || string.IsNullOrEmpty(variation.Cue))
 			{
-				byCue[variation.Cue] = variation;
+				continue;
 			}
+
+			if (!byCue.TryGetValue(variation.Cue, out List<VariationView>? list))
+			{
+				byCue[variation.Cue] = list = new List<VariationView>();
+			}
+
+			list.Add(variation);
 		}
 
 		foreach (SoundView sound in Sounds)
@@ -191,17 +199,19 @@ public class SoundBankView
 				throw new XnbError("新增的 Sound 缺少 Cue 名。");
 			}
 
-			if (!byCue.TryGetValue(sound.Cue, out VariationView variation))
+			if (!byCue.TryGetValue(sound.Cue, out List<VariationView>? variations) || variations.Count == 0)
 			{
 				throw new XnbError($"新增的 Cue「{sound.Cue}」没有对应的变体（Variations 里缺少同名条目）。");
 			}
 
-			if (LoopedCues.Contains(sound.Cue, StringComparer.OrdinalIgnoreCase))
+			bool loop = LoopedCues.Contains(sound.Cue, StringComparer.OrdinalIgnoreCase);
+			if (loop || variations.Count > 1)
 			{
-				AddLoopedSimpleCue(soundBank, sound, variation);
+				AddSimpleCue(soundBank, sound, variations, loop);
 				continue;
 			}
 
+			VariationView variation = variations[0];
 			SoundBank.SoundCue cue = new SoundBank.SoundCue
 			{
 				// FileOffset 保持 0 —— 这是「新增」的标记
@@ -226,25 +236,60 @@ public class SoundBankView
 
 	/// <summary>
 	/// 追加一条**简单** Cue：<c>SoundEntry</c>（<c>Flags=0x04</c>）+ 带 Clip 的 <c>XactSound</c>
-	/// （<c>Flags=0x01</c>、<c>NumClips=1</c>、一条类型 1 且 <c>LoopCount=255</c> 的事件）。
-	/// 常量全部照抄原版的音乐 Cue（实测 <c>spring_day_ambient</c>）。
+	/// （<c>Flags=0x01</c>、<c>NumClips=1</c>）。
+	/// <para>
+	/// 单条变体照抄原版音乐：类型 1 事件、<c>LoopCount=255</c>。
+	/// 多条变体（CP 的多个 <c>FilePaths</c>）写成一个类型 6 事件，事件里列出
+	/// 所有 <c>(TrackIndex, WaveBankIndex, weight)</c>，变体类型 = Random；
+	/// MonoGame 的 <c>PlayWaveEvent</c> 会在每次 Play 时按权重随机挑一条。
+	/// </para>
 	/// </summary>
-	private static void AddLoopedSimpleCue(SoundBank soundBank, SoundView view, VariationView variation)
+	private static void AddSimpleCue(SoundBank soundBank, SoundView view,
+		IReadOnlyList<VariationView> variations, bool loop)
 	{
 		if (soundBank._sounds.ContainsKey(view.Cue))
 		{
-			throw new XnbError($"新增的循环 Cue「{view.Cue}」与已有的 Cue 重名。");
+			throw new XnbError($"新增的 Cue「{view.Cue}」与已有的 Cue 重名。");
 		}
 
-		var wave = new XactClip.WaveIndex
+		XactClip.WaveIndex wave;
+		if (variations.Count == 1)
 		{
-			EventInfo = 0x20000001,   // 类型 1：单条播放
-			EventFlags = 0x0C,
-			LoopCount = 255,   // XACT 的「无限」（原版音乐就是 255）
-			WaveBankIndex = variation.WaveBankIndex,
-			TrackIndex = variation.TrackIndex,
-		};
-		wave.unkn.Add(new byte[] { 0xFF });
+			VariationView variation = variations[0];
+			wave = new XactClip.WaveIndex
+			{
+				EventInfo = 0x20000001,   // 类型 1：单条播放
+				EventFlags = 0x0C,
+				LoopCount = (byte)(loop ? 255 : 0),
+				WaveBankIndex = variation.WaveBankIndex,
+				TrackIndex = variation.TrackIndex,
+			};
+			wave.unkn.Add(new byte[] { 0xFF });
+		}
+		else
+		{
+			wave = new XactClip.WaveIndex
+			{
+				EventInfo = 0x20000006,   // 类型 6：多轨随机变体
+				EventFlags = 0x0C,
+				LoopCount = (byte)(loop ? 255 : 0),
+				NumTracks = (ushort)variations.Count,
+				VariationFlags = 0,
+				MoreFlags = 2,             // VariationType.Random
+				Tracks = variations.Select(v => (int)v.TrackIndex).ToArray(),
+				WaveBanks = variations.Select(v => (int)v.WaveBankIndex).ToArray(),
+				// MonoGame 的选择是 Next(totalWeight + 1)，不是标准的按权重区间取模：
+				// 全 1 权重会让第一个变体拿到 2/(N+1) 而不是 1/N。
+				// 用 [1, 2, 2, …] 把总权重凑成 2N−1、结果数 2N，每个变体刚好 2 个结果。
+				Weights = variations.Select((_, i) => i == 0 ? new byte[] { 0, 1 } : new byte[] { 0, 2 }).ToArray(),
+				MinVolumeDecibels = 180,
+				MaxVolumeDecibels = 180,
+			};
+			// 类型 6 读取器会各吃掉 1、1、5 个未使用字节；MonoGame 也直接跳过。
+			wave.unkn.Add(new byte[] { 0xFF });
+			wave.unkn.Add(new byte[] { 0 });
+			wave.unkn.Add(new byte[5]);
+		}
 
 		var clip = new XactClip
 		{
