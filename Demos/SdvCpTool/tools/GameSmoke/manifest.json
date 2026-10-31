@@ -1,0 +1,9 @@
+{
+  "Name": "SdvCpTool GameSmoke",
+  "Author": "SdvCpTool",
+  "Version": "1.0.0",
+  "Description": "自动自检：自己新建存档 → 跳开场 → 起床 → 出门巡图 → 连跨几天，把报错写进 smoke-result.txt。",
+  "UniqueID": "local.SdvCpTool.GameSmoke",
+  "EntryDll": "GameSmoke.dll",
+  "MinimumApiVersion": "4.0.0"
+}

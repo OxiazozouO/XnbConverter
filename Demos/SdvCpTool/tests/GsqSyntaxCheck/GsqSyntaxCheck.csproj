@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- 独立工具，不进 SdvCpTool.sln：它引用游戏程序集，不能进 CI。 -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Stardew Valley">
+      <HintPath>D:\Stardew.Valley.v1.6.15\Stardew Valley\Stardew Valley.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

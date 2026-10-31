@@ -1,0 +1,9 @@
+{
+  "Name": "SdvCpTool AssetProbe",
+  "Author": "SdvCpTool",
+  "Version": "1.0.0",
+  "Description": "装机探针：逐张地图试着建 GameLocation，把建不起来的报出来（`probe_maps`）。",
+  "UniqueID": "local.SdvCpTool.AssetProbe",
+  "EntryDll": "AssetProbe.dll",
+  "MinimumApiVersion": "4.0.0"
+}

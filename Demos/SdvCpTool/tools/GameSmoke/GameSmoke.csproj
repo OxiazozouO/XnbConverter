@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    探针 mod（SMAPI）—— 装机后**唯一**能自动回答"每张地图到底建不建得起来"的东西。
+    历史：`docs/how-to-build-an-install.md` §5 一直指着 `local.SdvCpTool.GameSmoke`，
+    但那个工程在仓库里和全盘都**找不到**（空指）—— 这份是 2026-10-11 重建的，用法见同目录 README.md。
+
+    ⚠ **必须 net6.0**：SMAPI 4（SDV 1.6 用的那份）只加载 net6.0 的程序集，net8.0 的装上去不认。
+    ⚠ 引用的 DLL **不要拷到输出**（`Private=false`）—— 它们在游戏进程里已经有了；
+      拷一份反而会让 SMAPI 加载到重复的 StardewValley。
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>GameSmoke</AssemblyName>
+    <RootNamespace>GameSmoke</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>10</LangVersion>
+    <!--
+      默认指向**带游戏程序集**的那份（本机是 `D:\Stardew.Valley.v1.6.15\Stardew Valley`）——
+      编译要的是 `Stardew Valley.dll` / `MonoGame.Framework.dll` / `xTile.dll`。
+      ⚠ **别指到 Steam 那份**：本机 `D:\Steam\steamapps\common\Stardew Valley` 是
+      "只有 SMAPI + Content + Mods"的便携布局（没有游戏程序集），指着它会找不到引用。
+      换机器：`dotnet build -p:GamePath="..."`。
+    -->
+    <GamePath Condition="'$(GamePath)' == ''">D:\Stardew.Valley.v1.6.15\Stardew Valley</GamePath>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Stardew Valley">
+      <HintPath>$(GamePath)\Stardew Valley.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StardewValley.GameData">
+      <HintPath>$(GamePath)\StardewValley.GameData.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="StardewModdingAPI">
+      <HintPath>$(GamePath)\StardewModdingAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="MonoGame.Framework">
+      <HintPath>$(GamePath)\MonoGame.Framework.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="xTile">
+      <HintPath>$(GamePath)\xTile.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

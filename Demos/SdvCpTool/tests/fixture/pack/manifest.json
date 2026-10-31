@@ -1,0 +1,10 @@
+{
+  "Name": "SdvCpTool Fixture",
+  "Author": "fixture",
+  "Version": "1.0.0",
+  "Description": "开发期快速回归夹具：每个机制一条补丁。",
+  "UniqueID": "SdvCpTool.Fixture",
+  "ContentPackFor": {
+    "UniqueID": "Pathoschild.ContentPatcher"
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "Format": "2.0.0",
+  "Changes": [
+    {
+      "LogName": "01 无条件 EditData",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "Entries": {
+        "fixture_uncond": "unconditional value"
+      }
+    },
+    {
+      "LogName": "02 GSQ 落点",
+      "Action": "EditData",
+      "Target": "Data/Locations",
+      "When": {
+        "Season": "spring"
+      },
+      "Fields": {
+        "Town": {
+          "DisplayName": "FIXTURE_TOWN"
+        }
+      }
+    },
+    {
+      "LogName": "03 恒假 HasMod",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "When": {
+        "HasMod": "Not.Installed.Mod"
+      },
+      "Entries": {
+        "fixture_never": "x"
+      }
+    },
+    {
+      "LogName": "04a 配置开关 true",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "When": {
+        "SdvCpTool.FixtureMod/SomeToggle": true
+      },
+      "Entries": {
+        "fixture_ns_true": "x"
+      }
+    },
+    {
+      "LogName": "04b 配置开关 false",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "When": {
+        "SdvCpTool.FixtureMod/AnotherToggle": true
+      },
+      "Entries": {
+        "fixture_ns_false": "x"
+      }
+    },
+    {
+      "LogName": "05 配偶键改写",
+      "Action": "EditData",
+      "Target": "Data/Festivals/spring13",
+      "When": {
+        "Relationship:Abigail |contains= married": true
+      },
+      "Entries": {
+        "Abigail": "FIXTURE_SPOUSE_DIALOGUE"
+      }
+    },
+    {
+      "LogName": "06 键即条件蕴含",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "When": {
+        "Season": "spring"
+      },
+      "Entries": {
+        "spring_13": "FIXTURE_SPRING_MAIL"
+      }
+    },
+    {
+      "LogName": "07a 基础对白（无条件）",
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Abigail",
+      "Entries": {
+        "Mon8": "FIXTURE_BASE_TEXT"
+      }
+    },
+    {
+      "LogName": "07b $query 对话",
+      "Action": "EditData",
+      "Target": "Characters/Dialogue/Abigail",
+      "When": {
+        "Relationship:Abigail": "Dating"
+      },
+      "Entries": {
+        "Mon8": "FIXTURE_DATING_TEXT"
+      }
+    },
+    {
+      "LogName": "08 Load 新建数据资产",
+      "Action": "Load",
+      "Target": "Data/FixtureNew",
+      "FromFile": "assets/newdata.json"
+    },
+    {
+      "LogName": "09 Load 新建图片资产",
+      "Action": "Load",
+      "Target": "LooseSprites/FixtureIcon",
+      "FromFile": "assets/icon.png"
+    },
+    {
+      "LogName": "09b EditImage 合成（Overlay，目标由 09 Load 创建）",
+      "Action": "EditImage",
+      "Target": "LooseSprites/FixtureIcon",
+      "FromFile": "assets/icon.png",
+      "PatchMode": "Overlay"
+    },
+    {
+      "LogName": "10 i18n 展开",
+      "Action": "EditData",
+      "Target": "Strings/StringsFromCSFiles",
+      "Entries": {
+        "Fixture.Key": "{{i18n:fixturekey}}"
+      }
+    },
+    {
+      "LogName": "11 TextOperations",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "Entries": {
+        "fixture_txt": "A"
+      },
+      "TextOperations": [
+        {
+          "Operation": "Append",
+          "Target": [
+            "Entries",
+            "fixture_txt"
+          ],
+          "Value": "B"
+        }
+      ]
+    },
+    {
+      "LogName": "12 负例 Random",
+      "Action": "Load",
+      "Target": "LooseSprites/FixtureRandom",
+      "FromFile": "assets/icon_{{Random: 1, 2}}.png"
+    },
+    {
+      "LogName": "13 负例 PlayerName",
+      "Action": "EditData",
+      "Target": "Data/mail",
+      "When": {
+        "PlayerName": "Nobody"
+      },
+      "Entries": {
+        "fixture_neg": "x"
+      }
+    }
+  ]
+}

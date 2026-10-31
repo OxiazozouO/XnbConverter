@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <!--
+      tbin 读写要用 XnaShim 提供的 Vector2 / IntVector2。
+      传递引用不会把它带进 CLI 的输出目录，缺了它 EditMap 会在运行时报
+      "Could not load file or assembly 'MonoGame.Framework'" —— 实测踩过。
+    -->
+    <!-- DestinationSubDirectory 必须与 XnbConverter.Core 的约定一致：
+         RootPath.LoadBuiltinShim 只找 `AppContext.BaseDirectory/xna-shim/MonoGame.Framework.dll`。 -->
+    <ProjectReference Include="..\..\..\..\XnbConverter.XnaShim\XnbConverter.XnaShim.csproj">
+      <DestinationSubDirectory>xna-shim\</DestinationSubDirectory>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SdvCpTool.Core\SdvCpTool.Core.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!--
+    与 XnbConverter.Cli 相同的处理：XnbConverter.XnaShim 只该待在 xna-shim\ 子目录里，
+    搁在输出根目录会被运行时默认探测抢先命中，.config/custom dll 里放的真 MonoGame 就轮不上。
+    Core → Cli 的传递引用会把替身抄到根目录（Core 里的 DestinationSubDirectory 管不住传递引用），
+    这里清掉；运行时的替身兜底由 XnbConverter.Core 的 RootPath 从 xna-shim\ 解析。
+  -->
+  <Target Name="DropXnaShimFromOutputRoot" AfterTargets="CopyFilesToOutputDirectory">
+    <ItemGroup>
+      <XnaShimStray Include="$(OutDir)MonoGame.Framework.*" />
+    </ItemGroup>
+    <Delete Files="@(XnaShimStray)" ContinueOnError="true" />
+  </Target>
+
+</Project>
